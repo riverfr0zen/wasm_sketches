@@ -8,8 +8,6 @@ use rand::Rng;
 use rand::prelude::thread_rng;
 
 
-
-
 // pub const WINDOW_WIDTH: f32 = 3200.0;
 // pub const WINDOW_HEIGHT: f32 = 2400.0;
 pub const WINDOW_WIDTH: f32 = 800.0;

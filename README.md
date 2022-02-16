@@ -14,3 +14,20 @@ cargo build --release --example shiftyc --target wasm32-unknown-unknown --featur
 ```
 wasm-bindgen --out-dir www/wasms --target web target/wasm32-unknown-unknown/release/examples/shiftyc.wasm
 ```
+
+
+# build-sketches tool
+
+## Run with cargo
+
+```
+cargo run --release --bin build-sketches
+```
+
+## Build
+
+```
+cargo build --release --bin build-sketches
+```
+
+The executable will then be at `target/release/build-sketches`
