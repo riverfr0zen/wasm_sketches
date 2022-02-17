@@ -15,10 +15,6 @@ web-sys = { version = "0.3.56", features = ['Window'] }
 [features]
 framestats = []
 
-[profile.release]
-lto = true
-opt-level = "z"
-
 # Based on https://dev.to/yjdoc2/make-a-combined-library-and-binary-project-in-rust-d4f
 [[bin]]
 name = "build-sketches"
@@ -28,3 +24,8 @@ path = "src/build_sketches.rs"
 # [lib]
 # name = "wasm_sketches"
 # path = "src/lib.rs"
+
+
+[profile.release]
+lto = true
+opt-level = "z"
