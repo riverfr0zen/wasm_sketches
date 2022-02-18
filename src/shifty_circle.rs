@@ -53,17 +53,80 @@ pub struct Destination {
     speed: f32,
 }
 
+// Helpful on how to return multiple types:
+// https://www.reddit.com/r/rust/comments/dme4og/can_we_return_multiple_type_data_from_the_function/
+// https://play.rust-lang.org/?version=stable&mode=debug&edition=2018&gist=57223180ab43fff42e057d367468ac22
+enum Either<A, B> {
+    Left(A),
+    Right(B),
+}
 
-pub fn setup_shifty_circle(mut commands: Commands) {
-    // let mut rng = thread_rng();
-    let mycircle = shapes::Circle {
-        radius: SHIFTY_CIRCLE_RADIUS,
-        ..Default::default()
-    };
+enum ShiftyShapes {
+    RECT,
+    CIRCLE,
+    ELLIPSE,
+}
 
+
+fn get_shape(shape: ShiftyShapes) -> impl Geometry {
+    match shape {
+        ShiftyShapes::CIRCLE => {
+            info!("got to circle");
+            // This is a temporary workaround, reusing ellipse to draw a circle. The real problem
+            // seems to be that I need to figure out how to properly return multiple types 
+            // from a function (see error message here)
+            //
+            // return shapes::Circle {
+            //     radius: SHIFTY_CIRCLE_RADIUS,
+            //     ..Default::default()
+            // }
+            return shapes::Ellipse {
+                radii: Vec2::new(SHIFTY_CIRCLE_RADIUS, SHIFTY_CIRCLE_RADIUS),
+                ..Default::default()
+            }
+        },
+        ShiftyShapes::ELLIPSE => {
+            info!("got to ellipse");
+            return shapes::Ellipse {
+                radii: Vec2::new(SHIFTY_CIRCLE_RADIUS, SHIFTY_CIRCLE_RADIUS / 2.0),
+                ..Default::default()
+            }
+        },
+        ShiftyShapes::RECT => {
+            info!("got to rect");
+            // return shapes::RegularPolygon {
+            //     sides: 4,
+            //     feature: shapes::RegularPolygonFeature::Radius(200.0),
+            //     ..shapes::RegularPolygon::default()
+            // }
+
+            return shapes::Ellipse {
+                radii: Vec2::new(SHIFTY_CIRCLE_RADIUS, SHIFTY_CIRCLE_RADIUS / 2.0),
+                ..Default::default()
+            }
+        }
+    }
+}
+
+
+pub fn setup_shifty_circle(commands: Commands) {
+    // let myshape = get_shape(ShiftyShapes::CIRCLE);
+    let myshape = get_shape(ShiftyShapes::CIRCLE);
+    setup_generic(commands, myshape);
+}
+
+
+pub fn setup_shifty_ufo(commands: Commands) {
+    // let myshape = get_shape(ShiftyShapes::CIRCLE);
+    let myshape = get_shape(ShiftyShapes::ELLIPSE);
+    setup_generic(commands, myshape);
+}
+
+
+fn setup_generic(mut commands: Commands, myshape: impl Geometry) {
     commands.spawn_bundle(OrthographicCameraBundle::new_2d());
     commands.spawn_bundle(GeometryBuilder::build_as(
-        &mycircle,
+        &myshape,
         DrawMode::Outlined {
             fill_mode: FillMode::color(SHIFTY_CIRCLE_FILL_COLOR),
             outline_mode: StrokeMode::new(SHIFTY_CIRCLE_STROKE_COLOR, SHIFTY_CIRCLE_STROKE),
@@ -182,7 +245,7 @@ fn do_pulsating_effect(mut query: Query<&mut DrawMode, With<ShiftyCircle>>) {
 
 
 
-pub fn app() {
+pub fn app(variation: &str) {
     // From https://github.com/Nilirad/bevy_prototype_lyon/blob/master/examples/path.rs
 
     let mut app = App::new();
@@ -215,7 +278,10 @@ pub fn app() {
     app.add_plugin(LogDiagnosticsPlugin::default())
     .add_plugin(FrameTimeDiagnosticsPlugin::default());
 
-    app.add_startup_system(setup_shifty_circle);
+    match variation {
+        "ufo" => app.add_startup_system(setup_shifty_ufo),
+        _ => app.add_startup_system(setup_shifty_circle),
+    };
 
     #[cfg(target_arch = "wasm32")]
     app.add_startup_system(setup_browser_size)
