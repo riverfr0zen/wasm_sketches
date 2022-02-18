@@ -145,6 +145,34 @@ pub fn change_circle_destination(
 }
 
 
+// Based on https://github.com/Nilirad/bevy_prototype_lyon/blob/master/examples/dynamic_shape.rs
+// fn change_draw_mode_system(mut query: Query<&mut DrawMode>, time: Res<Time>) {
+fn change_draw_mode_system(mut query: Query<&mut DrawMode, With<ShiftyCircle>>) {
+    // let hue = (time.seconds_since_startup() * 50.0) % 360.0;
+    // let outline_width = 2.0 + time.seconds_since_startup().sin().abs() * 10.0;
+
+
+    for mut draw_mode in query.iter_mut() {
+        // Helpful: https://doc.rust-lang.org/rust-by-example/flow_control/if_let.html
+        if let DrawMode::Outlined {
+            ref mut fill_mode,
+            ref mut outline_mode,
+        } = *draw_mode
+        {
+            if fill_mode.color.a() < 0.1 {
+                fill_mode.color.set_a(fill_mode.color.a() + 0.02);
+                // outline_mode.options.line_width = outline_width as f32;
+            }
+            else {
+                fill_mode.color = SHIFTY_CIRCLE_FILL_COLOR;
+                info!("{:?}", fill_mode.color.a());
+            }
+        }
+    }
+}
+
+
+
 pub fn app() {
     // From https://github.com/Nilirad/bevy_prototype_lyon/blob/master/examples/path.rs
 
@@ -194,7 +222,7 @@ pub fn app() {
     ).add_system(
         change_circle_destination
             .with_run_criteria(FixedTimestep::step(SHIFTY_CHANGE_STEP))
-    );
+    ).add_system(change_draw_mode_system);
 
     app.run();
 }
