@@ -8,18 +8,20 @@ use rand::Rng;
 use rand::prelude::thread_rng;
 
 
-// pub const WINDOW_WIDTH: f32 = 3200.0;
-// pub const WINDOW_HEIGHT: f32 = 2400.0;
-pub const WINDOW_WIDTH: f32 = 800.0;
-pub const WINDOW_HEIGHT: f32 = 600.0;
-pub const SHIFTY_CIRCLE_STEP: f64 = 0.01;
-pub const SHIFTY_CHANGE_STEP: f64 = 0.5;
-pub const CLEAR_COLOR: Color = Color::rgb(0.149, 0.156, 0.290);
+const TARGET_RES_WIDTH: f32 = 3840.0;
+// const TARGET_RES_HEIGHT: f32 = 2160.0;
+const WINDOW_WIDTH: f32 = 1920.0;
+const WINDOW_HEIGHT: f32 = 1080.0;
+// Place window on top right corner
+const WINDOW_POSITION_X: f32 = TARGET_RES_WIDTH - WINDOW_WIDTH;
+const WINDOW_POSITION_Y: f32 = 0.0;
+const SHIFTY_CIRCLE_STEP: f64 = 0.01;
+const SHIFTY_CHANGE_STEP: f64 = 0.5;
+const CLEAR_COLOR: Color = Color::rgb(0.149, 0.156, 0.290);
 const SHIFTY_CIRCLE_RADIUS: f32 = 50.0;
 const SHIFTY_CIRCLE_STROKE: f32 = 5.0;
 const SHIFTY_CIRCLE_MIN_SPEED: f32 = 0.01;
 const SHIFTY_CIRCLE_MAX_SPEED: f32 = 50.0;
-// const SHIFTY_CIRCLE_FILL_COLOR: Color = Color::rgba(0.0, 1.0, 0.0, 0.2);
 const SHIFTY_CIRCLE_FILL_COLOR: Color = Color::rgba(0.784, 0.713, 0.345, 0.01);
 const SHIFTY_CIRCLE_STROKE_COLOR: Color = Color::rgba(0.784, 0.713, 0.345, 0.01);
 #[cfg(target_arch = "wasm32")]
@@ -151,6 +153,7 @@ pub fn app() {
             title: "Shifty Circle".to_string(),
             width: WINDOW_WIDTH,
             height: WINDOW_HEIGHT,
+            position: Some(Vec2::new(WINDOW_POSITION_X, WINDOW_POSITION_Y)),
             #[cfg(target_arch = "wasm32")]
             canvas: Some("#window-matching-canvas".to_string()),
             ..Default::default()
