@@ -108,21 +108,32 @@ fn get_shape(shape: ShiftyShapes) -> Either<shapes::Circle, shapes::Ellipse> {
     }
 }
 
-
 pub fn setup_shifty_circle(commands: Commands) {
     let some_shape = get_shape(ShiftyShapes::CIRCLE);
-    match some_shape {
-        Either::Left(myshape) => setup_generic(commands, myshape),
-        Either::Right(myshape) => setup_generic(commands, myshape)
+    /*
+     * This way of destructuring took some time to figure out and is still is a little hard 
+     * to understand as I'm new to Rust. 
+     * 
+     * What it means is: "If let destructures `some_shape` into Either::Left(myshape), where
+     * `myshape` would be the Circle shape we want, then run the `if` block. Need to do this 
+     * because I'm using the "Either" pattern for returning multiple types (see above).
+     * 
+     * By using `if let` I can avoid the verbose and redundant match statement from the
+     * previous commit of this function.
+     * 
+     * Based on: 
+     * https://www.reddit.com/r/rust/comments/dme4og/can_we_return_multiple_type_data_from_the_function/
+     */
+    if let Either::Left(myshape) = some_shape {
+        setup_generic(commands, myshape);
     }
 }
 
 
 pub fn setup_shifty_ufo(commands: Commands) {
     let some_shape = get_shape(ShiftyShapes::ELLIPSE);
-    match some_shape {
-        Either::Left(myshape) => setup_generic(commands, myshape),
-        Either::Right(myshape) => setup_generic(commands, myshape)
+    if let Either::Right(myshape) = some_shape {
+        setup_generic(commands, myshape);
     }
 }
 
