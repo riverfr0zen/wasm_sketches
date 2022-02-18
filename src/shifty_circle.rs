@@ -108,7 +108,7 @@ fn get_shape(shape: ShiftyShapes) -> OneOf<shapes::Circle, shapes::Ellipse, shap
 }
 
 
-pub fn setup_shifty_circle(commands: Commands) {
+fn setup_shifty_circle(commands: Commands) {
     let some_shape = get_shape(ShiftyShapes::CIRCLE);
     /*
      * This way of destructuring took some time to figure out and is still is a little hard 
@@ -132,7 +132,7 @@ pub fn setup_shifty_circle(commands: Commands) {
 }
 
 
-pub fn setup_shifty_ufo(commands: Commands) {
+fn setup_shifty_ufo(commands: Commands) {
     let some_shape = get_shape(ShiftyShapes::ELLIPSE);
     if let OneOf::Second(myshape) = some_shape {
         setup_generic(commands, myshape);
@@ -141,7 +141,7 @@ pub fn setup_shifty_ufo(commands: Commands) {
     }
 }
 
-pub fn setup_shifty_rect(commands: Commands) {
+fn setup_shifty_rect(commands: Commands) {
     let some_shape = get_shape(ShiftyShapes::RECT);
     if let OneOf::Third(myshape) = some_shape {
         setup_generic(commands, myshape);
@@ -153,6 +153,7 @@ pub fn setup_shifty_rect(commands: Commands) {
 
 fn setup_generic(mut commands: Commands, myshape: impl Geometry) {
     commands.spawn_bundle(OrthographicCameraBundle::new_2d());
+
     commands.spawn_bundle(GeometryBuilder::build_as(
         &myshape,
         DrawMode::Outlined {
@@ -171,7 +172,7 @@ fn setup_generic(mut commands: Commands, myshape: impl Geometry) {
 // Call the handle_browser_resize system once at startup (if window is created)
 // to cover for the short period before handle_browser_resize kicks in
 // (since that system will likely be set to a FixedTimeStep)
-pub fn setup_browser_size(
+fn setup_browser_size(
     app_globals: ResMut<AppGlobals>,
     windows: ResMut<Windows>, 
     mut window_created_reader: EventReader<WindowCreated>
@@ -184,7 +185,7 @@ pub fn setup_browser_size(
 
 // Based on this Discord conversation: https://i.imgur.com/osfA8PH.png AND
 // https://github.com/mrk-its/bevy-robbo/blob/master/src/main.rs
-pub fn handle_browser_resize(mut windows: ResMut<Windows>, mut app_globals: ResMut<AppGlobals>) {
+fn handle_browser_resize(mut windows: ResMut<Windows>, mut app_globals: ResMut<AppGlobals>) {
     let window = windows.get_primary_mut().unwrap();
     let wasm_window = web_sys::window().unwrap();
     let (target_width, target_height) = (
@@ -202,7 +203,7 @@ pub fn handle_browser_resize(mut windows: ResMut<Windows>, mut app_globals: ResM
 
 
 
-pub fn translate_circle(mut q: Query<(&mut Transform, &Destination)>) {
+fn translate_circle(mut q: Query<(&mut Transform, &Destination)>) {
     for (mut transform, dest) in q.iter_mut() {
         if dest.x > transform.translation.x {
             transform.translation.x += dest.speed;
@@ -222,7 +223,7 @@ pub fn translate_circle(mut q: Query<(&mut Transform, &Destination)>) {
 }
 
 
-pub fn change_circle_destination(
+fn change_circle_destination(
     app_globals: Res<AppGlobals>, mut q: Query<&mut Destination, With<ShiftyCircle>>
 ) {
     let mut rng = thread_rng();
