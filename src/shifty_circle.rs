@@ -62,13 +62,13 @@ enum Either<A, B> {
 }
 
 enum ShiftyShapes {
-    RECT,
+    // RECT,
     CIRCLE,
     ELLIPSE,
 }
 
 
-fn get_shape(shape: ShiftyShapes) -> impl Geometry {
+fn get_shape(shape: ShiftyShapes) -> Either<shapes::Circle, shapes::Ellipse> {
     match shape {
         ShiftyShapes::CIRCLE => {
             info!("got to circle");
@@ -76,50 +76,54 @@ fn get_shape(shape: ShiftyShapes) -> impl Geometry {
             // seems to be that I need to figure out how to properly return multiple types 
             // from this function (see error message here)
             //
-            // return shapes::Circle {
-            //     radius: SHIFTY_CIRCLE_RADIUS,
-            //     ..Default::default()
-            // }
-            return shapes::Ellipse {
-                radii: Vec2::new(SHIFTY_CIRCLE_RADIUS, SHIFTY_CIRCLE_RADIUS),
-                ..Default::default()
-            }
+            return Either::Left(
+                shapes::Circle {
+                    radius: SHIFTY_CIRCLE_RADIUS,
+                    ..Default::default()
+                }
+            )
         },
         ShiftyShapes::ELLIPSE => {
             info!("got to ellipse");
-            return shapes::Ellipse {
-                radii: Vec2::new(SHIFTY_CIRCLE_RADIUS, SHIFTY_CIRCLE_RADIUS / 2.0),
-                ..Default::default()
-            }
+            return Either::Right(
+                shapes::Ellipse {
+                    radii: Vec2::new(SHIFTY_CIRCLE_RADIUS, SHIFTY_CIRCLE_RADIUS / 2.0),
+                    ..Default::default()
+                }
+            )
         },
-        ShiftyShapes::RECT => {
-            info!("got to rect");
-            // return shapes::RegularPolygon {
-            //     sides: 4,
-            //     feature: shapes::RegularPolygonFeature::Radius(200.0),
-            //     ..shapes::RegularPolygon::default()
-            // }
+        // ShiftyShapes::RECT => {
+        //     info!("got to rect");
+        //     // return shapes::RegularPolygon {
+        //     //     sides: 4,
+        //     //     feature: shapes::RegularPolygonFeature::Radius(200.0),
+        //     //     ..shapes::RegularPolygon::default()
+        //     // }
 
-            return shapes::Ellipse {
-                radii: Vec2::new(SHIFTY_CIRCLE_RADIUS, SHIFTY_CIRCLE_RADIUS / 2.0),
-                ..Default::default()
-            }
-        }
+        //     return shapes::Ellipse {
+        //         radii: Vec2::new(SHIFTY_CIRCLE_RADIUS, SHIFTY_CIRCLE_RADIUS / 2.0),
+        //         ..Default::default()
+        //     }
+        // }
     }
 }
 
 
 pub fn setup_shifty_circle(commands: Commands) {
-    // let myshape = get_shape(ShiftyShapes::CIRCLE);
-    let myshape = get_shape(ShiftyShapes::CIRCLE);
-    setup_generic(commands, myshape);
+    let some_shape = get_shape(ShiftyShapes::CIRCLE);
+    match some_shape {
+        Either::Left(myshape) => setup_generic(commands, myshape),
+        Either::Right(myshape) => setup_generic(commands, myshape)
+    }
 }
 
 
 pub fn setup_shifty_ufo(commands: Commands) {
-    // let myshape = get_shape(ShiftyShapes::CIRCLE);
-    let myshape = get_shape(ShiftyShapes::ELLIPSE);
-    setup_generic(commands, myshape);
+    let some_shape = get_shape(ShiftyShapes::ELLIPSE);
+    match some_shape {
+        Either::Left(myshape) => setup_generic(commands, myshape),
+        Either::Right(myshape) => setup_generic(commands, myshape)
+    }
 }
 
 
