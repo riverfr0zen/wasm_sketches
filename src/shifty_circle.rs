@@ -142,7 +142,7 @@ pub fn setup_shifty_ufo(commands: Commands) {
 }
 
 pub fn setup_shifty_rect(commands: Commands) {
-    let some_shape = get_shape(ShiftyShapes::ELLIPSE);
+    let some_shape = get_shape(ShiftyShapes::RECT);
     if let OneOf::Third(myshape) = some_shape {
         setup_generic(commands, myshape);
     } else {
