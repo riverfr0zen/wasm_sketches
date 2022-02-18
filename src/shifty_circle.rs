@@ -17,13 +17,15 @@ const WINDOW_POSITION_X: f32 = TARGET_RES_WIDTH - WINDOW_WIDTH;
 const WINDOW_POSITION_Y: f32 = 0.0;
 const SHIFTY_CIRCLE_STEP: f64 = 0.01;
 const SHIFTY_CHANGE_STEP: f64 = 0.5;
+const PULSATING_STEP: f64 = 0.1;
 const CLEAR_COLOR: Color = Color::rgb(0.149, 0.156, 0.290);
 const SHIFTY_CIRCLE_RADIUS: f32 = 50.0;
-const SHIFTY_CIRCLE_STROKE: f32 = 5.0;
+const SHIFTY_CIRCLE_STROKE: f32 = 1.0;
 const SHIFTY_CIRCLE_MIN_SPEED: f32 = 0.01;
 const SHIFTY_CIRCLE_MAX_SPEED: f32 = 50.0;
 const SHIFTY_CIRCLE_FILL_COLOR: Color = Color::rgba(0.784, 0.713, 0.345, 0.01);
 const SHIFTY_CIRCLE_STROKE_COLOR: Color = Color::rgba(0.784, 0.713, 0.345, 0.01);
+const FILL_MAX_ALPHA: f32 = 0.1;
 #[cfg(target_arch = "wasm32")]
 const RESIZE_CHECK_STEP: f64 = 1.0;
 
@@ -147,7 +149,7 @@ pub fn change_circle_destination(
 
 // Based on https://github.com/Nilirad/bevy_prototype_lyon/blob/master/examples/dynamic_shape.rs
 // fn change_draw_mode_system(mut query: Query<&mut DrawMode>, time: Res<Time>) {
-fn change_draw_mode_system(mut query: Query<&mut DrawMode, With<ShiftyCircle>>) {
+fn do_pulsating_effect(mut query: Query<&mut DrawMode, With<ShiftyCircle>>) {
     // let hue = (time.seconds_since_startup() * 50.0) % 360.0;
     // let outline_width = 2.0 + time.seconds_since_startup().sin().abs() * 10.0;
 
@@ -159,14 +161,21 @@ fn change_draw_mode_system(mut query: Query<&mut DrawMode, With<ShiftyCircle>>) 
             ref mut outline_mode,
         } = *draw_mode
         {
-            if fill_mode.color.a() < 0.1 {
+            if fill_mode.color.a() < FILL_MAX_ALPHA {
                 fill_mode.color.set_a(fill_mode.color.a() + 0.02);
-                // outline_mode.options.line_width = outline_width as f32;
-            }
-            else {
+                outline_mode.color.set_a(fill_mode.color.a() + 0.02);
+            } else {
                 fill_mode.color = SHIFTY_CIRCLE_FILL_COLOR;
-                info!("{:?}", fill_mode.color.a());
+                outline_mode.color = SHIFTY_CIRCLE_STROKE_COLOR;
             }
+
+            // Don't like this, leaving in here in case I want to mess with it later
+            // info!("{:?}", outline_mode.options.line_width);
+            // if outline_mode.options.line_width < 5.0 {
+            //     outline_mode.options.line_width = outline_mode.options.line_width + 1.0;
+            // } else {
+            //     outline_mode.options.line_width = SHIFTY_CIRCLE_STROKE;
+            // }
         }
     }
 }
@@ -222,7 +231,9 @@ pub fn app() {
     ).add_system(
         change_circle_destination
             .with_run_criteria(FixedTimestep::step(SHIFTY_CHANGE_STEP))
-    ).add_system(change_draw_mode_system);
+    ).add_system(do_pulsating_effect
+        .with_run_criteria(FixedTimestep::step(PULSATING_STEP))
+    );
 
     app.run();
 }
