@@ -56,19 +56,20 @@ pub struct Destination {
 // Helpful on how to return multiple types:
 // https://www.reddit.com/r/rust/comments/dme4og/can_we_return_multiple_type_data_from_the_function/
 // https://play.rust-lang.org/?version=stable&mode=debug&edition=2018&gist=57223180ab43fff42e057d367468ac22
-enum Either<A, B> {
-    Left(A),
-    Right(B),
+enum OneOf<A, B, C> {
+    First(A),
+    Second(B),
+    Third(C),
 }
 
 enum ShiftyShapes {
-    // RECT,
+    RECT,
     CIRCLE,
     ELLIPSE,
 }
 
 
-fn get_shape(shape: ShiftyShapes) -> Either<shapes::Circle, shapes::Ellipse> {
+fn get_shape(shape: ShiftyShapes) -> OneOf<shapes::Circle, shapes::Ellipse, shapes::RegularPolygon> {
     match shape {
         ShiftyShapes::CIRCLE => {
             info!("got to circle");
@@ -76,7 +77,7 @@ fn get_shape(shape: ShiftyShapes) -> Either<shapes::Circle, shapes::Ellipse> {
             // seems to be that I need to figure out how to properly return multiple types 
             // from this function (see error message here)
             //
-            return Either::Left(
+            return OneOf::First(
                 shapes::Circle {
                     radius: SHIFTY_CIRCLE_RADIUS,
                     ..Default::default()
@@ -85,28 +86,27 @@ fn get_shape(shape: ShiftyShapes) -> Either<shapes::Circle, shapes::Ellipse> {
         },
         ShiftyShapes::ELLIPSE => {
             info!("got to ellipse");
-            return Either::Right(
+            return OneOf::Second(
                 shapes::Ellipse {
                     radii: Vec2::new(SHIFTY_CIRCLE_RADIUS, SHIFTY_CIRCLE_RADIUS / 2.0),
                     ..Default::default()
                 }
             )
         },
-        // ShiftyShapes::RECT => {
-        //     info!("got to rect");
-        //     // return shapes::RegularPolygon {
-        //     //     sides: 4,
-        //     //     feature: shapes::RegularPolygonFeature::Radius(200.0),
-        //     //     ..shapes::RegularPolygon::default()
-        //     // }
+        ShiftyShapes::RECT => {
+            info!("got to rect");
+            return OneOf::Third(
+                shapes::RegularPolygon {
+                    sides: 4,
+                    feature: shapes::RegularPolygonFeature::Radius(SHIFTY_CIRCLE_RADIUS),
+                    ..shapes::RegularPolygon::default()
+                }
 
-        //     return shapes::Ellipse {
-        //         radii: Vec2::new(SHIFTY_CIRCLE_RADIUS, SHIFTY_CIRCLE_RADIUS / 2.0),
-        //         ..Default::default()
-        //     }
-        // }
+            )
+        },
     }
 }
+
 
 pub fn setup_shifty_circle(commands: Commands) {
     let some_shape = get_shape(ShiftyShapes::CIRCLE);
@@ -124,16 +124,29 @@ pub fn setup_shifty_circle(commands: Commands) {
      * Based on: 
      * https://www.reddit.com/r/rust/comments/dme4og/can_we_return_multiple_type_data_from_the_function/
      */
-    if let Either::Left(myshape) = some_shape {
+    if let OneOf::First(myshape) = some_shape {
         setup_generic(commands, myshape);
+    } else {
+        panic!("Got the wrong shape!");
     }
 }
 
 
 pub fn setup_shifty_ufo(commands: Commands) {
     let some_shape = get_shape(ShiftyShapes::ELLIPSE);
-    if let Either::Right(myshape) = some_shape {
+    if let OneOf::Second(myshape) = some_shape {
         setup_generic(commands, myshape);
+    } else {
+        panic!("Got the wrong shape!");
+    }
+}
+
+pub fn setup_shifty_rect(commands: Commands) {
+    let some_shape = get_shape(ShiftyShapes::ELLIPSE);
+    if let OneOf::Third(myshape) = some_shape {
+        setup_generic(commands, myshape);
+    } else {
+        panic!("Got the wrong shape!");
     }
 }
 
@@ -295,6 +308,7 @@ pub fn app(variation: &str) {
 
     match variation {
         "ufo" => app.add_startup_system(setup_shifty_ufo),
+        "rect" => app.add_startup_system(setup_shifty_rect),
         _ => app.add_startup_system(setup_shifty_circle),
     };
 
