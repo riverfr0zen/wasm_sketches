@@ -18,8 +18,15 @@ wasm-bindgen --out-dir www/wasms --target web target/wasm32-unknown-unknown/rele
 For quick copy:
 
 ```
+circle:
 cargo build --release --example shiftyc --target wasm32-unknown-unknown
 wasm-bindgen --out-dir www/wasms --target web target/wasm32-unknown-unknown/release/examples/shiftyc.wasm
+
+
+ufo:
+cargo build --release --example shiftyufo --target wasm32-unknown-unknown
+wasm-bindgen --out-dir www/wasms --target web target/wasm32-unknown-unknown/release/examples/shiftyufo.wasm
+
 ```
 
 

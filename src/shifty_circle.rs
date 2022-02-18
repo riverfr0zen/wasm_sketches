@@ -74,7 +74,7 @@ fn get_shape(shape: ShiftyShapes) -> impl Geometry {
             info!("got to circle");
             // This is a temporary workaround, reusing ellipse to draw a circle. The real problem
             // seems to be that I need to figure out how to properly return multiple types 
-            // from a function (see error message here)
+            // from this function (see error message here)
             //
             // return shapes::Circle {
             //     radius: SHIFTY_CIRCLE_RADIUS,
