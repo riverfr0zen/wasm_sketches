@@ -72,11 +72,6 @@ enum ShiftyShapes {
 fn get_shape(shape: ShiftyShapes) -> OneOf<shapes::Circle, shapes::Ellipse, shapes::RegularPolygon> {
     match shape {
         ShiftyShapes::CIRCLE => {
-            info!("got to circle");
-            // This is a temporary workaround, reusing ellipse to draw a circle. The real problem
-            // seems to be that I need to figure out how to properly return multiple types 
-            // from this function (see error message here)
-            //
             return OneOf::First(
                 shapes::Circle {
                     radius: SHIFTY_CIRCLE_RADIUS,
@@ -85,7 +80,6 @@ fn get_shape(shape: ShiftyShapes) -> OneOf<shapes::Circle, shapes::Ellipse, shap
             )
         },
         ShiftyShapes::ELLIPSE => {
-            info!("got to ellipse");
             return OneOf::Second(
                 shapes::Ellipse {
                     radii: Vec2::new(SHIFTY_CIRCLE_RADIUS, SHIFTY_CIRCLE_RADIUS / 2.0),
@@ -116,7 +110,10 @@ fn setup_shifty_circle(commands: Commands) {
      * 
      * What it means is: "If let destructures `some_shape` into Either::Left(myshape), where
      * `myshape` would be the Circle shape we want, then run the `if` block. Need to do this 
-     * because I'm using the "Either" pattern for returning multiple types (see above).
+     * because I'm using the "Either" pattern for returning multiple types described here:
+     * 
+     * https://play.rust-lang.org/?version=stable&mode=debug&edition=2018&gist=57223180ab43fff42e057d367468ac22
+     * (Update: Changed "Either" to "OneOf")
      * 
      * By using `if let` I can avoid the verbose and redundant match statement from the
      * previous commit of this function.
