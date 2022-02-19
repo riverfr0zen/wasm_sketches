@@ -139,6 +139,9 @@ fn setup_shifty_ufo(commands: Commands) {
 }
 
 fn setup_shifty_rect(commands: Commands) {
+    // For an example of triggering the panic below, you can ask for an ELLIPSE from `get_shape`
+    // instead of the expected RECT
+    // let some_shape = get_shape(ShiftyShapes::ELLIPSE);
     let some_shape = get_shape(ShiftyShapes::RECT);
     if let OneOf::Third(myshape) = some_shape {
         setup_generic(commands, myshape);
