@@ -30,8 +30,6 @@ wasm-bindgen --out-dir www/wasms --target web target/wasm32-unknown-unknown/rele
 rect:
 cargo build --release --example shiftyrect --target wasm32-unknown-unknown
 wasm-bindgen --out-dir www/wasms --target web target/wasm32-unknown-unknown/release/examples/shiftyrect.wasm
-
-
 ```
 
 
@@ -42,7 +40,7 @@ wasm-bindgen --out-dir www/wasms --target web target/wasm32-unknown-unknown/rele
 Notice the omission of the file name. I'm not sure what happens if there are multiple binaries.
 
 ```
-cargo run -- -e hi
+cargo run -- --sketch shiftyc
 ```
 
 ## Run with cargo (release)
