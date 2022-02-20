@@ -1,4 +1,5 @@
 use bevy::prelude::*;
+#[cfg(target_arch = "wasm32")]
 use bevy::window::WindowCreated;
 use bevy::core::FixedTimestep;
 #[cfg(feature = "framestats")]
@@ -172,6 +173,7 @@ fn setup_generic(mut commands: Commands, myshape: impl Geometry) {
 // Call the handle_browser_resize system once at startup (if window is created)
 // to cover for the short period before handle_browser_resize kicks in
 // (since that system will likely be set to a FixedTimeStep)
+#[cfg(target_arch = "wasm32")]
 fn setup_browser_size(
     app_globals: ResMut<AppGlobals>,
     windows: ResMut<Windows>, 
@@ -185,6 +187,7 @@ fn setup_browser_size(
 
 // Based on this Discord conversation: https://i.imgur.com/osfA8PH.png AND
 // https://github.com/mrk-its/bevy-robbo/blob/master/src/main.rs
+#[cfg(target_arch = "wasm32")]
 fn handle_browser_resize(mut windows: ResMut<Windows>, mut app_globals: ResMut<AppGlobals>) {
     let window = windows.get_primary_mut().unwrap();
     let wasm_window = web_sys::window().unwrap();
