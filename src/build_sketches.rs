@@ -1,6 +1,5 @@
 use clap::Parser;
-use std::process::{Command, Stdio};
-use std::io::{BufRead, BufReader, Error, ErrorKind};
+use std::process::{ Command, Stdio };
 
 
 #[derive(Parser, Debug)]
@@ -12,50 +11,41 @@ struct Args {
 }
 
 
-fn build_sketch(sketch: &str) -> Result<(), Error> {
+fn build_sketch(sketch: &str) {
     println!("Building {}...", sketch);
-    // Get streamed response, based on:
+    // In the previous commit I was following this example
     // https://rust-lang-nursery.github.io/rust-cookbook/os/external.html#continuously-process-child-process-outputs
-    let build_cmd = Command::new("cargo")
+    //
+    // ...but I couldn't figure out how to get the exit code. Then I found this example
+    // which I think serves this use case better:
+    // https://stackoverflow.com/a/32020376/4655636
+    let mut build_cmd = Command::new("cargo")
         .arg("build")
         .arg("--example")
         .arg(sketch)
         .arg("--target")
         .arg("wasm32-unknown-unknown")
         .arg("--release")
-        .stdout(Stdio::piped())
-        .spawn()?
-        .stdout
-        .ok_or_else(|| Error::new(ErrorKind::Other,"Could not capture standard output."))?;
+        .stdout(Stdio::inherit())
+        .stderr(Stdio::inherit())
+        .spawn()
+        .unwrap();
 
-    let reader = BufReader::new(build_cmd);
-
-    reader
-        .lines()
-        .filter_map(|line| line.ok())
-        .for_each(|line| println!("{}", line));
-
-
-    println!("Running wasm-bindgen for {}...", sketch);
-    let wasm_cmd = Command::new("wasm-bindgen")
-        .arg("--out-dir")
-        .arg("www/wasms")
-        .arg("--target")
-        .arg("web")
-        .arg(format!("target/wasm32-unknown-unknown/release/examples/{}.wasm", sketch))
-        .stdout(Stdio::piped())
-        .spawn()?
-        .stdout
-        .ok_or_else(|| Error::new(ErrorKind::Other,"Could not capture standard output."))?;
-
-    let reader = BufReader::new(wasm_cmd);
-
-    reader
-        .lines()
-        .filter_map(|line| line.ok())
-        .for_each(|line| println!("hello {}", line));
-
-    Ok(())
+    let build_success = build_cmd.wait().unwrap().success();
+    if build_success {
+        println!("Running wasm-bindgen for {}...", sketch);
+        Command::new("wasm-bindgen")
+            .arg("--out-dir")
+            .arg("www/wasms")
+            .arg("--target")
+            .arg("web")
+            .arg(format!("target/wasm32-unknown-unknown/release/examples/{}.wasm", sketch))
+            .stdout(Stdio::inherit())
+            .stderr(Stdio::inherit())
+            .spawn()
+            .unwrap();
+    
+    }
 }
 
 
@@ -66,11 +56,6 @@ fn main() {
     if args.sketch == "All" {
         println!("TODO: Go through all examples and build sketches")
     } else {
-        // Error handling based on:
-        // https://stackoverflow.com/a/53368681/4655636
-        match build_sketch(args.sketch.as_str()) {
-            Err(e) => println!("{:?}", e),
-            _ => ()
-        }
+        build_sketch(args.sketch.as_str());
     }
 }
