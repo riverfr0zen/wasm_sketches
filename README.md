@@ -37,7 +37,15 @@ wasm-bindgen --out-dir www/wasms --target web target/wasm32-unknown-unknown/rele
 
 # build-sketches tool
 
-## Run with cargo
+## Run with cargo (debug)
+
+Notice the omission of the file name. I'm not sure what happens if there are multiple binaries.
+
+```
+cargo run -- -e hi
+```
+
+## Run with cargo (release)
 
 ```
 cargo run --release --bin build-sketches
