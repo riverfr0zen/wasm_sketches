@@ -3,15 +3,6 @@ use std::process::{ Command, Stdio };
 use std::fs;
 
 
-#[derive(Parser, Debug)]
-#[clap(author, version, about, long_about = None)]
-struct Args {
-    /// Name of the example to build
-    #[clap(short, long, default_value = "All")]
-    sketch: String,
-}
-
-
 fn gen_html_from_template(sketch: &str) {
     let file_contents = fs::read_to_string(
         "www/window-matching-canvas.template.html"
@@ -67,13 +58,21 @@ fn build_sketch(sketch: &str) {
 }
 
 
+#[derive(Parser, Debug)]
+#[clap(author, version, about, long_about = None)]
+struct Args {
+    /// Name of the example to build
+    #[clap(short, long)]
+    sketch: Option<String>,
+}
+
+
 #[allow(dead_code)]
 fn main() {
     let args = Args::parse();
 
-    if args.sketch == "All" {
-        println!("TODO: Go through all examples and build sketches")
-    } else {
-        build_sketch(args.sketch.as_str());
+    match args.sketch {
+        Some(sketch) => build_sketch(&sketch),
+        None => println!("TODO: Go through all examples and build sketches"),
     }
 }
