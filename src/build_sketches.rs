@@ -1,15 +1,45 @@
 use clap::Parser;
 use std::process::{ Command, Stdio };
 use std::fs;
+use std::path::Path;
+use serde_json::json;
+use serde_json::{Result, Value};
+
+const CANVAS_HTML_TPL: &str = "www/window-matching-canvas.template.html";
+const JSON_LIST: &str = "www/sketches.json";
 
 
 fn gen_html_from_template(sketch: &str) {
     let file_contents = fs::read_to_string(
-        "www/window-matching-canvas.template.html"
+        CANVAS_HTML_TPL
     ).expect("Unable to read file");
 
     let file_contents = file_contents.replace("{{sketch}}", sketch);
-    fs::write(format!("www/{}.html", sketch), file_contents).expect("Unable to write file");
+    fs::write(format!("www/{}.html", sketch), file_contents).expect("Unable to write html file");
+}
+
+
+fn add_to_sketch_to_json_list(sketch: &str) -> Result<()> {
+    let list_path = Path::new(JSON_LIST);
+
+    if !list_path.exists() {
+        println!("JSON list doesn't exist, creating...");
+        // Based on: https://github.com/serde-rs/json#constructing-json-values
+        let new_list = json!({ "sketches": [sketch] });
+        fs::write(JSON_LIST, new_list.to_string()).expect("Unable to write json list");
+    } else {
+        let json_list = fs::read_to_string(JSON_LIST).expect("Unable to read json list");
+        let mut json_list: Value = serde_json::from_str(&json_list).expect("Failed to get JSON from file");
+        if let Some(sketches)  = json_list["sketches"].as_array_mut() {
+            let sketch_json = & json!(sketch);
+            if ! sketches.contains(sketch_json) {
+                sketches.push(json!(sketch_json));
+            }
+        }
+        // println!("{}", json_list.to_string());
+        fs::write(JSON_LIST, json_list.to_string()).expect("Unable to rewrite json list");        
+    }
+    return Ok(());
 }
 
 
@@ -55,6 +85,7 @@ fn build_sketch(sketch: &str) {
 
     println!("Create html from template");
     gen_html_from_template(sketch);
+    add_to_sketch_to_json_list(sketch).expect("Could not add sketch to json list");
 }
 
 
