@@ -6,7 +6,7 @@ use serde_json::json;
 use serde_json::{Result, Value};
 
 const CANVAS_HTML_TPL: &str = "www/window-matching-canvas.template.html";
-const JSON_LIST: &str = "www/sketches.json";
+const WASM_CONFIG: &str = "www/sketches.json";
 
 
 fn gen_html_from_template(sketch: &str) {
@@ -19,25 +19,25 @@ fn gen_html_from_template(sketch: &str) {
 }
 
 
-fn add_to_sketch_to_json_list(sketch: &str) -> Result<()> {
-    let list_path = Path::new(JSON_LIST);
+fn add_to_sketch_to_json_cfg(sketch: &str) -> Result<()> {
+    let list_path = Path::new(WASM_CONFIG);
 
     if !list_path.exists() {
         println!("JSON list doesn't exist, creating...");
         // Based on: https://github.com/serde-rs/json#constructing-json-values
         let new_list = json!({ "sketches": [sketch] });
-        fs::write(JSON_LIST, new_list.to_string()).expect("Unable to write json list");
+        fs::write(WASM_CONFIG, new_list.to_string()).expect("Unable to write json list");
     } else {
-        let json_list = fs::read_to_string(JSON_LIST).expect("Unable to read json list");
-        let mut json_list: Value = serde_json::from_str(&json_list).expect("Failed to get JSON from file");
-        if let Some(sketches)  = json_list["sketches"].as_array_mut() {
+        let json_cfg = fs::read_to_string(WASM_CONFIG).expect("Unable to read json list");
+        let mut json_cfg: Value = serde_json::from_str(&json_cfg).expect("Failed to get JSON from file");
+        if let Some(sketches)  = json_cfg["sketches"].as_array_mut() {
             let sketch_json = & json!(sketch);
             if ! sketches.contains(sketch_json) {
                 sketches.push(json!(sketch_json));
             }
         }
-        // println!("{}", json_list.to_string());
-        fs::write(JSON_LIST, json_list.to_string()).expect("Unable to rewrite json list");        
+        // println!("{}", json_cfg.to_string());
+        fs::write(WASM_CONFIG, json_cfg.to_string()).expect("Unable to rewrite json list");        
     }
     return Ok(());
 }
@@ -83,9 +83,10 @@ fn build_sketch(sketch: &str) {
         return;
     }
 
-    println!("Create html from template");
+    println!("Creating html from template...");
     gen_html_from_template(sketch);
-    add_to_sketch_to_json_list(sketch).expect("Could not add sketch to json list");
+    println!("Adding sketch to list in json...");
+    add_to_sketch_to_json_cfg(sketch).expect("Could not add sketch to json list");
 }
 
 
