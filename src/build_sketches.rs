@@ -43,7 +43,7 @@ fn add_to_sketch_to_json_cfg(sketch: &str) -> Result<()> {
 }
 
 
-fn build_sketch(sketch: &str) {
+fn build_sketch(sketch: &str, no_html: &bool) {
     println!("Building {}...", sketch);
     // In the previous commit I was following this example
     // https://rust-lang-nursery.github.io/rust-cookbook/os/external.html#continuously-process-child-process-outputs
@@ -83,8 +83,11 @@ fn build_sketch(sketch: &str) {
         return;
     }
 
-    println!("Creating html from template...");
-    gen_html_from_template(sketch);
+    if ! no_html {
+        println!("Creating html from template...");
+        gen_html_from_template(sketch);
+    }
+
     println!("Adding sketch to list in json...");
     add_to_sketch_to_json_cfg(sketch).expect("Could not add sketch to json list");
 }
@@ -96,6 +99,9 @@ struct Args {
     /// Name of the example to build
     #[clap(short, long)]
     sketch: Option<String>,
+    /// Skip generation of html file
+    #[clap(long="no-html")]
+    no_html: bool,
 }
 
 
@@ -104,7 +110,7 @@ fn main() {
     let args = Args::parse();
 
     match args.sketch {
-        Some(sketch) => build_sketch(&sketch),
+        Some(sketch) => build_sketch(&sketch, &args.no_html),
         None => println!("TODO: Go through all examples and build sketches"),
     }
 }

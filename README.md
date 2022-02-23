@@ -41,6 +41,12 @@ Notice the omission of the file name. I'm not sure what happens if there are mul
 
 ```
 cargo run -- --sketch shiftyc
+
+or
+
+# Skip generation of html file
+
+cargo run -- --no-html --sketch shiftyc
 ```
 
 ## Run with cargo (release)

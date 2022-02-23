@@ -11,8 +11,8 @@ use rand::prelude::thread_rng;
 
 const TARGET_RES_WIDTH: f32 = 3840.0;
 // const TARGET_RES_HEIGHT: f32 = 2160.0;
-const WINDOW_WIDTH: f32 = 1920.0;
-const WINDOW_HEIGHT: f32 = 1080.0;
+const WINDOW_WIDTH: f32 = 800.0;
+const WINDOW_HEIGHT: f32 = 600.0;
 // Place window on top right corner
 const WINDOW_POSITION_X: f32 = TARGET_RES_WIDTH - WINDOW_WIDTH;
 const WINDOW_POSITION_Y: f32 = 0.0;
@@ -29,6 +29,10 @@ const SHIFTY_CIRCLE_STROKE_COLOR: Color = Color::rgba(0.784, 0.713, 0.345, 0.01)
 const FILL_MAX_ALPHA: f32 = 0.1;
 #[cfg(target_arch = "wasm32")]
 const RESIZE_CHECK_STEP: f64 = 1.0;
+#[cfg(target_arch = "wasm32")]
+// 29 seems to be a magic number here, at least on my phone. Need to investigate further.
+const MOBILE_HEIGHT_CORRECTION: f32 = 29.0;
+
 
 
 // Resource for app globals.
@@ -195,13 +199,28 @@ fn handle_browser_resize(mut windows: ResMut<Windows>, mut app_globals: ResMut<A
         wasm_window.inner_width().unwrap().as_f64().unwrap() as f32,
         wasm_window.inner_height().unwrap().as_f64().unwrap() as f32,
     );
+    // info!("window.scale_factor: {}", window.scale_factor());
+    // info!("window.backend_scale_factor: {}", window.backend_scale_factor());
+    // info!("window.width: {}", window.width());
+    // info!("window.height: {}", window.height());
+    // info!("target_width: {}", target_width);
+    // info!("target_height: {}", target_height);
+
     if window.width() != target_width || window.height() != target_height {
-        window.set_resolution(target_width, target_height);
+        if window.scale_factor() >= 3.0 {
+            window.set_resolution(target_width, target_height - MOBILE_HEIGHT_CORRECTION);
+        } else {
+            window.set_resolution(target_width, target_height);
+        }
+        // info!("x window.width: {}", window.width());
+        // info!("x window.height: {}", window.height());
+
         app_globals.dest_low_x = -window.width() / 2.0 + SHIFTY_CIRCLE_RADIUS;
         app_globals.dest_high_x = window.width() / 2.0 - SHIFTY_CIRCLE_RADIUS;
         app_globals.dest_low_y = -window.height() / 2.0 + SHIFTY_CIRCLE_RADIUS;
         app_globals.dest_high_y = window.height() / 2.0 - SHIFTY_CIRCLE_RADIUS;
     }
+    // info!("----");
 }
 
 
