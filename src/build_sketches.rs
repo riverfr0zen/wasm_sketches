@@ -43,7 +43,7 @@ fn add_to_sketch_to_json_cfg(sketch: &str) -> Result<()> {
 }
 
 
-fn build_sketch(sketch: &str, no_html: &bool) {
+fn build_sketch(sketch: &str, no_html: &bool, framestats: &bool) {
     println!("Building {}...", sketch);
     // In the previous commit I was following this example
     // https://rust-lang-nursery.github.io/rust-cookbook/os/external.html#continuously-process-child-process-outputs
@@ -51,19 +51,21 @@ fn build_sketch(sketch: &str, no_html: &bool) {
     // ...but I couldn't figure out how to get the exit code. Then I found this example
     // using Stdio::inherit which I think serves this use case better:
     // https://stackoverflow.com/a/32020376/4655636
-    let mut build_cmd = Command::new("cargo")
-        .arg("build")
+    let mut build_cmd = Command::new("cargo");
+    build_cmd.arg("build")
         .arg("--example")
         .arg(sketch)
         .arg("--target")
         .arg("wasm32-unknown-unknown")
-        .arg("--release")
-        .stdout(Stdio::inherit())
-        .stderr(Stdio::inherit())
-        .spawn()
-        .unwrap();
+        .arg("--release");
+    if *framestats {
+        build_cmd.arg("--features=framestats");
+    }
+    build_cmd.stdout(Stdio::inherit())
+        .stderr(Stdio::inherit());
 
-    if ! build_cmd.wait().unwrap().success() {
+    let mut build_cmd_child = build_cmd.spawn().unwrap();
+    if ! build_cmd_child.wait().unwrap().success() {
         return;
     }
 
@@ -102,6 +104,8 @@ struct Args {
     /// Skip generation of html file
     #[clap(long="no-html")]
     no_html: bool,
+    #[clap(long="framestats")]
+    framestats: bool,
 }
 
 
@@ -110,7 +114,7 @@ fn main() {
     let args = Args::parse();
 
     match args.sketch {
-        Some(sketch) => build_sketch(&sketch, &args.no_html),
+        Some(sketch) => build_sketch(&sketch, &args.no_html, &args.framestats),
         None => println!("TODO: Go through all examples and build sketches"),
     }
 }

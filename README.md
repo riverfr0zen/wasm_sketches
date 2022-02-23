@@ -45,8 +45,12 @@ cargo run -- --sketch shiftyc
 or
 
 # Skip generation of html file
-
 cargo run -- --no-html --sketch shiftyc
+
+
+# Enable frame stats log
+cargo run -- --framestats --sketch shiftyc
+
 ```
 
 ## Run with cargo (release)
