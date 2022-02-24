@@ -219,11 +219,12 @@ fn handle_browser_resize(mut windows: ResMut<Windows>, mut app_globals: ResMut<A
 
             if target_width * scale_factor > app_globals.max_texture_dimension_2d as f32 {
                 target_width = (app_globals.max_texture_dimension_2d as f32 / scale_factor).floor();
+                info!("corrected target_width: {}", target_width);
             }
             if target_height * scale_factor > app_globals.max_texture_dimension_2d as f32 {
                 target_height = (app_globals.max_texture_dimension_2d as f32 / scale_factor).floor();
+                info!("corrected target_height: {}", target_height);
             }
-            info!("corrected target_height: {}", target_height);
             
         }
         window.set_resolution(target_width, target_height);
