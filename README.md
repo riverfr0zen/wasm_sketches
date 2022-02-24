@@ -1,4 +1,15 @@
+This repository contains graphics "sketches" that I am learning to make in Rust.
+
+
+
 # shiftyc
+
+Live examples so far:
+
+* [shiftyc](https://irfanbaig.com/shiftyc.html")
+* [shiftyrect](https://irfanbaig.com/shiftyrect.html")
+* [shiftufo](https://irfanbaig.com/shiftyufo.html")
+
 
 ```
 cargo build --release --example shiftyc --target wasm32-unknown-unknown
