@@ -1,14 +1,18 @@
-This repository contains graphics "sketches" that I am learning to make in Rust.
+This repository contains graphics "sketches" I am learning to make in Rust. 
 
+Currently I'm mainly working with [Bevy Engine](https://bevyengine.org), but I expect I will branch out to other things too.
+
+Note that I am also new to Rust itself, so expect at least some "wtfs" herein =). Any feedback welcome! 
 
 
 # shiftyc
 
 Live examples so far:
 
-* [shiftyc](https://irfanbaig.com/shiftyc.html)
-* [shiftyrect](https://irfanbaig.com/shiftyrect.html)
-* [shiftufo](https://irfanbaig.com/shiftyufo.html)
+* "shifty circle" variations
+    * [shiftyc](https://irfanbaig.com/shiftyc.html)
+    * [shiftyrect](https://irfanbaig.com/shiftyrect.html)
+    * [shiftufo](https://irfanbaig.com/shiftyufo.html)
 
 
 ```
