@@ -3145,6 +3145,7 @@ dependencies = [
  "log",
  "rand",
  "serde_json",
+ "wasm-bindgen",
  "web-sys",
 ]
 

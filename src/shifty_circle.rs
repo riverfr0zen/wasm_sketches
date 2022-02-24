@@ -7,6 +7,7 @@ use bevy::diagnostic::{FrameTimeDiagnosticsPlugin, LogDiagnosticsPlugin};
 use bevy_prototype_lyon::prelude::*;
 use rand::Rng;
 use rand::prelude::thread_rng;
+use bevy::render::renderer::RenderDevice;
 
 
 const TARGET_RES_WIDTH: f32 = 3840.0;
@@ -29,16 +30,13 @@ const SHIFTY_CIRCLE_STROKE_COLOR: Color = Color::rgba(0.784, 0.713, 0.345, 0.01)
 const FILL_MAX_ALPHA: f32 = 0.1;
 #[cfg(target_arch = "wasm32")]
 const RESIZE_CHECK_STEP: f64 = 1.0;
-#[cfg(target_arch = "wasm32")]
-// 29 seems to be a magic number here, at least on my phone. Need to investigate further.
-const MOBILE_HEIGHT_CORRECTION: f32 = 29.0;
-
 
 
 // Resource for app globals.
 // Based on https://bevy-cheatbook.github.io/programming/res.html
-#[derive(Default)]
+#[derive(Default, Debug)]
 pub struct AppGlobals {
+    pub max_texture_dimension_2d: u32,
     pub dest_low_x: f32,
     pub dest_high_x: f32,
     pub dest_low_y: f32,
@@ -134,6 +132,11 @@ fn setup_shifty_circle(commands: Commands) {
 }
 
 
+fn device_limits_setup(world: &mut World) {
+    let render_device = world.get_resource::<RenderDevice>().unwrap();
+    world.get_resource_mut::<AppGlobals>().unwrap().max_texture_dimension_2d = render_device.limits().max_texture_dimension_2d;
+}
+
 fn setup_shifty_ufo(commands: Commands) {
     let some_shape = get_shape(ShiftyShapes::ELLIPSE);
     if let OneOf::Second(myshape) = some_shape {
@@ -199,22 +202,29 @@ fn handle_browser_resize(mut windows: ResMut<Windows>, mut app_globals: ResMut<A
         wasm_window.inner_width().unwrap().as_f64().unwrap() as f32,
         wasm_window.inner_height().unwrap().as_f64().unwrap() as f32,
     );
+
+    // info!("wasm_window.device_pixel_ratio: {}", wasm_window.device_pixel_ratio());
     // info!("window.scale_factor: {}", window.scale_factor());
     // info!("window.backend_scale_factor: {}", window.backend_scale_factor());
     // info!("window.width: {}", window.width());
     // info!("window.height: {}", window.height());
+    // info!("window.physical_width: {}", window.physical_width());
+    // info!("window.physical_height: {}", window.physical_height());
     // info!("target_width: {}", target_width);
     // info!("target_height: {}", target_height);
 
     if window.width() != target_width || window.height() != target_height {
-        if window.scale_factor() >= 3.0 {
-            window.set_resolution(target_width, target_height - MOBILE_HEIGHT_CORRECTION);
+        if window.scale_factor() >= 1.0 {
+            let scale_factor = window.scale_factor() as f32;
+            let mut my_target_height = target_height;
+            if my_target_height * scale_factor > app_globals.max_texture_dimension_2d as f32 {
+                my_target_height = (app_globals.max_texture_dimension_2d as f32 / scale_factor).floor();
+            }
+            info!("{}", my_target_height);
+            window.set_resolution(target_width, my_target_height);
         } else {
             window.set_resolution(target_width, target_height);
         }
-        // info!("x window.width: {}", window.width());
-        // info!("x window.height: {}", window.height());
-
         app_globals.dest_low_x = -window.width() / 2.0 + SHIFTY_CIRCLE_RADIUS;
         app_globals.dest_high_x = window.width() / 2.0 - SHIFTY_CIRCLE_RADIUS;
         app_globals.dest_low_y = -window.height() / 2.0 + SHIFTY_CIRCLE_RADIUS;
@@ -253,10 +263,6 @@ fn change_circle_destination(
         dest.x = rng.gen_range(app_globals.dest_low_x..app_globals.dest_high_x);
         dest.y = rng.gen_range(app_globals.dest_low_y..app_globals.dest_high_y);
         dest.speed = rng.gen_range(SHIFTY_CIRCLE_MIN_SPEED..SHIFTY_CIRCLE_MAX_SPEED);
-        // println!("x: {}", dest.x);
-        // println!("y: {}", dest.y);
-        // println!("speed: {}", dest.speed);
-        // println!("---");
     }
 }
 
@@ -266,7 +272,6 @@ fn change_circle_destination(
 fn do_pulsating_effect(mut query: Query<&mut DrawMode, With<ShiftyCircle>>) {
     // let hue = (time.seconds_since_startup() * 50.0) % 360.0;
     // let outline_width = 2.0 + time.seconds_since_startup().sin().abs() * 10.0;
-
 
     for mut draw_mode in query.iter_mut() {
         // Helpful: https://doc.rust-lang.org/rust-by-example/flow_control/if_let.html
@@ -297,8 +302,6 @@ fn do_pulsating_effect(mut query: Query<&mut DrawMode, With<ShiftyCircle>>) {
 
 
 pub fn app(variation: &str) {
-    // From https://github.com/Nilirad/bevy_prototype_lyon/blob/master/examples/path.rs
-
     let mut app = App::new();
     app.insert_resource(WindowDescriptor {
             title: "Shifty Circle".to_string(),
@@ -310,6 +313,7 @@ pub fn app(variation: &str) {
             ..Default::default()
         }
     ).insert_resource(AppGlobals {
+        max_texture_dimension_2d: 0,
         dest_low_x: -WINDOW_WIDTH / 2.0,
         dest_high_x: WINDOW_WIDTH / 2.0,
         dest_low_y: -WINDOW_HEIGHT / 2.0,
@@ -328,6 +332,9 @@ pub fn app(variation: &str) {
     #[cfg(feature = "framestats")]
     app.add_plugin(LogDiagnosticsPlugin::default())
     .add_plugin(FrameTimeDiagnosticsPlugin::default());
+
+
+    app.add_startup_system(device_limits_setup.exclusive_system());
 
     match variation {
         "ufo" => app.add_startup_system(setup_shifty_ufo),

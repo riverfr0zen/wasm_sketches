@@ -92,6 +92,13 @@ fn build_sketch(sketch: &str, no_html: &bool, framestats: &bool) {
 
     println!("Adding sketch to list in json...");
     add_to_sketch_to_json_cfg(sketch).expect("Could not add sketch to json list");
+
+    // @TODO: This notification method is not portable
+    Command::new("./notify-send-all")
+        .arg("root")
+        .arg("Finished building sketches")
+        .output()
+        .expect("Could not notify");
 }
 
 
