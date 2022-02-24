@@ -198,7 +198,7 @@ fn setup_browser_size(
 fn handle_browser_resize(mut windows: ResMut<Windows>, mut app_globals: ResMut<AppGlobals>) {
     let window = windows.get_primary_mut().unwrap();
     let wasm_window = web_sys::window().unwrap();
-    let (target_width, target_height) = (
+    let (mut target_width, mut target_height) = (
         wasm_window.inner_width().unwrap().as_f64().unwrap() as f32,
         wasm_window.inner_height().unwrap().as_f64().unwrap() as f32,
     );
@@ -216,21 +216,22 @@ fn handle_browser_resize(mut windows: ResMut<Windows>, mut app_globals: ResMut<A
     if window.width() != target_width || window.height() != target_height {
         if window.scale_factor() >= 1.0 {
             let scale_factor = window.scale_factor() as f32;
-            let mut my_target_height = target_height;
-            if my_target_height * scale_factor > app_globals.max_texture_dimension_2d as f32 {
-                my_target_height = (app_globals.max_texture_dimension_2d as f32 / scale_factor).floor();
+
+            if target_width * scale_factor > app_globals.max_texture_dimension_2d as f32 {
+                target_width = (app_globals.max_texture_dimension_2d as f32 / scale_factor).floor();
             }
-            info!("{}", my_target_height);
-            window.set_resolution(target_width, my_target_height);
-        } else {
-            window.set_resolution(target_width, target_height);
+            if target_height * scale_factor > app_globals.max_texture_dimension_2d as f32 {
+                target_height = (app_globals.max_texture_dimension_2d as f32 / scale_factor).floor();
+            }
+            info!("corrected target_height: {}", target_height);
+            
         }
+        window.set_resolution(target_width, target_height);
         app_globals.dest_low_x = -window.width() / 2.0 + SHIFTY_CIRCLE_RADIUS;
         app_globals.dest_high_x = window.width() / 2.0 - SHIFTY_CIRCLE_RADIUS;
         app_globals.dest_low_y = -window.height() / 2.0 + SHIFTY_CIRCLE_RADIUS;
         app_globals.dest_high_y = window.height() / 2.0 - SHIFTY_CIRCLE_RADIUS;
     }
-    // info!("----");
 }
 
 
