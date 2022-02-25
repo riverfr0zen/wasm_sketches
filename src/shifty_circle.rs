@@ -176,9 +176,6 @@ fn setup_generic(mut commands: Commands, myshape: impl Geometry) {
 // Call the handle_browser_resize system once at startup (if window is created)
 // to cover for the short period before handle_browser_resize kicks in
 // (since that system will likely be set to a FixedTimeStep)
-//
-// Also a good place to do any initial sizing setup, such as getting the 
-// render device limits below.
 #[cfg(target_arch = "wasm32")]
 fn setup_browser_size(
     windows: ResMut<Windows>, 
@@ -187,6 +184,7 @@ fn setup_browser_size(
     mut window_created_reader: EventReader<WindowCreated>
 ) {
     if window_created_reader.iter().next().is_some() {
+        // A good place to do any initial sizing setup, such as getting these device limits 
         app_globals.max_texture_dimension_2d = render_device.limits().max_texture_dimension_2d;
         handle_browser_resize(windows, app_globals);
     }
