@@ -105,6 +105,11 @@ fn get_shape(shape: ShiftyShapes) -> OneOf<shapes::Circle, shapes::Ellipse, shap
 }
 
 
+fn get_device_limits(world: &mut World) {
+    let render_device = world.get_resource::<RenderDevice>().unwrap();
+    world.get_resource_mut::<AppGlobals>().unwrap().max_texture_dimension_2d = render_device.limits().max_texture_dimension_2d;
+}
+
 fn setup_shifty_circle(commands: Commands) {
     let some_shape = get_shape(ShiftyShapes::CIRCLE);
     /*
@@ -131,11 +136,6 @@ fn setup_shifty_circle(commands: Commands) {
     }
 }
 
-
-fn device_limits_setup(world: &mut World) {
-    let render_device = world.get_resource::<RenderDevice>().unwrap();
-    world.get_resource_mut::<AppGlobals>().unwrap().max_texture_dimension_2d = render_device.limits().max_texture_dimension_2d;
-}
 
 fn setup_shifty_ufo(commands: Commands) {
     let some_shape = get_shape(ShiftyShapes::ELLIPSE);
@@ -336,7 +336,7 @@ pub fn app(variation: &str) {
     .add_plugin(FrameTimeDiagnosticsPlugin::default());
 
 
-    app.add_startup_system(device_limits_setup.exclusive_system());
+    app.add_startup_system(get_device_limits.exclusive_system());
 
     match variation {
         "ufo" => app.add_startup_system(setup_shifty_ufo),
