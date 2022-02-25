@@ -7,6 +7,7 @@ use bevy::diagnostic::{FrameTimeDiagnosticsPlugin, LogDiagnosticsPlugin};
 use bevy_prototype_lyon::prelude::*;
 use rand::Rng;
 use rand::prelude::thread_rng;
+#[cfg(target_arch = "wasm32")]
 use bevy::render::renderer::RenderDevice;
 
 
@@ -105,11 +106,6 @@ fn get_shape(shape: ShiftyShapes) -> OneOf<shapes::Circle, shapes::Ellipse, shap
 }
 
 
-fn get_device_limits(world: &mut World) {
-    let render_device = world.get_resource::<RenderDevice>().unwrap();
-    world.get_resource_mut::<AppGlobals>().unwrap().max_texture_dimension_2d = render_device.limits().max_texture_dimension_2d;
-}
-
 fn setup_shifty_circle(commands: Commands) {
     let some_shape = get_shape(ShiftyShapes::CIRCLE);
     /*
@@ -180,13 +176,18 @@ fn setup_generic(mut commands: Commands, myshape: impl Geometry) {
 // Call the handle_browser_resize system once at startup (if window is created)
 // to cover for the short period before handle_browser_resize kicks in
 // (since that system will likely be set to a FixedTimeStep)
+//
+// Also a good place to do any initial sizing setup, such as getting the 
+// render device limits below.
 #[cfg(target_arch = "wasm32")]
 fn setup_browser_size(
-    app_globals: ResMut<AppGlobals>,
     windows: ResMut<Windows>, 
+    render_device: Res<RenderDevice>, 
+    mut app_globals: ResMut<AppGlobals>,
     mut window_created_reader: EventReader<WindowCreated>
 ) {
     if window_created_reader.iter().next().is_some() {
+        app_globals.max_texture_dimension_2d = render_device.limits().max_texture_dimension_2d;
         handle_browser_resize(windows, app_globals);
     }
 }
@@ -334,9 +335,6 @@ pub fn app(variation: &str) {
     #[cfg(feature = "framestats")]
     app.add_plugin(LogDiagnosticsPlugin::default())
     .add_plugin(FrameTimeDiagnosticsPlugin::default());
-
-
-    app.add_startup_system(get_device_limits.exclusive_system());
 
     match variation {
         "ufo" => app.add_startup_system(setup_shifty_ufo),
