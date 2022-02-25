@@ -37,7 +37,6 @@ const RESIZE_CHECK_STEP: f64 = 1.0;
 // Based on https://bevy-cheatbook.github.io/programming/res.html
 #[derive(Default, Debug)]
 pub struct AppGlobals {
-    pub max_texture_dimension_2d: u32,
     pub dest_low_x: f32,
     pub dest_high_x: f32,
     pub dest_low_y: f32,
@@ -180,13 +179,11 @@ fn setup_generic(mut commands: Commands, myshape: impl Geometry) {
 fn setup_browser_size(
     windows: ResMut<Windows>, 
     render_device: Res<RenderDevice>, 
-    mut app_globals: ResMut<AppGlobals>,
+    app_globals: ResMut<AppGlobals>,
     mut window_created_reader: EventReader<WindowCreated>
 ) {
     if window_created_reader.iter().next().is_some() {
-        // A good place to do any initial sizing setup, such as getting these device limits 
-        app_globals.max_texture_dimension_2d = render_device.limits().max_texture_dimension_2d;
-        handle_browser_resize(windows, app_globals);
+        handle_browser_resize(render_device, windows, app_globals);
     }
 }
 
@@ -194,7 +191,11 @@ fn setup_browser_size(
 // Based on this Discord conversation: https://i.imgur.com/osfA8PH.png AND
 // https://github.com/mrk-its/bevy-robbo/blob/master/src/main.rs
 #[cfg(target_arch = "wasm32")]
-fn handle_browser_resize(mut windows: ResMut<Windows>, mut app_globals: ResMut<AppGlobals>) {
+fn handle_browser_resize(
+    render_device: Res<RenderDevice>, 
+    mut windows: ResMut<Windows>, 
+    mut app_globals: ResMut<AppGlobals>
+) {
     let window = windows.get_primary_mut().unwrap();
     let wasm_window = web_sys::window().unwrap();
     let (mut target_width, mut target_height) = (
@@ -214,14 +215,15 @@ fn handle_browser_resize(mut windows: ResMut<Windows>, mut app_globals: ResMut<A
 
     if window.width() != target_width || window.height() != target_height {
         if window.scale_factor() >= 1.0 {
+            let max_2d = render_device.limits().max_texture_dimension_2d;
             let scale_factor = window.scale_factor() as f32;
 
-            if target_width * scale_factor > app_globals.max_texture_dimension_2d as f32 {
-                target_width = (app_globals.max_texture_dimension_2d as f32 / scale_factor).floor();
+            if target_width * scale_factor > max_2d as f32 {
+                target_width = (max_2d as f32 / scale_factor).floor();
                 info!("corrected target_width: {}", target_width);
             }
-            if target_height * scale_factor > app_globals.max_texture_dimension_2d as f32 {
-                target_height = (app_globals.max_texture_dimension_2d as f32 / scale_factor).floor();
+            if target_height * scale_factor > max_2d as f32 {
+                target_height = (max_2d as f32 / scale_factor).floor();
                 info!("corrected target_height: {}", target_height);
             }
             
@@ -301,7 +303,6 @@ fn do_pulsating_effect(mut query: Query<&mut DrawMode, With<ShiftyCircle>>) {
 }
 
 
-
 pub fn app(variation: &str) {
     let mut app = App::new();
     app.insert_resource(WindowDescriptor {
@@ -314,7 +315,6 @@ pub fn app(variation: &str) {
             ..Default::default()
         }
     ).insert_resource(AppGlobals {
-        max_texture_dimension_2d: 0,
         dest_low_x: -WINDOW_WIDTH / 2.0,
         dest_high_x: WINDOW_WIDTH / 2.0,
         dest_low_y: -WINDOW_HEIGHT / 2.0,
