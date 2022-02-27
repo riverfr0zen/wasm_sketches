@@ -1,6 +1,7 @@
 use clap::Parser;
 use std::process::{ Command, Stdio };
 use std::fs;
+use std::io;
 use std::path::Path;
 use serde_json::json;
 use serde_json::{Result, Value};
@@ -96,9 +97,25 @@ fn build_sketch(sketch: &str, no_html: &bool, framestats: &bool) {
     // @TODO: This notification method is not portable
     Command::new("./notify-send-all")
         .arg("root")
-        .arg("Finished building sketches")
+        .arg(format!("Finished building {}", sketch))
         .output()
         .expect("Could not notify");
+}
+
+
+fn build_sketches(no_html: &bool, framestats: &bool) -> io::Result<()> {
+    let egs_dir = Path::new("./examples");
+    if egs_dir.is_dir() {
+        for entry in fs::read_dir(egs_dir)? {
+            let entry = entry?;
+            let path = entry.path();
+            if path.is_file() {
+                println!("{}", path.file_stem().unwrap().to_str().unwrap());
+                build_sketch(path.file_stem().unwrap().to_str().unwrap(), no_html, framestats);
+            }
+        }
+    }
+    Ok(())
 }
 
 
@@ -111,6 +128,7 @@ struct Args {
     /// Skip generation of html file
     #[clap(long="no-html")]
     no_html: bool,
+    /// Enable logging of frame statistics like fps
     #[clap(long="framestats")]
     framestats: bool,
 }
@@ -122,6 +140,8 @@ fn main() {
 
     match args.sketch {
         Some(sketch) => build_sketch(&sketch, &args.no_html, &args.framestats),
-        None => println!("TODO: Go through all examples and build sketches"),
+        None => {
+            let _rs = build_sketches(&args.no_html, &args.framestats);
+        }
     }
 }

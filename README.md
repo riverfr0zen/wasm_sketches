@@ -52,16 +52,20 @@ wasm-bindgen --out-dir www/wasms --target web target/wasm32-unknown-unknown/rele
 
 ## Run with cargo (debug)
 
-Notice the omission of the file name. I'm not sure what happens if there are multiple binaries.
+Notice the omission of the binary name. I haven't learned yet what happens if there are multiple binaries.
 
 ```
-cargo run -- --sketch shiftyc
+# Get help
+cargo run -- --help
 
-or
+# Build all sketches
+cargo run -- 
+
+#Limit building to only one sketch:
+cargo run -- --sketch shiftyc
 
 # Skip generation of html file
 cargo run -- --no-html --sketch shiftyc
-
 
 # Enable frame stats log
 cargo run -- --framestats --sketch shiftyc
