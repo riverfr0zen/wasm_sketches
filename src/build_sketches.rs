@@ -1,7 +1,6 @@
 use clap::Parser;
 use std::process::{ Command, Stdio };
 use std::fs;
-use std::io;
 use std::path::Path;
 use serde_json::json;
 use serde_json::{Result, Value};
@@ -103,11 +102,11 @@ fn build_sketch(sketch: &str, no_html: &bool, framestats: &bool) {
 }
 
 
-fn build_sketches(no_html: &bool, framestats: &bool) -> io::Result<()> {
+fn build_sketches(no_html: &bool, framestats: &bool) {
     let egs_dir = Path::new("./examples");
     if egs_dir.is_dir() {
-        for entry in fs::read_dir(egs_dir)? {
-            let entry = entry?;
+        for entry in fs::read_dir(egs_dir).expect("Couldn't read directory") {
+            let entry = entry.expect("Couldn't get item");
             let path = entry.path();
             if path.is_file() {
                 println!("{}", path.file_stem().unwrap().to_str().unwrap());
@@ -115,7 +114,6 @@ fn build_sketches(no_html: &bool, framestats: &bool) -> io::Result<()> {
             }
         }
     }
-    Ok(())
 }
 
 
@@ -140,8 +138,6 @@ fn main() {
 
     match args.sketch {
         Some(sketch) => build_sketch(&sketch, &args.no_html, &args.framestats),
-        None => {
-            let _rs = build_sketches(&args.no_html, &args.framestats);
-        }
+        None => build_sketches(&args.no_html, &args.framestats)
     }
 }
