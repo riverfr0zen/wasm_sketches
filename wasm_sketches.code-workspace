@@ -6,5 +6,12 @@
 	],
 	"settings": {
 		// "editor.parameterHints": false	
+		"[rust]": {
+			"editor.defaultFormatter": "matklad.rust-analyzer",
+			"editor.formatOnSave": true,
+		},
+		"rust-analyzer.rustfmt.extraArgs": [
+			"+nightly"
+		]
 	}
 }

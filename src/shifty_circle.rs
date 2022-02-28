@@ -1,14 +1,14 @@
-use bevy::prelude::*;
-#[cfg(target_arch = "wasm32")]
-use bevy::window::WindowCreated;
 use bevy::core::FixedTimestep;
 #[cfg(feature = "framestats")]
 use bevy::diagnostic::{FrameTimeDiagnosticsPlugin, LogDiagnosticsPlugin};
-use bevy_prototype_lyon::prelude::*;
-use rand::Rng;
-use rand::prelude::thread_rng;
+use bevy::prelude::*;
 #[cfg(target_arch = "wasm32")]
 use bevy::render::renderer::RenderDevice;
+#[cfg(target_arch = "wasm32")]
+use bevy::window::WindowCreated;
+use bevy_prototype_lyon::prelude::*;
+use rand::prelude::thread_rng;
+use rand::Rng;
 
 
 const TARGET_RES_WIDTH: f32 = 3840.0;
@@ -72,35 +72,30 @@ enum ShiftyShapes {
 }
 
 
-fn get_shape(shape: ShiftyShapes) -> OneOf<shapes::Circle, shapes::Ellipse, shapes::RegularPolygon> {
+fn get_shape(
+    shape: ShiftyShapes,
+) -> OneOf<shapes::Circle, shapes::Ellipse, shapes::RegularPolygon> {
     match shape {
         ShiftyShapes::CIRCLE => {
-            return OneOf::First(
-                shapes::Circle {
-                    radius: SHIFTY_CIRCLE_RADIUS,
-                    ..Default::default()
-                }
-            )
-        },
+            return OneOf::First(shapes::Circle {
+                radius: SHIFTY_CIRCLE_RADIUS,
+                ..Default::default()
+            })
+        }
         ShiftyShapes::ELLIPSE => {
-            return OneOf::Second(
-                shapes::Ellipse {
-                    radii: Vec2::new(SHIFTY_CIRCLE_RADIUS, SHIFTY_CIRCLE_RADIUS / 2.0),
-                    ..Default::default()
-                }
-            )
-        },
+            return OneOf::Second(shapes::Ellipse {
+                radii: Vec2::new(SHIFTY_CIRCLE_RADIUS, SHIFTY_CIRCLE_RADIUS / 2.0),
+                ..Default::default()
+            })
+        }
         ShiftyShapes::RECT => {
             info!("got to rect");
-            return OneOf::Third(
-                shapes::RegularPolygon {
-                    sides: 4,
-                    feature: shapes::RegularPolygonFeature::Radius(SHIFTY_CIRCLE_RADIUS),
-                    ..shapes::RegularPolygon::default()
-                }
-
-            )
-        },
+            return OneOf::Third(shapes::RegularPolygon {
+                sides: 4,
+                feature: shapes::RegularPolygonFeature::Radius(SHIFTY_CIRCLE_RADIUS),
+                ..shapes::RegularPolygon::default()
+            });
+        }
     }
 }
 
@@ -108,20 +103,20 @@ fn get_shape(shape: ShiftyShapes) -> OneOf<shapes::Circle, shapes::Ellipse, shap
 fn setup_shifty_circle(commands: Commands) {
     let some_shape = get_shape(ShiftyShapes::CIRCLE);
     /*
-     * This way of destructuring took some time to figure out and is still is a little hard 
-     * to understand as I'm new to Rust. 
-     * 
+     * This way of destructuring took some time to figure out and is still is a little hard
+     * to understand as I'm new to Rust.
+     *
      * What it means is: "If let destructures `some_shape` into Either::Left(myshape), where
-     * `myshape` would be the Circle shape we want, then run the `if` block. Need to do this 
+     * `myshape` would be the Circle shape we want, then run the `if` block. Need to do this
      * because I'm using the "Either" pattern for returning multiple types described here:
-     * 
+     *
      * https://play.rust-lang.org/?version=stable&mode=debug&edition=2018&gist=57223180ab43fff42e057d367468ac22
      * (Update: Changed "Either" to "OneOf")
-     * 
+     *
      * By using `if let` I can avoid the verbose and redundant match statement from the
      * previous commit of this function.
-     * 
-     * Based on: 
+     *
+     * Based on:
      * https://www.reddit.com/r/rust/comments/dme4og/can_we_return_multiple_type_data_from_the_function/
      */
     if let OneOf::First(myshape) = some_shape {
@@ -157,30 +152,35 @@ fn setup_shifty_rect(commands: Commands) {
 fn setup_generic(mut commands: Commands, myshape: impl Geometry) {
     commands.spawn_bundle(OrthographicCameraBundle::new_2d());
 
-    commands.spawn_bundle(GeometryBuilder::build_as(
-        &myshape,
-        DrawMode::Outlined {
-            fill_mode: FillMode::color(SHIFTY_CIRCLE_FILL_COLOR),
-            outline_mode: StrokeMode::new(SHIFTY_CIRCLE_STROKE_COLOR, SHIFTY_CIRCLE_STROKE),
-        },
-        Transform::default(),
-    ))
-    .insert(ShiftyCircle)
-    .insert(Destination { x: 0.0, y: 0.0, speed: SHIFTY_CIRCLE_MIN_SPEED });
+    commands
+        .spawn_bundle(GeometryBuilder::build_as(
+            &myshape,
+            DrawMode::Outlined {
+                fill_mode: FillMode::color(SHIFTY_CIRCLE_FILL_COLOR),
+                outline_mode: StrokeMode::new(SHIFTY_CIRCLE_STROKE_COLOR, SHIFTY_CIRCLE_STROKE),
+            },
+            Transform::default(),
+        ))
+        .insert(ShiftyCircle)
+        .insert(Destination {
+            x: 0.0,
+            y: 0.0,
+            speed: SHIFTY_CIRCLE_MIN_SPEED,
+        });
 }
 
 
 // Based on https://github.com/bevyengine/bevy/issues/175
-// 
+//
 // Call the handle_browser_resize system once at startup (if window is created)
 // to cover for the short period before handle_browser_resize kicks in
 // (since that system will likely be set to a FixedTimeStep)
 #[cfg(target_arch = "wasm32")]
 fn setup_browser_size(
-    windows: ResMut<Windows>, 
-    render_device: Res<RenderDevice>, 
+    windows: ResMut<Windows>,
+    render_device: Res<RenderDevice>,
     app_globals: ResMut<AppGlobals>,
-    mut window_created_reader: EventReader<WindowCreated>
+    mut window_created_reader: EventReader<WindowCreated>,
 ) {
     if window_created_reader.iter().next().is_some() {
         handle_browser_resize(render_device, windows, app_globals);
@@ -192,9 +192,9 @@ fn setup_browser_size(
 // https://github.com/mrk-its/bevy-robbo/blob/master/src/main.rs
 #[cfg(target_arch = "wasm32")]
 fn handle_browser_resize(
-    render_device: Res<RenderDevice>, 
-    mut windows: ResMut<Windows>, 
-    mut app_globals: ResMut<AppGlobals>
+    render_device: Res<RenderDevice>,
+    mut windows: ResMut<Windows>,
+    mut app_globals: ResMut<AppGlobals>,
 ) {
     let window = windows.get_primary_mut().unwrap();
     let wasm_window = web_sys::window().unwrap();
@@ -226,7 +226,6 @@ fn handle_browser_resize(
                 target_height = (max_2d as f32 / scale_factor).floor();
                 info!("corrected target_height: {}", target_height);
             }
-            
         }
         window.set_resolution(target_width, target_height);
         app_globals.dest_low_x = -window.width() / 2.0 + SHIFTY_CIRCLE_RADIUS;
@@ -235,7 +234,6 @@ fn handle_browser_resize(
         app_globals.dest_high_y = window.height() / 2.0 - SHIFTY_CIRCLE_RADIUS;
     }
 }
-
 
 
 fn translate_circle(mut q: Query<(&mut Transform, &Destination)>) {
@@ -254,12 +252,12 @@ fn translate_circle(mut q: Query<(&mut Transform, &Destination)>) {
             transform.translation.y -= dest.speed;
         }
     }
-
 }
 
 
 fn change_circle_destination(
-    app_globals: Res<AppGlobals>, mut q: Query<&mut Destination, With<ShiftyCircle>>
+    app_globals: Res<AppGlobals>,
+    mut q: Query<&mut Destination, With<ShiftyCircle>>,
 ) {
     let mut rng = thread_rng();
     for mut dest in q.iter_mut() {
@@ -306,20 +304,21 @@ fn do_pulsating_effect(mut query: Query<&mut DrawMode, With<ShiftyCircle>>) {
 pub fn app(variation: &str) {
     let mut app = App::new();
     app.insert_resource(WindowDescriptor {
-            title: "Shifty Circle".to_string(),
-            width: WINDOW_WIDTH,
-            height: WINDOW_HEIGHT,
-            position: Some(Vec2::new(WINDOW_POSITION_X, WINDOW_POSITION_Y)),
-            #[cfg(target_arch = "wasm32")]
-            canvas: Some("#window-matching-canvas".to_string()),
-            ..Default::default()
-        }
-    ).insert_resource(AppGlobals {
+        title: "Shifty Circle".to_string(),
+        width: WINDOW_WIDTH,
+        height: WINDOW_HEIGHT,
+        position: Some(Vec2::new(WINDOW_POSITION_X, WINDOW_POSITION_Y)),
+        #[cfg(target_arch = "wasm32")]
+        canvas: Some("#window-matching-canvas".to_string()),
+        ..Default::default()
+    })
+    .insert_resource(AppGlobals {
         dest_low_x: -WINDOW_WIDTH / 2.0,
         dest_high_x: WINDOW_WIDTH / 2.0,
         dest_low_y: -WINDOW_HEIGHT / 2.0,
         dest_high_y: WINDOW_HEIGHT / 2.0,
-    }).insert_resource(ClearColor(CLEAR_COLOR))
+    })
+    .insert_resource(ClearColor(CLEAR_COLOR))
     .insert_resource(Msaa { samples: 4 });
 
     info!("--Logging does not start before DefaultPlugins so this log won't appear--");
@@ -328,11 +327,11 @@ pub fn app(variation: &str) {
 
     app.add_plugin(ShapePlugin);
 
-    // Example of "feature-flipping". 
+    // Example of "feature-flipping".
     // See https://doc.rust-lang.org/cargo/reference/features.html
     #[cfg(feature = "framestats")]
     app.add_plugin(LogDiagnosticsPlugin::default())
-    .add_plugin(FrameTimeDiagnosticsPlugin::default());
+        .add_plugin(FrameTimeDiagnosticsPlugin::default());
 
     match variation {
         "ufo" => app.add_startup_system(setup_shifty_ufo),
@@ -341,22 +340,17 @@ pub fn app(variation: &str) {
     };
 
     #[cfg(target_arch = "wasm32")]
-    app.add_startup_system(setup_browser_size)
-    .add_system(
-        handle_browser_resize.with_run_criteria(FixedTimestep::step(RESIZE_CHECK_STEP))
+    app.add_startup_system(setup_browser_size).add_system(
+        handle_browser_resize.with_run_criteria(FixedTimestep::step(RESIZE_CHECK_STEP)),
     );
 
     // Note setting with_run_criteria on a single system
     // (Found it here: https://bevy-cheatbook.github.io/programming/run-criteria.html#run-criteria-labels)
-    app.add_system(
-        translate_circle
-            .with_run_criteria(FixedTimestep::step(SHIFTY_CIRCLE_STEP))
-    ).add_system(
-        change_circle_destination
-            .with_run_criteria(FixedTimestep::step(SHIFTY_CHANGE_STEP))
-    ).add_system(do_pulsating_effect
-        .with_run_criteria(FixedTimestep::step(PULSATING_STEP))
-    );
+    app.add_system(translate_circle.with_run_criteria(FixedTimestep::step(SHIFTY_CIRCLE_STEP)))
+        .add_system(
+            change_circle_destination.with_run_criteria(FixedTimestep::step(SHIFTY_CHANGE_STEP)),
+        )
+        .add_system(do_pulsating_effect.with_run_criteria(FixedTimestep::step(PULSATING_STEP)));
 
     app.run();
 }

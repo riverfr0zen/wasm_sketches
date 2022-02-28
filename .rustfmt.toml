@@ -1,0 +1,22 @@
+#
+# Rust code formatting RFCs:
+# https://github.com/rust-dev-tools/fmt-rfcs
+#
+# Configuring Rustfmt
+# https://github.com/rust-lang/rustfmt/blob/master/Configurations.md
+#
+# Old, but useful as it's more readable:
+# https://gist.github.com/Robbepop/f88d896f859712384039813fab939172
+#
+
+# Enable unstable settings like `blank_lines_upper_bound`
+unstable_features = true
+
+max_width = 100
+
+# Maximum number of blank lines which can be put between items.
+blank_lines_upper_bound = 2
+
+# https://github.com/rust-lang/rustfmt/blob/master/Configurations.md#use_small_heuristics
+use_small_heuristics = "Default"
+# use_small_heuristics = "Max"

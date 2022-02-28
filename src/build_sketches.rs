@@ -1,18 +1,16 @@
 use clap::Parser;
-use std::process::{ Command, Stdio };
-use std::fs;
-use std::path::Path;
 use serde_json::json;
 use serde_json::{Result, Value};
+use std::fs;
+use std::path::Path;
+use std::process::{Command, Stdio};
 
 const CANVAS_HTML_TPL: &str = "www/window-matching-canvas.template.html";
 const WASM_CONFIG: &str = "www/sketches.json";
 
 
 fn gen_html_from_template(sketch: &str) {
-    let file_contents = fs::read_to_string(
-        CANVAS_HTML_TPL
-    ).expect("Unable to read file");
+    let file_contents = fs::read_to_string(CANVAS_HTML_TPL).expect("Unable to read file");
 
     let file_contents = file_contents.replace("{{sketch}}", sketch);
     fs::write(format!("www/{}.html", sketch), file_contents).expect("Unable to write html file");
@@ -29,15 +27,16 @@ fn add_to_sketch_to_json_cfg(sketch: &str) -> Result<()> {
         fs::write(WASM_CONFIG, new_list.to_string()).expect("Unable to write json list");
     } else {
         let json_cfg = fs::read_to_string(WASM_CONFIG).expect("Unable to read json list");
-        let mut json_cfg: Value = serde_json::from_str(&json_cfg).expect("Failed to get JSON from file");
-        if let Some(sketches)  = json_cfg["sketches"].as_array_mut() {
-            let sketch_json = & json!(sketch);
-            if ! sketches.contains(sketch_json) {
+        let mut json_cfg: Value =
+            serde_json::from_str(&json_cfg).expect("Failed to get JSON from file");
+        if let Some(sketches) = json_cfg["sketches"].as_array_mut() {
+            let sketch_json = &json!(sketch);
+            if !sketches.contains(sketch_json) {
                 sketches.push(json!(sketch_json));
             }
         }
         // println!("{}", json_cfg.to_string());
-        fs::write(WASM_CONFIG, json_cfg.to_string()).expect("Unable to rewrite json list");        
+        fs::write(WASM_CONFIG, json_cfg.to_string()).expect("Unable to rewrite json list");
     }
     return Ok(());
 }
@@ -52,7 +51,8 @@ fn build_sketch(sketch: &str, no_html: &bool, framestats: &bool) {
     // using Stdio::inherit which I think serves this use case better:
     // https://stackoverflow.com/a/32020376/4655636
     let mut build_cmd = Command::new("cargo");
-    build_cmd.arg("build")
+    build_cmd
+        .arg("build")
         .arg("--example")
         .arg(sketch)
         .arg("--target")
@@ -61,11 +61,10 @@ fn build_sketch(sketch: &str, no_html: &bool, framestats: &bool) {
     if *framestats {
         build_cmd.arg("--features=framestats");
     }
-    build_cmd.stdout(Stdio::inherit())
-        .stderr(Stdio::inherit());
+    build_cmd.stdout(Stdio::inherit()).stderr(Stdio::inherit());
 
     let mut build_cmd_child = build_cmd.spawn().unwrap();
-    if ! build_cmd_child.wait().unwrap().success() {
+    if !build_cmd_child.wait().unwrap().success() {
         return;
     }
 
@@ -75,17 +74,20 @@ fn build_sketch(sketch: &str, no_html: &bool, framestats: &bool) {
         .arg("www/wasms")
         .arg("--target")
         .arg("web")
-        .arg(format!("target/wasm32-unknown-unknown/release/examples/{}.wasm", sketch))
+        .arg(format!(
+            "target/wasm32-unknown-unknown/release/examples/{}.wasm",
+            sketch
+        ))
         .stdout(Stdio::inherit())
         .stderr(Stdio::inherit())
         .spawn()
         .unwrap();
 
-    if ! wasm_bgen_cmd.wait().unwrap().success() {
+    if !wasm_bgen_cmd.wait().unwrap().success() {
         return;
     }
 
-    if ! no_html {
+    if !no_html {
         println!("Creating html from template...");
         gen_html_from_template(sketch);
     }
@@ -110,7 +112,11 @@ fn build_sketches(no_html: &bool, framestats: &bool) {
             let path = entry.path();
             if path.is_file() {
                 println!("{}", path.file_stem().unwrap().to_str().unwrap());
-                build_sketch(path.file_stem().unwrap().to_str().unwrap(), no_html, framestats);
+                build_sketch(
+                    path.file_stem().unwrap().to_str().unwrap(),
+                    no_html,
+                    framestats,
+                );
             }
         }
     }
@@ -124,10 +130,10 @@ struct Args {
     #[clap(short, long)]
     sketch: Option<String>,
     /// Skip generation of html file
-    #[clap(long="no-html")]
+    #[clap(long = "no-html")]
     no_html: bool,
     /// Enable logging of frame statistics like fps
-    #[clap(long="framestats")]
+    #[clap(long = "framestats")]
     framestats: bool,
 }
 
@@ -138,6 +144,6 @@ fn main() {
 
     match args.sketch {
         Some(sketch) => build_sketch(&sketch, &args.no_html, &args.framestats),
-        None => build_sketches(&args.no_html, &args.framestats)
+        None => build_sketches(&args.no_html, &args.framestats),
     }
 }

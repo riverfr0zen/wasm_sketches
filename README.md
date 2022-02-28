@@ -96,3 +96,27 @@ strip target/release/build-sketches
 @TODO: [There is a way to set Cargo to strip automatically on build](https://doc.rust-lang.org/cargo/reference/unstable.html#profile-strip-option), but it is apparently still in the nightly build of Cargo only, so something to revisit in the future. 
 
 
+# Tooling notes
+
+Much of the tooling setup here is from my [rust learning project](https://github.com/riverfr0zen/riverfr0zen-learns-rust). Items below are in addition to that.
+
+
+## Using unstable rustfmt features
+
+Many useful rustfmt features are currently in "Unstable" status and only available in nightly builds. It is possible to use these "nightly" features for rustfmt only (i.e., stable rustc with "nightly" rustfmt):
+
+Based on: https://github.com/rust-lang/vscode-rust/issues/438#issuecomment-1003671382
+
+
+1. Install the nightly toolchain
+
+`rustup toolchain install nightly`
+
+2. Pass the "+nightly" arg to rustfmt by modifying VSCode settings (I added to my VSCode workspace settings):
+
+```
+"rust-analyzer.rustfmt.extraArgs": [
+        "+nightly"
+]
+```
+
