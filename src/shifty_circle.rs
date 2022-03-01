@@ -19,16 +19,20 @@ const WINDOW_HEIGHT: f32 = 600.0;
 const WINDOW_POSITION_X: f32 = TARGET_RES_WIDTH - WINDOW_WIDTH;
 const WINDOW_POSITION_Y: f32 = 0.0;
 const SHIFTY_CIRCLE_STEP: f64 = 0.01;
-const SHIFTY_CHANGE_STEP: f64 = 0.5;
-const PULSATING_STEP: f64 = 0.01;
+const SHIFTY_CHANGE_STEP: f64 = 1.5;
 const CLEAR_COLOR: Color = Color::rgb(0.149, 0.156, 0.290);
 const SHIFTY_CIRCLE_RADIUS: f32 = 50.0;
 const SHIFTY_CIRCLE_STROKE: f32 = 1.0;
 const SHIFTY_CIRCLE_MIN_SPEED: f32 = 0.01;
 const SHIFTY_CIRCLE_MAX_SPEED: f32 = 50.0;
-const SHIFTY_CIRCLE_FILL_COLOR: Color = Color::rgba(0.784, 0.713, 0.345, 0.01);
-const SHIFTY_CIRCLE_STROKE_COLOR: Color = Color::rgba(0.784, 0.713, 0.345, 0.01);
-const FILL_MAX_ALPHA: f32 = 0.1;
+const SHIFTY_CIRCLE_FILL_COLOR: Color = Color::rgba(0.784, 0.713, 0.345, 0.0);
+const SHIFTY_CIRCLE_STROKE_COLOR: Color = Color::rgba(0.784, 0.713, 0.345, 0.0);
+const PULSATING_STEP: f64 = 0.1;
+const PULSE_MAX_ALPHA: f32 = 0.1;
+// const PULSE_SCALE: f64 = 0.1;
+const PULSE_SCALE: f64 = 0.01;
+const PULSE_AMPLITUDE: f64 = 1.0;
+const PULSE_FREQ: f64 = 5.0;
 #[cfg(target_arch = "wasm32")]
 const RESIZE_CHECK_STEP: f64 = 1.0;
 
@@ -269,10 +273,16 @@ fn change_circle_destination(
 
 
 // Based on https://github.com/Nilirad/bevy_prototype_lyon/blob/master/examples/dynamic_shape.rs
-// fn change_draw_mode_system(mut query: Query<&mut DrawMode>, time: Res<Time>) {
-fn do_pulsating_effect(mut query: Query<&mut DrawMode, With<ShiftyCircle>>) {
+fn do_pulsating_effect(time: Res<Time>, mut query: Query<&mut DrawMode, With<ShiftyCircle>>) {
     // let hue = (time.seconds_since_startup() * 50.0) % 360.0;
     // let outline_width = 2.0 + time.seconds_since_startup().sin().abs() * 10.0;
+    let secs_since = time.seconds_since_startup();
+    let secs_mod = secs_since % 360.0;
+    let pulse_wave = PULSE_AMPLITUDE * (secs_since * PULSE_FREQ).sin().abs() * PULSE_SCALE;
+    info!(
+        "since: {:?}, mod: {:?}, pulse: {}",
+        secs_since, secs_mod, pulse_wave
+    );
 
     for mut draw_mode in query.iter_mut() {
         // Helpful: https://doc.rust-lang.org/rust-by-example/flow_control/if_let.html
@@ -281,21 +291,13 @@ fn do_pulsating_effect(mut query: Query<&mut DrawMode, With<ShiftyCircle>>) {
             ref mut outline_mode,
         } = *draw_mode
         {
-            if fill_mode.color.a() < FILL_MAX_ALPHA {
-                fill_mode.color.set_a(fill_mode.color.a() + 0.02);
-                outline_mode.color.set_a(fill_mode.color.a() + 0.02);
+            if pulse_wave > PULSE_MAX_ALPHA as f64 {
+                fill_mode.color.set_a(PULSE_MAX_ALPHA);
+                outline_mode.color.set_a(PULSE_MAX_ALPHA);
             } else {
-                fill_mode.color = SHIFTY_CIRCLE_FILL_COLOR;
-                outline_mode.color = SHIFTY_CIRCLE_STROKE_COLOR;
+                fill_mode.color.set_a(pulse_wave as f32);
+                outline_mode.color.set_a(pulse_wave as f32);
             }
-
-            // Don't like this, leaving in here in case I want to mess with it later
-            // info!("{:?}", outline_mode.options.line_width);
-            // if outline_mode.options.line_width < 5.0 {
-            //     outline_mode.options.line_width = outline_mode.options.line_width + 1.0;
-            // } else {
-            //     outline_mode.options.line_width = SHIFTY_CIRCLE_STROKE;
-            // }
         }
     }
 }
