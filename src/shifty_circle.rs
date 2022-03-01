@@ -20,7 +20,8 @@ const WINDOW_POSITION_X: f32 = TARGET_RES_WIDTH - WINDOW_WIDTH;
 const WINDOW_POSITION_Y: f32 = 0.0;
 const SHIFTY_CIRCLE_STEP: f64 = 0.01;
 const SHIFTY_CHANGE_STEP: f64 = 1.5;
-const CLEAR_COLOR: Color = Color::rgb(0.149, 0.156, 0.290);
+// const CLEAR_COLOR: Color = Color::rgb(0.149, 0.156, 0.290);
+const CLEAR_COLOR: Color = Color::rgb(0.1, 0.11, 0.0);
 const SHIFTY_CIRCLE_RADIUS: f32 = 50.0;
 const SHIFTY_CIRCLE_STROKE: f32 = 1.0;
 const SHIFTY_CIRCLE_MIN_SPEED: f32 = 0.01;
@@ -277,12 +278,12 @@ fn do_pulsating_effect(time: Res<Time>, mut query: Query<&mut DrawMode, With<Shi
     // let hue = (time.seconds_since_startup() * 50.0) % 360.0;
     // let outline_width = 2.0 + time.seconds_since_startup().sin().abs() * 10.0;
     let secs_since = time.seconds_since_startup();
-    let secs_mod = secs_since % 360.0;
-    let pulse_wave = PULSE_AMPLITUDE * (secs_since * PULSE_FREQ).sin().abs() * PULSE_SCALE;
-    info!(
-        "since: {:?}, mod: {:?}, pulse: {}",
-        secs_since, secs_mod, pulse_wave
-    );
+    let secs_theta = secs_since % 360.0;
+    let pulse_wave = PULSE_AMPLITUDE * (secs_theta * PULSE_FREQ).sin().abs() * PULSE_SCALE;
+    // info!(
+    //     "since: {:?}, theta: {:?}, pulse: {}",
+    //     secs_since, secs_theta, pulse_wave
+    // );
 
     for mut draw_mode in query.iter_mut() {
         // Helpful: https://doc.rust-lang.org/rust-by-example/flow_control/if_let.html
