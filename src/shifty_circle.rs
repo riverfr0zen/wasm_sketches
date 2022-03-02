@@ -59,6 +59,10 @@ pub struct AppGlobals {
 pub struct ShiftyCircle;
 
 
+#[derive(Component)]
+pub struct Building;
+
+
 // #[derive(Component, Clone, Copy, PartialEq, Eq)]
 #[derive(Component)]
 pub struct Destination {
@@ -217,8 +221,15 @@ fn setup_generic(mut commands: Commands, myshape: impl Geometry) {
 }
 
 
-fn draw_skyline(mut commands: Commands, app_globals: ResMut<AppGlobals>) {
+fn draw_skyline(
+    mut commands: Commands,
+    app_globals: ResMut<AppGlobals>,
+    mut q: Query<Entity, With<Building>>,
+) {
     info!("in skyline {:?}", app_globals.winsetup.width);
+    for entity in q.iter_mut() {
+        commands.entity(entity).despawn();
+    }
 
     let mut remaining_space = app_globals.winsetup.width;
     let mut building_pos_x = -app_globals.winsetup.width / 2.0;
@@ -240,19 +251,22 @@ fn draw_skyline(mut commands: Commands, app_globals: ResMut<AppGlobals>) {
             ..Default::default()
         };
 
-        commands.spawn_bundle(GeometryBuilder::build_as(
-            &building,
-            DrawMode::Outlined {
-                fill_mode: FillMode::color(BUILDING_COLOR),
-                outline_mode: StrokeMode::new(SHIFTY_CIRCLE_STROKE_COLOR, SHIFTY_CIRCLE_STROKE),
-            },
-            // Transform::default(),
-            Transform::from_translation(Vec3::new(
-                building_pos_x,
-                -app_globals.winsetup.height / 2.0,
-                0.0,
-            )),
-        ));
+        commands
+            .spawn_bundle(GeometryBuilder::build_as(
+                &building,
+                DrawMode::Outlined {
+                    fill_mode: FillMode::color(BUILDING_COLOR),
+                    outline_mode: StrokeMode::new(SHIFTY_CIRCLE_STROKE_COLOR, SHIFTY_CIRCLE_STROKE),
+                },
+                // Transform::default(),
+                Transform::from_translation(Vec3::new(
+                    building_pos_x,
+                    -app_globals.winsetup.height / 2.0,
+                    0.0,
+                )),
+            ))
+            .insert(Building);
+
         building_pos_x += building_width;
         remaining_space -= building_width;
     }
@@ -271,9 +285,16 @@ fn setup_browser_size(
     render_device: Res<RenderDevice>,
     app_globals: ResMut<AppGlobals>,
     mut window_created_reader: EventReader<WindowCreated>,
+    buildings_query: Query<Entity, With<Building>>,
 ) {
     if window_created_reader.iter().next().is_some() {
-        handle_browser_resize(commands, render_device, windows, app_globals);
+        handle_browser_resize(
+            commands,
+            render_device,
+            windows,
+            app_globals,
+            buildings_query,
+        );
     }
 }
 
@@ -286,6 +307,7 @@ fn handle_browser_resize(
     render_device: Res<RenderDevice>,
     mut windows: ResMut<Windows>,
     mut app_globals: ResMut<AppGlobals>,
+    buildings_query: Query<Entity, With<Building>>,
 ) {
     let window = windows.get_primary_mut().unwrap();
     let wasm_window = web_sys::window().unwrap();
@@ -334,15 +356,11 @@ fn handle_browser_resize(
         window.set_resolution(target_width, target_height);
         app_globals.winsetup.width = target_width;
         app_globals.winsetup.height = target_height;
-        // app_globals.dest_low_x = -window.width() / 2.0 + SHIFTY_CIRCLE_RADIUS;
-        // app_globals.dest_high_x = window.width() / 2.0 - SHIFTY_CIRCLE_RADIUS;
-        // app_globals.dest_low_y = -window.height() / 2.0 + SHIFTY_CIRCLE_RADIUS;
-        // app_globals.dest_high_y = window.height() / 2.0 - SHIFTY_CIRCLE_RADIUS;
         app_globals.dest_low_x = -target_width / 2.0 + SHIFTY_CIRCLE_RADIUS;
         app_globals.dest_high_x = target_width / 2.0 - SHIFTY_CIRCLE_RADIUS;
         app_globals.dest_low_y = -target_height / 2.0 + SHIFTY_CIRCLE_RADIUS;
         app_globals.dest_high_y = target_height / 2.0 - SHIFTY_CIRCLE_RADIUS;
-        draw_skyline(commands, app_globals);
+        draw_skyline(commands, app_globals, buildings_query);
     }
 }
 
