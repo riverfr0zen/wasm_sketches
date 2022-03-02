@@ -22,15 +22,17 @@ const SHIFTY_CIRCLE_STEP: f64 = 0.01;
 const SHIFTY_CHANGE_STEP: f64 = 1.5;
 // const CLEAR_COLOR: Color = Color::rgb(0.149, 0.156, 0.290);
 const CLEAR_COLOR: Color = Color::rgb(0.1, 0.11, 0.0);
+const SHIFTY_CIRCLE_COUNT: u8 = 3;
 const SHIFTY_CIRCLE_RADIUS: f32 = 50.0;
 const SHIFTY_CIRCLE_STROKE: f32 = 1.0;
 const SHIFTY_CIRCLE_MIN_SPEED: f32 = 0.01;
 const SHIFTY_CIRCLE_MAX_SPEED: f32 = 50.0;
 const SHIFTY_CIRCLE_FILL_COLOR: Color = Color::rgba(0.784, 0.713, 0.345, 0.0);
 const SHIFTY_CIRCLE_STROKE_COLOR: Color = Color::rgba(0.784, 0.713, 0.345, 0.0);
+const BUILDING_MIN_WIDTH: f32 = 10.0;
 const BUILDING_MAX_WIDTH: f32 = 200.0;
-const BUILDING_COLOR: Color = Color::GREEN;
-// const BUILDING_COLOR: Color = Color::rgb(0.1, 0.115, 0.0);
+// const BUILDING_COLOR: Color = Color::GREEN;
+const BUILDING_COLOR: Color = Color::rgb(0.1, 0.09, 0.0);
 const PULSATING_STEP: f64 = 0.1;
 const PULSE_MAX_ALPHA: f32 = 0.1;
 // const PULSE_SCALE: f64 = 0.1;
@@ -190,40 +192,48 @@ fn setup_shifty_rect(commands: Commands) {
 fn setup_generic(mut commands: Commands, myshape: impl Geometry) {
     commands.spawn_bundle(OrthographicCameraBundle::new_2d());
 
-    commands
-        .spawn_bundle(GeometryBuilder::build_as(
-            &myshape,
-            DrawMode::Outlined {
-                fill_mode: FillMode::color(SHIFTY_CIRCLE_FILL_COLOR),
-                outline_mode: StrokeMode::new(SHIFTY_CIRCLE_STROKE_COLOR, SHIFTY_CIRCLE_STROKE),
-            },
-            Transform::default(),
-        ))
-        .insert(ShiftyCircle)
-        .insert(Destination {
-            x: 0.0,
-            y: 0.0,
-            speed: SHIFTY_CIRCLE_MIN_SPEED,
-        });
+    // `_` means to discard the iterator element, since it's not being used:
+    // https://stackoverflow.com/questions/29932503/what-is-the-idiomatic-way-to-write-a-for-loop-without-using-the-iterator-value
+    //
+    // `..=` is "inclusive ranges" notation:
+    // https://blog.rust-lang.org/2018/05/10/Rust-1.26.html#inclusive-ranges-with-
+    for _ in 1..=SHIFTY_CIRCLE_COUNT {
+        commands
+            .spawn_bundle(GeometryBuilder::build_as(
+                &myshape,
+                DrawMode::Outlined {
+                    fill_mode: FillMode::color(SHIFTY_CIRCLE_FILL_COLOR),
+                    outline_mode: StrokeMode::new(SHIFTY_CIRCLE_STROKE_COLOR, SHIFTY_CIRCLE_STROKE),
+                },
+                Transform::default(),
+            ))
+            .insert(ShiftyCircle)
+            .insert(Destination {
+                x: 0.0,
+                y: 0.0,
+                speed: SHIFTY_CIRCLE_MIN_SPEED,
+            });
+    }
 }
 
 
-fn setup_skyline(mut commands: Commands, app_globals: Res<AppGlobals>) {
-    // let building = shapes::Rectangle {
-    //     extents: Vec2::new(100.0, 200.0),
-    //     ..Default::default()
-    // };
+fn draw_skyline(mut commands: Commands, app_globals: ResMut<AppGlobals>) {
+    info!("in skyline {:?}", app_globals.winsetup.width);
+
     let mut remaining_space = app_globals.winsetup.width;
     let mut building_pos_x = -app_globals.winsetup.width / 2.0;
     let mut rng = thread_rng();
+    let building_max_height = app_globals.winsetup.height / 4.0;
+    let building_min_height = app_globals.winsetup.height / 16.0;
     while remaining_space > 0.0 {
         let building_width = if remaining_space > BUILDING_MAX_WIDTH {
-            rng.gen_range(1.0..BUILDING_MAX_WIDTH)
+            rng.gen_range(BUILDING_MIN_WIDTH..BUILDING_MAX_WIDTH)
         } else {
             BUILDING_MAX_WIDTH
         };
         // let building_height = 200.0;
-        let building_height = building_pos_x.sin().abs() * 200.0 + 100.0;
+        // let building_height = building_pos_x.sin().abs() * 200.0 + 100.0;
+        let building_height = rng.gen_range(building_min_height..building_max_height);
         let building = shapes::Rectangle {
             extents: Vec2::new(building_width, building_height),
             origin: RectangleOrigin::BottomLeft,
@@ -256,13 +266,14 @@ fn setup_skyline(mut commands: Commands, app_globals: Res<AppGlobals>) {
 // (since that system will likely be set to a FixedTimeStep)
 #[cfg(target_arch = "wasm32")]
 fn setup_browser_size(
+    commands: Commands,
     windows: ResMut<Windows>,
     render_device: Res<RenderDevice>,
     app_globals: ResMut<AppGlobals>,
     mut window_created_reader: EventReader<WindowCreated>,
 ) {
     if window_created_reader.iter().next().is_some() {
-        handle_browser_resize(render_device, windows, app_globals);
+        handle_browser_resize(commands, render_device, windows, app_globals);
     }
 }
 
@@ -271,6 +282,7 @@ fn setup_browser_size(
 // https://github.com/mrk-its/bevy-robbo/blob/master/src/main.rs
 #[cfg(target_arch = "wasm32")]
 fn handle_browser_resize(
+    commands: Commands,
     render_device: Res<RenderDevice>,
     mut windows: ResMut<Windows>,
     mut app_globals: ResMut<AppGlobals>,
@@ -292,25 +304,45 @@ fn handle_browser_resize(
     // info!("target_width: {}", target_width);
     // info!("target_height: {}", target_height);
 
-    if window.width() != target_width || window.height() != target_height {
-        if window.scale_factor() >= 1.0 {
-            let max_2d = render_device.limits().max_texture_dimension_2d;
-            let scale_factor = window.scale_factor() as f32;
+    if window.scale_factor() >= 1.0 {
+        let max_2d = render_device.limits().max_texture_dimension_2d;
+        let scale_factor = window.scale_factor() as f32;
 
-            if target_width * scale_factor > max_2d as f32 {
-                target_width = (max_2d as f32 / scale_factor).floor();
-                info!("corrected target_width: {}", target_width);
-            }
-            if target_height * scale_factor > max_2d as f32 {
-                target_height = (max_2d as f32 / scale_factor).floor();
-                info!("corrected target_height: {}", target_height);
-            }
+        if target_width * scale_factor > max_2d as f32 {
+            target_width = (max_2d as f32 / scale_factor).floor();
+            info!("corrected target_width: {}", target_width);
         }
+        if target_height * scale_factor > max_2d as f32 {
+            target_height = (max_2d as f32 / scale_factor).floor();
+            info!("corrected target_height: {}", target_height);
+        }
+    }
+
+    // Have to apply floor() to window.width() since it seems set_resolution does not
+    // always set the exact floating point value, and so this was triggering on every
+    // step.
+    //
+    // if window.width() != target_width || window.height() != target_height {
+    if window.width().floor() != target_width || window.height().floor() != target_height {
+        // info!(
+        //     "{:?} {:?}, {:?} {:?}",
+        //     window.width(),
+        //     target_width,
+        //     window.height(),
+        //     target_height,
+        // );
         window.set_resolution(target_width, target_height);
-        app_globals.dest_low_x = -window.width() / 2.0 + SHIFTY_CIRCLE_RADIUS;
-        app_globals.dest_high_x = window.width() / 2.0 - SHIFTY_CIRCLE_RADIUS;
-        app_globals.dest_low_y = -window.height() / 2.0 + SHIFTY_CIRCLE_RADIUS;
-        app_globals.dest_high_y = window.height() / 2.0 - SHIFTY_CIRCLE_RADIUS;
+        app_globals.winsetup.width = target_width;
+        app_globals.winsetup.height = target_height;
+        // app_globals.dest_low_x = -window.width() / 2.0 + SHIFTY_CIRCLE_RADIUS;
+        // app_globals.dest_high_x = window.width() / 2.0 - SHIFTY_CIRCLE_RADIUS;
+        // app_globals.dest_low_y = -window.height() / 2.0 + SHIFTY_CIRCLE_RADIUS;
+        // app_globals.dest_high_y = window.height() / 2.0 - SHIFTY_CIRCLE_RADIUS;
+        app_globals.dest_low_x = -target_width / 2.0 + SHIFTY_CIRCLE_RADIUS;
+        app_globals.dest_high_x = target_width / 2.0 - SHIFTY_CIRCLE_RADIUS;
+        app_globals.dest_low_y = -target_height / 2.0 + SHIFTY_CIRCLE_RADIUS;
+        app_globals.dest_high_y = target_height / 2.0 - SHIFTY_CIRCLE_RADIUS;
+        draw_skyline(commands, app_globals);
     }
 }
 
@@ -418,12 +450,16 @@ pub fn app(variation: &str) {
         _ => app.add_startup_system(setup_shifty_circle),
     };
 
-    app.add_startup_system(setup_skyline);
+    // If wasm32, the skyline will be drawn in handle_browser_resize
+    #[cfg(not(target_arch = "wasm32"))]
+    app.add_startup_system(draw_skyline);
 
     #[cfg(target_arch = "wasm32")]
-    app.add_startup_system(setup_browser_size).add_system(
-        handle_browser_resize.with_run_criteria(FixedTimestep::step(RESIZE_CHECK_STEP)),
-    );
+    app.add_startup_system(setup_browser_size);
+
+    #[cfg(target_arch = "wasm32")]
+    app.add_system(handle_browser_resize.with_run_criteria(FixedTimestep::step(RESIZE_CHECK_STEP)));
+
 
     // Note setting with_run_criteria on a single system
     // (Found it here: https://bevy-cheatbook.github.io/programming/run-criteria.html#run-criteria-labels)
