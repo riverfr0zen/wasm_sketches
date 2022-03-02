@@ -28,6 +28,7 @@ const SHIFTY_CIRCLE_MIN_SPEED: f32 = 0.01;
 const SHIFTY_CIRCLE_MAX_SPEED: f32 = 50.0;
 const SHIFTY_CIRCLE_FILL_COLOR: Color = Color::rgba(0.784, 0.713, 0.345, 0.0);
 const SHIFTY_CIRCLE_STROKE_COLOR: Color = Color::rgba(0.784, 0.713, 0.345, 0.0);
+const BUILDING_MAX_WIDTH: f32 = 200.0;
 const BUILDING_COLOR: Color = Color::GREEN;
 // const BUILDING_COLOR: Color = Color::rgb(0.1, 0.115, 0.0);
 const PULSATING_STEP: f64 = 0.1;
@@ -137,7 +138,7 @@ fn get_shape(
 }
 
 
-fn setup_shifty_circle(commands: Commands, app_globals: Res<AppGlobals>) {
+fn setup_shifty_circle(commands: Commands) {
     let some_shape = get_shape(ShiftyShapes::CIRCLE);
     /*
      * This way of destructuring took some time to figure out and is still is a little hard
@@ -157,36 +158,36 @@ fn setup_shifty_circle(commands: Commands, app_globals: Res<AppGlobals>) {
      * https://www.reddit.com/r/rust/comments/dme4og/can_we_return_multiple_type_data_from_the_function/
      */
     if let OneOf::First(myshape) = some_shape {
-        setup_generic(commands, app_globals, myshape);
+        setup_generic(commands, myshape);
     } else {
         panic!("Got the wrong shape!");
     }
 }
 
 
-fn setup_shifty_ufo(commands: Commands, app_globals: Res<AppGlobals>) {
+fn setup_shifty_ufo(commands: Commands) {
     let some_shape = get_shape(ShiftyShapes::ELLIPSE);
     if let OneOf::Second(myshape) = some_shape {
-        setup_generic(commands, app_globals, myshape);
+        setup_generic(commands, myshape);
     } else {
         panic!("Got the wrong shape!");
     }
 }
 
-fn setup_shifty_rect(commands: Commands, app_globals: Res<AppGlobals>) {
+fn setup_shifty_rect(commands: Commands) {
     // For an example of triggering the panic below, you can ask for an ELLIPSE from `get_shape`
     // instead of the expected RECT
     // let some_shape = get_shape(ShiftyShapes::ELLIPSE);
     let some_shape = get_shape(ShiftyShapes::RECT);
     if let OneOf::Third(myshape) = some_shape {
-        setup_generic(commands, app_globals, myshape);
+        setup_generic(commands, myshape);
     } else {
         panic!("Got the wrong shape!");
     }
 }
 
 
-fn setup_generic(mut commands: Commands, app_globals: Res<AppGlobals>, myshape: impl Geometry) {
+fn setup_generic(mut commands: Commands, myshape: impl Geometry) {
     commands.spawn_bundle(OrthographicCameraBundle::new_2d());
 
     commands
@@ -204,31 +205,47 @@ fn setup_generic(mut commands: Commands, app_globals: Res<AppGlobals>, myshape: 
             y: 0.0,
             speed: SHIFTY_CIRCLE_MIN_SPEED,
         });
+}
 
 
+fn setup_skyline(mut commands: Commands, app_globals: Res<AppGlobals>) {
     // let building = shapes::Rectangle {
     //     extents: Vec2::new(100.0, 200.0),
     //     ..Default::default()
     // };
-    let building = shapes::Rectangle {
-        extents: Vec2::new(100.0, 200.0),
-        origin: RectangleOrigin::BottomLeft,
-        ..Default::default()
-    };
+    let mut remaining_space = app_globals.winsetup.width;
+    let mut building_pos_x = -app_globals.winsetup.width / 2.0;
+    let mut rng = thread_rng();
+    while remaining_space > 0.0 {
+        let building_width = if remaining_space > BUILDING_MAX_WIDTH {
+            rng.gen_range(1.0..BUILDING_MAX_WIDTH)
+        } else {
+            BUILDING_MAX_WIDTH
+        };
+        // let building_height = 200.0;
+        let building_height = building_pos_x.sin().abs() * 200.0 + 100.0;
+        let building = shapes::Rectangle {
+            extents: Vec2::new(building_width, building_height),
+            origin: RectangleOrigin::BottomLeft,
+            ..Default::default()
+        };
 
-    commands.spawn_bundle(GeometryBuilder::build_as(
-        &building,
-        DrawMode::Outlined {
-            fill_mode: FillMode::color(BUILDING_COLOR),
-            outline_mode: StrokeMode::new(SHIFTY_CIRCLE_STROKE_COLOR, SHIFTY_CIRCLE_STROKE),
-        },
-        // Transform::default(),
-        Transform::from_translation(Vec3::new(
-            -app_globals.winsetup.width / 2.0,
-            -app_globals.winsetup.height / 2.0,
-            0.0,
-        )),
-    ));
+        commands.spawn_bundle(GeometryBuilder::build_as(
+            &building,
+            DrawMode::Outlined {
+                fill_mode: FillMode::color(BUILDING_COLOR),
+                outline_mode: StrokeMode::new(SHIFTY_CIRCLE_STROKE_COLOR, SHIFTY_CIRCLE_STROKE),
+            },
+            // Transform::default(),
+            Transform::from_translation(Vec3::new(
+                building_pos_x,
+                -app_globals.winsetup.height / 2.0,
+                0.0,
+            )),
+        ));
+        building_pos_x += building_width;
+        remaining_space -= building_width;
+    }
 }
 
 
@@ -400,6 +417,8 @@ pub fn app(variation: &str) {
         "rect" => app.add_startup_system(setup_shifty_rect),
         _ => app.add_startup_system(setup_shifty_circle),
     };
+
+    app.add_startup_system(setup_skyline);
 
     #[cfg(target_arch = "wasm32")]
     app.add_startup_system(setup_browser_size).add_system(
