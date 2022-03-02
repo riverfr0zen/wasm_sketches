@@ -15,9 +15,9 @@ const TARGET_RES_WIDTH: f32 = 3840.0;
 // const TARGET_RES_HEIGHT: f32 = 2160.0;
 const WINDOW_WIDTH: f32 = 800.0;
 const WINDOW_HEIGHT: f32 = 600.0;
+const WINDOW_WIDTH_DEV: f32 = 1600.0;
+const WINDOW_HEIGHT_DEV: f32 = 1600.0;
 // Place window on top right corner
-const WINDOW_POSITION_X: f32 = TARGET_RES_WIDTH - WINDOW_WIDTH;
-const WINDOW_POSITION_Y: f32 = 0.0;
 const SHIFTY_CIRCLE_STEP: f64 = 0.01;
 const SHIFTY_CHANGE_STEP: f64 = 1.5;
 // const CLEAR_COLOR: Color = Color::rgb(0.149, 0.156, 0.290);
@@ -28,6 +28,8 @@ const SHIFTY_CIRCLE_MIN_SPEED: f32 = 0.01;
 const SHIFTY_CIRCLE_MAX_SPEED: f32 = 50.0;
 const SHIFTY_CIRCLE_FILL_COLOR: Color = Color::rgba(0.784, 0.713, 0.345, 0.0);
 const SHIFTY_CIRCLE_STROKE_COLOR: Color = Color::rgba(0.784, 0.713, 0.345, 0.0);
+// const BUILDING_COLOR: Color = Color::BLACK;
+const BUILDING_COLOR: Color = Color::rgb(0.1, 0.115, 0.0);
 const PULSATING_STEP: f64 = 0.1;
 const PULSE_MAX_ALPHA: f32 = 0.1;
 // const PULSE_SCALE: f64 = 0.1;
@@ -77,6 +79,35 @@ enum ShiftyShapes {
 }
 
 
+struct WindowSetup {
+    width: f32,
+    height: f32,
+    position_x: f32,
+    position_y: f32,
+}
+
+
+impl Default for WindowSetup {
+    fn default() -> Self {
+        if cfg!(debug_assertions) {
+            Self {
+                width: WINDOW_WIDTH_DEV,
+                height: WINDOW_HEIGHT_DEV,
+                position_x: TARGET_RES_WIDTH - WINDOW_WIDTH_DEV,
+                position_y: 0.0,
+            }
+        } else {
+            Self {
+                width: WINDOW_WIDTH,
+                height: WINDOW_HEIGHT,
+                position_x: TARGET_RES_WIDTH - WINDOW_WIDTH,
+                position_y: 0.0,
+            }
+        }
+    }
+}
+
+
 fn get_shape(
     shape: ShiftyShapes,
 ) -> OneOf<shapes::Circle, shapes::Ellipse, shapes::RegularPolygon> {
@@ -94,7 +125,6 @@ fn get_shape(
             })
         }
         ShiftyShapes::RECT => {
-            info!("got to rect");
             return OneOf::Third(shapes::RegularPolygon {
                 sides: 4,
                 feature: shapes::RegularPolygonFeature::Radius(SHIFTY_CIRCLE_RADIUS),
@@ -172,6 +202,26 @@ fn setup_generic(mut commands: Commands, myshape: impl Geometry) {
             y: 0.0,
             speed: SHIFTY_CIRCLE_MIN_SPEED,
         });
+
+    let building = shapes::RegularPolygon {
+        sides: 4,
+        feature: shapes::RegularPolygonFeature::Radius(300.0),
+        ..shapes::RegularPolygon::default()
+    };
+
+    // let building = shapes::Rectangle {
+    //     ..Default::default()
+    // };
+
+
+    commands.spawn_bundle(GeometryBuilder::build_as(
+        &building,
+        DrawMode::Outlined {
+            fill_mode: FillMode::color(BUILDING_COLOR),
+            outline_mode: StrokeMode::new(SHIFTY_CIRCLE_STROKE_COLOR, SHIFTY_CIRCLE_STROKE),
+        },
+        Transform::default(),
+    ));
 }
 
 
@@ -306,20 +356,21 @@ fn do_pulsating_effect(time: Res<Time>, mut query: Query<&mut DrawMode, With<Shi
 
 pub fn app(variation: &str) {
     let mut app = App::new();
+    let winsetup = WindowSetup::default();
     app.insert_resource(WindowDescriptor {
         title: "Shifty Circle".to_string(),
-        width: WINDOW_WIDTH,
-        height: WINDOW_HEIGHT,
-        position: Some(Vec2::new(WINDOW_POSITION_X, WINDOW_POSITION_Y)),
+        width: winsetup.width,
+        height: winsetup.height,
+        position: Some(Vec2::new(winsetup.position_x, winsetup.position_y)),
         #[cfg(target_arch = "wasm32")]
         canvas: Some("#window-matching-canvas".to_string()),
         ..Default::default()
     })
     .insert_resource(AppGlobals {
-        dest_low_x: -WINDOW_WIDTH / 2.0,
-        dest_high_x: WINDOW_WIDTH / 2.0,
-        dest_low_y: -WINDOW_HEIGHT / 2.0,
-        dest_high_y: WINDOW_HEIGHT / 2.0,
+        dest_low_x: -winsetup.width / 2.0,
+        dest_high_x: winsetup.width / 2.0,
+        dest_low_y: -winsetup.height / 2.0,
+        dest_high_y: winsetup.height / 2.0,
     })
     .insert_resource(ClearColor(CLEAR_COLOR))
     .insert_resource(Msaa { samples: 4 });

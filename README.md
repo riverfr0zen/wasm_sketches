@@ -101,6 +101,20 @@ strip target/release/build-sketches
 Much of the tooling setup here is from my [rust learning project](https://github.com/riverfr0zen/riverfr0zen-learns-rust). Items below are in addition to that.
 
 
+## formatOnSave for rust code
+
+Added the following to VSCode workspace settings:
+
+```
+		"[rust]": {
+			"editor.defaultFormatter": "matklad.rust-analyzer",
+			"editor.formatOnSave": true,
+		},
+```
+
+`rust-analyzer` is using rustfmt, and this can be configured by adding a `.rustfmt.toml` file in the project folder. I've heard that using the `rustfmt` defaults is considered "best practice", so I'll be sticking to them with very few overrides (coming from Python, I simply must separate some things with at least two lines =).
+
+
 ## Using unstable rustfmt features
 
 Many useful rustfmt features are currently in "Unstable" status and only available in nightly builds. It is possible to use these "nightly" features for rustfmt only (i.e., stable rustc with "nightly" rustfmt):
