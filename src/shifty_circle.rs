@@ -34,6 +34,8 @@ const BUILDING_MAX_WIDTH: f32 = 200.0;
 // const BUILDING_COLOR: Color = Color::GREEN;
 const BUILDING_COLOR: Color = Color::rgb(0.1, 0.09, 0.0);
 const BUILDING_FORE_COLOR: Color = Color::rgb(0.1, 0.098, 0.0);
+const BUILDING_MAX_HEIGHT_RATIO: f32 = 3.0;
+const BUILDING_MIN_HEIGHT_RATIO: f32 = 16.0;
 const PULSATING_STEP: f64 = 0.1;
 const PULSE_MAX_ALPHA: f32 = 0.1;
 // const PULSE_SCALE: f64 = 0.1;
@@ -210,7 +212,8 @@ fn setup_generic(mut commands: Commands, myshape: impl Geometry) {
                     fill_mode: FillMode::color(SHIFTY_CIRCLE_FILL_COLOR),
                     outline_mode: StrokeMode::new(SHIFTY_CIRCLE_STROKE_COLOR, SHIFTY_CIRCLE_STROKE),
                 },
-                Transform::default(),
+                // Transform::default(),
+                Transform::from_translation(Vec3::new(0.0, 0.0, 1.0)),
             ))
             .insert(ShiftyCircle)
             .insert(Destination {
@@ -244,8 +247,6 @@ fn draw_skyline_layer(
         } else {
             BUILDING_MAX_WIDTH
         };
-        // let building_height = 200.0;
-        // let building_height = building_pos_x.sin().abs() * 200.0 + 100.0;
         let building_height = rng.gen_range(building_min_height..building_max_height);
         let building = shapes::Rectangle {
             extents: Vec2::new(building_width, building_height),
@@ -282,8 +283,8 @@ fn draw_skyline(
 
     let buildings_start_x = -app_globals.winsetup.width / 2.0;
     let buildings_start_y = -app_globals.winsetup.height / 2.0;
-    let building_max_height = app_globals.winsetup.height / 4.0;
-    let building_min_height = app_globals.winsetup.height / 16.0;
+    let building_max_height = app_globals.winsetup.height / BUILDING_MAX_HEIGHT_RATIO;
+    let building_min_height = app_globals.winsetup.height / BUILDING_MIN_HEIGHT_RATIO;
 
     draw_skyline_layer(
         &mut commands,
@@ -304,7 +305,7 @@ fn draw_skyline(
         building_min_height,
         building_max_height - building_max_height / 4.0,
         BUILDING_FORE_COLOR,
-        1.0,
+        2.0,
     );
 }
 
