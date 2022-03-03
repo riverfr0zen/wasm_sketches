@@ -33,6 +33,7 @@ const BUILDING_MIN_WIDTH: f32 = 10.0;
 const BUILDING_MAX_WIDTH: f32 = 200.0;
 // const BUILDING_COLOR: Color = Color::GREEN;
 const BUILDING_COLOR: Color = Color::rgb(0.1, 0.09, 0.0);
+const BUILDING_FORE_COLOR: Color = Color::rgb(0.1, 0.098, 0.0);
 const PULSATING_STEP: f64 = 0.1;
 const PULSE_MAX_ALPHA: f32 = 0.1;
 // const PULSE_SCALE: f64 = 0.1;
@@ -221,22 +222,23 @@ fn setup_generic(mut commands: Commands, myshape: impl Geometry) {
 }
 
 
-fn draw_skyline(
-    mut commands: Commands,
-    app_globals: ResMut<AppGlobals>,
-    mut q: Query<Entity, With<Building>>,
+fn draw_skyline_layer(
+    commands: &mut Commands,
+    available_space: f32,
+    buildings_start_x: f32,
+    buildings_start_y: f32,
+    building_min_height: f32,
+    building_max_height: f32,
+    building_color: Color,
+    z_index: f32,
 ) {
-    info!("in skyline {:?}", app_globals.winsetup.width);
-    for entity in q.iter_mut() {
-        commands.entity(entity).despawn();
-    }
-
-    let mut remaining_space = app_globals.winsetup.width;
-    let mut building_pos_x = -app_globals.winsetup.width / 2.0;
+    let mut remaining_space = available_space;
+    let mut building_pos_x = buildings_start_x;
     let mut rng = thread_rng();
-    let building_max_height = app_globals.winsetup.height / 4.0;
-    let building_min_height = app_globals.winsetup.height / 16.0;
+
     while remaining_space > 0.0 {
+        info!("{:?}, {:?}", available_space, remaining_space);
+
         let building_width = if remaining_space > BUILDING_MAX_WIDTH {
             rng.gen_range(BUILDING_MIN_WIDTH..BUILDING_MAX_WIDTH)
         } else {
@@ -255,21 +257,55 @@ fn draw_skyline(
             .spawn_bundle(GeometryBuilder::build_as(
                 &building,
                 DrawMode::Outlined {
-                    fill_mode: FillMode::color(BUILDING_COLOR),
+                    fill_mode: FillMode::color(building_color),
                     outline_mode: StrokeMode::new(SHIFTY_CIRCLE_STROKE_COLOR, SHIFTY_CIRCLE_STROKE),
                 },
                 // Transform::default(),
-                Transform::from_translation(Vec3::new(
-                    building_pos_x,
-                    -app_globals.winsetup.height / 2.0,
-                    0.0,
-                )),
+                Transform::from_translation(Vec3::new(building_pos_x, buildings_start_y, z_index)),
             ))
             .insert(Building);
 
         building_pos_x += building_width;
         remaining_space -= building_width;
     }
+}
+
+fn draw_skyline(
+    mut commands: Commands,
+    app_globals: ResMut<AppGlobals>,
+    mut q: Query<Entity, With<Building>>,
+) {
+    info!("in skyline {:?}", app_globals.winsetup.width);
+    for entity in q.iter_mut() {
+        commands.entity(entity).despawn();
+    }
+
+    let buildings_start_x = -app_globals.winsetup.width / 2.0;
+    let buildings_start_y = -app_globals.winsetup.height / 2.0;
+    let building_max_height = app_globals.winsetup.height / 4.0;
+    let building_min_height = app_globals.winsetup.height / 16.0;
+
+    draw_skyline_layer(
+        &mut commands,
+        app_globals.winsetup.width,
+        buildings_start_x,
+        buildings_start_y,
+        building_min_height,
+        building_max_height,
+        BUILDING_COLOR,
+        0.0,
+    );
+
+    draw_skyline_layer(
+        &mut commands,
+        app_globals.winsetup.width,
+        buildings_start_x,
+        buildings_start_y,
+        building_min_height,
+        building_max_height - building_max_height / 4.0,
+        BUILDING_FORE_COLOR,
+        1.0,
+    );
 }
 
 
