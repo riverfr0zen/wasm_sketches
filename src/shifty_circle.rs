@@ -240,7 +240,7 @@ fn draw_skyline_layer(
     let mut rng = thread_rng();
 
     while remaining_space > 0.0 {
-        info!("{:?}, {:?}", available_space, remaining_space);
+        // info!("{:?}, {:?}", available_space, remaining_space);
 
         let building_width = if remaining_space > BUILDING_MAX_WIDTH {
             rng.gen_range(BUILDING_MIN_WIDTH..BUILDING_MAX_WIDTH)
@@ -276,7 +276,6 @@ fn draw_skyline(
     app_globals: ResMut<AppGlobals>,
     mut q: Query<Entity, With<Building>>,
 ) {
-    info!("in skyline {:?}", app_globals.winsetup.width);
     for entity in q.iter_mut() {
         commands.entity(entity).despawn();
     }
@@ -369,11 +368,11 @@ fn handle_browser_resize(
 
         if target_width * scale_factor > max_2d as f32 {
             target_width = (max_2d as f32 / scale_factor).floor();
-            info!("corrected target_width: {}", target_width);
+            // info!("corrected target_width: {}", target_width);
         }
         if target_height * scale_factor > max_2d as f32 {
             target_height = (max_2d as f32 / scale_factor).floor();
-            info!("corrected target_height: {}", target_height);
+            // info!("corrected target_height: {}", target_height);
         }
     }
 
