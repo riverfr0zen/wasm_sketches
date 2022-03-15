@@ -601,6 +601,17 @@ dependencies = [
 ]
 
 [[package]]
+name = "bevy_sketches"
+version = "0.1.0"
+dependencies = [
+ "bevy",
+ "bevy_prototype_lyon",
+ "rand",
+ "wasm-bindgen",
+ "web-sys",
+]
+
+[[package]]
 name = "bevy_sprite"
 version = "0.6.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -804,7 +815,6 @@ version = "0.1.0"
 dependencies = [
  "clap",
  "const_format",
- "log",
  "serde_json",
 ]
 
@@ -2753,18 +2763,6 @@ name = "siphasher"
 version = "0.2.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "0b8de496cf83d4ed58b6be86c3a275b8602f6ffe98d3024a869e124147a9a3ac"
-
-[[package]]
-name = "sketches"
-version = "0.1.0"
-dependencies = [
- "bevy",
- "bevy_prototype_lyon",
- "log",
- "rand",
- "wasm-bindgen",
- "web-sys",
-]
 
 [[package]]
 name = "slab"

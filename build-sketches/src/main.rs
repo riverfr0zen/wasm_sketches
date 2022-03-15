@@ -7,10 +7,10 @@ use std::path::Path;
 use std::process::{Command, Stdio};
 
 
-const WWW_PATH: &str = "sketches/www";
+const WWW_PATH: &str = "bevy_sketches/www";
 const CANVAS_HTML_TPL: &str = concatcp!(WWW_PATH, "/window-matching-canvas.template.html");
 const WASM_CONFIG: &str = concatcp!(WWW_PATH, "/sketches.json");
-const EXAMPLES_DIR: &str = "sketches/examples";
+const EXAMPLES_DIR: &str = "bevy_sketches/examples";
 
 
 fn gen_html_from_template(sketch: &str) {
