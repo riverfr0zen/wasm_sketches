@@ -1,33 +1,6 @@
-[package]
-name = "wasm_sketches"
-version = "0.1.0"
-edition = "2021"
-
-# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
-
-[dependencies]
-# bevy = { version = "0.6.1", features = ["dynamic"] }
-bevy = { version = "0.6.1" }
-bevy_prototype_lyon = "0.4.0"
-rand = "0.8.5"
-web-sys = { version = "0.3.56", features = ['Window'] }
-wasm-bindgen = "0.2.79"
-clap = { version = "3.1.0", features = ["derive"] }
-log = "0.4.14"
-serde_json = "1.0"
-
-[features]
-framestats = []
-
-# Based on https://dev.to/yjdoc2/make-a-combined-library-and-binary-project-in-rust-d4f
-[[bin]]
-name = "build-sketches"
-path = "src/build_sketches.rs"
-
-# Not sure we need to do the same with lib as with bin -- maybe if we ever want to export it?
-# [lib]
-# name = "wasm_sketches"
-# path = "src/lib.rs"
+[workspace]
+resolver = "2"
+members = ["sketches", "build-sketches"]
 
 
 [profile.release]

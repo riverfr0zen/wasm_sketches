@@ -7,6 +7,4 @@ mod tests {
     }
 }
 
-pub mod build_sketches;
-
 pub mod shifty_circle;

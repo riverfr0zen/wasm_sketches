@@ -1,19 +1,25 @@
 use clap::Parser;
+use const_format::concatcp;
 use serde_json::json;
 use serde_json::{Result, Value};
 use std::fs;
 use std::path::Path;
 use std::process::{Command, Stdio};
 
-const CANVAS_HTML_TPL: &str = "www/window-matching-canvas.template.html";
-const WASM_CONFIG: &str = "www/sketches.json";
+
+const WWW_PATH: &str = "sketches/www";
+const CANVAS_HTML_TPL: &str = concatcp!(WWW_PATH, "/window-matching-canvas.template.html");
+const WASM_CONFIG: &str = concatcp!(WWW_PATH, "/sketches.json");
+const EXAMPLES_DIR: &str = "sketches/examples";
 
 
 fn gen_html_from_template(sketch: &str) {
+    println!("{}", CANVAS_HTML_TPL);
     let file_contents = fs::read_to_string(CANVAS_HTML_TPL).expect("Unable to read file");
 
     let file_contents = file_contents.replace("{{sketch}}", sketch);
-    fs::write(format!("www/{}.html", sketch), file_contents).expect("Unable to write html file");
+    fs::write(format!("{}/{}.html", WWW_PATH, sketch), file_contents)
+        .expect("Unable to write html file");
 }
 
 
@@ -71,7 +77,7 @@ fn build_sketch(sketch: &str, no_html: &bool, framestats: &bool) {
     println!("Running wasm-bindgen for {}...", sketch);
     let mut wasm_bgen_cmd = Command::new("wasm-bindgen")
         .arg("--out-dir")
-        .arg("www/wasms")
+        .arg(concatcp!(WWW_PATH, "/wasms"))
         .arg("--target")
         .arg("web")
         .arg(format!(
@@ -105,7 +111,7 @@ fn build_sketch(sketch: &str, no_html: &bool, framestats: &bool) {
 
 
 fn build_sketches(no_html: &bool, framestats: &bool) {
-    let egs_dir = Path::new("./examples");
+    let egs_dir = Path::new(EXAMPLES_DIR);
     if egs_dir.is_dir() {
         for entry in fs::read_dir(egs_dir).expect("Couldn't read directory") {
             let entry = entry.expect("Couldn't get item");

@@ -1,7 +1,7 @@
 // Looks like `extern crate` is older syntax and no longer needed
 // extern crate wasm_sketches;
-use wasm_sketches;
+use sketches;
 
 fn main() {
-    wasm_sketches::shifty_circle::app("circle");
+    sketches::shifty_circle::app("circle");
 }
