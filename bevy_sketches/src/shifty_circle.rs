@@ -1,12 +1,6 @@
 use super::base;
 use bevy::core::FixedTimestep;
-#[cfg(feature = "framestats")]
-use bevy::diagnostic::{FrameTimeDiagnosticsPlugin, LogDiagnosticsPlugin};
 use bevy::prelude::*;
-#[cfg(target_arch = "wasm32")]
-use bevy::render::renderer::RenderDevice;
-#[cfg(target_arch = "wasm32")]
-use bevy::window::WindowCreated;
 use bevy_prototype_lyon::prelude::*;
 use rand::prelude::thread_rng;
 use rand::Rng;
@@ -38,19 +32,16 @@ const PULSE_MAX_ALPHA: f32 = 0.1;
 const PULSE_SCALE: f64 = 0.01;
 const PULSE_AMPLITUDE: f64 = 1.0;
 const PULSE_FREQ: f64 = 5.0;
-#[cfg(target_arch = "wasm32")]
-const RESIZE_CHECK_STEP: f64 = 1.0;
 
 
 // Resource for app globals.
 // Based on https://bevy-cheatbook.github.io/programming/res.html
 #[derive(Default, Debug)]
 pub struct AppGlobals {
-    pub dest_low_x: f32,
-    pub dest_high_x: f32,
-    pub dest_low_y: f32,
-    pub dest_high_y: f32,
-    winsetup: base::WindowSetup,
+    dest_low_x: f32,
+    dest_high_x: f32,
+    dest_low_y: f32,
+    dest_high_y: f32,
 }
 
 
@@ -70,6 +61,7 @@ pub struct Destination {
     speed: f32,
 }
 
+
 // Helpful on how to return multiple types:
 // https://www.reddit.com/r/rust/comments/dme4og/can_we_return_multiple_type_data_from_the_function/
 // https://play.rust-lang.org/?version=stable&mode=debug&edition=2018&gist=57223180ab43fff42e057d367468ac22
@@ -79,41 +71,12 @@ enum OneOf<A, B, C> {
     Third(C),
 }
 
+
 enum ShiftyShapes {
     RECT,
     CIRCLE,
     ELLIPSE,
 }
-
-
-// #[derive(Debug)]
-// struct WindowSetup {
-//     width: f32,
-//     height: f32,
-//     position_x: f32,
-//     position_y: f32,
-// }
-
-
-// impl Default for WindowSetup {
-//     fn default() -> Self {
-//         if cfg!(debug_assertions) {
-//             Self {
-//                 width: WINDOW_WIDTH_DEV,
-//                 height: WINDOW_HEIGHT_DEV,
-//                 position_x: TARGET_RES_WIDTH - WINDOW_WIDTH_DEV,
-//                 position_y: 0.0,
-//             }
-//         } else {
-//             Self {
-//                 width: WINDOW_WIDTH,
-//                 height: WINDOW_HEIGHT,
-//                 position_x: TARGET_RES_WIDTH - WINDOW_WIDTH,
-//                 position_y: 0.0,
-//             }
-//         }
-//     }
-// }
 
 
 fn get_shape(
@@ -269,21 +232,21 @@ fn draw_skyline_layer(
 
 fn draw_skyline(
     mut commands: Commands,
-    app_globals: ResMut<AppGlobals>,
+    winsetup: ResMut<base::WindowSetup>,
     mut q: Query<Entity, With<Building>>,
 ) {
     for entity in q.iter_mut() {
         commands.entity(entity).despawn();
     }
 
-    let buildings_start_x = -app_globals.winsetup.width / 2.0;
-    let buildings_start_y = -app_globals.winsetup.height / 2.0;
-    let building_max_height = app_globals.winsetup.height / BUILDING_MAX_HEIGHT_RATIO;
-    let building_min_height = app_globals.winsetup.height / BUILDING_MIN_HEIGHT_RATIO;
+    let buildings_start_x = -winsetup.width / 2.0;
+    let buildings_start_y = -winsetup.height / 2.0;
+    let building_max_height = winsetup.height / BUILDING_MAX_HEIGHT_RATIO;
+    let building_min_height = winsetup.height / BUILDING_MIN_HEIGHT_RATIO;
 
     draw_skyline_layer(
         &mut commands,
-        app_globals.winsetup.width,
+        winsetup.width,
         buildings_start_x,
         buildings_start_y,
         building_min_height,
@@ -294,7 +257,7 @@ fn draw_skyline(
 
     draw_skyline_layer(
         &mut commands,
-        app_globals.winsetup.width,
+        winsetup.width,
         buildings_start_x,
         buildings_start_y,
         building_min_height,
@@ -302,98 +265,6 @@ fn draw_skyline(
         BUILDING_FORE_COLOR,
         2.0,
     );
-}
-
-
-// Based on https://github.com/bevyengine/bevy/issues/175
-//
-// Call the handle_browser_resize system once at startup (if window is created)
-// to cover for the short period before handle_browser_resize kicks in
-// (since that system will likely be set to a FixedTimeStep)
-#[cfg(target_arch = "wasm32")]
-fn setup_browser_size(
-    commands: Commands,
-    windows: ResMut<Windows>,
-    render_device: Res<RenderDevice>,
-    app_globals: ResMut<AppGlobals>,
-    mut window_created_reader: EventReader<WindowCreated>,
-    buildings_query: Query<Entity, With<Building>>,
-) {
-    if window_created_reader.iter().next().is_some() {
-        handle_browser_resize(
-            commands,
-            render_device,
-            windows,
-            app_globals,
-            buildings_query,
-        );
-    }
-}
-
-
-// Based on this Discord conversation: https://i.imgur.com/osfA8PH.png AND
-// https://github.com/mrk-its/bevy-robbo/blob/master/src/main.rs
-#[cfg(target_arch = "wasm32")]
-fn handle_browser_resize(
-    commands: Commands,
-    render_device: Res<RenderDevice>,
-    mut windows: ResMut<Windows>,
-    mut app_globals: ResMut<AppGlobals>,
-    buildings_query: Query<Entity, With<Building>>,
-) {
-    let window = windows.get_primary_mut().unwrap();
-    let wasm_window = web_sys::window().unwrap();
-    let (mut target_width, mut target_height) = (
-        wasm_window.inner_width().unwrap().as_f64().unwrap() as f32,
-        wasm_window.inner_height().unwrap().as_f64().unwrap() as f32,
-    );
-
-    // info!("wasm_window.device_pixel_ratio: {}", wasm_window.device_pixel_ratio());
-    // info!("window.scale_factor: {}", window.scale_factor());
-    // info!("window.backend_scale_factor: {}", window.backend_scale_factor());
-    // info!("window.width: {}", window.width());
-    // info!("window.height: {}", window.height());
-    // info!("window.physical_width: {}", window.physical_width());
-    // info!("window.physical_height: {}", window.physical_height());
-    // info!("target_width: {}", target_width);
-    // info!("target_height: {}", target_height);
-
-    if window.scale_factor() >= 1.0 {
-        let max_2d = render_device.limits().max_texture_dimension_2d;
-        let scale_factor = window.scale_factor() as f32;
-
-        if target_width * scale_factor > max_2d as f32 {
-            target_width = (max_2d as f32 / scale_factor).floor();
-            // info!("corrected target_width: {}", target_width);
-        }
-        if target_height * scale_factor > max_2d as f32 {
-            target_height = (max_2d as f32 / scale_factor).floor();
-            // info!("corrected target_height: {}", target_height);
-        }
-    }
-
-    // Have to apply floor() to window.width() since it seems set_resolution does not
-    // always set the exact floating point value, and so this was triggering on every
-    // step.
-    //
-    // if window.width() != target_width || window.height() != target_height {
-    if window.width().floor() != target_width || window.height().floor() != target_height {
-        // info!(
-        //     "{:?} {:?}, {:?} {:?}",
-        //     window.width(),
-        //     target_width,
-        //     window.height(),
-        //     target_height,
-        // );
-        window.set_resolution(target_width, target_height);
-        app_globals.winsetup.width = target_width;
-        app_globals.winsetup.height = target_height;
-        app_globals.dest_low_x = -target_width / 2.0 + SHIFTY_CIRCLE_RADIUS;
-        app_globals.dest_high_x = target_width / 2.0 - SHIFTY_CIRCLE_RADIUS;
-        app_globals.dest_low_y = -target_height / 2.0 + SHIFTY_CIRCLE_RADIUS;
-        app_globals.dest_high_y = target_height / 2.0 - SHIFTY_CIRCLE_RADIUS;
-        draw_skyline(commands, app_globals, buildings_query);
-    }
 }
 
 
@@ -460,39 +331,43 @@ fn do_pulsating_effect(time: Res<Time>, mut query: Query<&mut DrawMode, With<Shi
 }
 
 
+#[cfg(target_arch = "wasm32")]
+fn handle_post_browser_resize(
+    commands: Commands,
+    winsetup: ResMut<base::WindowSetup>,
+    mut resize_event_reader: EventReader<base::BrowserResized>,
+    mut app_globals: ResMut<AppGlobals>,
+    buildings_query: Query<Entity, With<Building>>,
+) {
+    if resize_event_reader.iter().next().is_some() {
+        app_globals.dest_low_x = -winsetup.width / 2.0 + SHIFTY_CIRCLE_RADIUS;
+        app_globals.dest_high_x = winsetup.width / 2.0 - SHIFTY_CIRCLE_RADIUS;
+        app_globals.dest_low_y = -winsetup.height / 2.0 + SHIFTY_CIRCLE_RADIUS;
+        app_globals.dest_high_y = winsetup.height / 2.0 - SHIFTY_CIRCLE_RADIUS;
+        draw_skyline(commands, winsetup, buildings_query);
+    }
+}
+
+
 pub fn app(variation: &str) {
-    let mut app = App::new();
-    let winsetup = base::WindowSetup::default();
-    app.insert_resource(WindowDescriptor {
-        title: "Shifty Circle".to_string(),
-        width: winsetup.width,
-        height: winsetup.height,
-        position: Some(Vec2::new(winsetup.position_x, winsetup.position_y)),
-        #[cfg(target_arch = "wasm32")]
-        canvas: Some("#window-matching-canvas".to_string()),
+    let winsetup = base::WindowSetup {
+        clear_color: CLEAR_COLOR,
+        title: format!("shifty{}", String::from(variation)),
         ..Default::default()
-    })
-    .insert_resource(AppGlobals {
-        dest_low_x: -winsetup.width / 2.0,
-        dest_high_x: winsetup.width / 2.0,
-        dest_low_y: -winsetup.height / 2.0,
-        dest_high_y: winsetup.height / 2.0,
-        winsetup: winsetup,
-    })
-    .insert_resource(ClearColor(CLEAR_COLOR))
-    .insert_resource(Msaa { samples: 4 });
+    };
+    // Need to copy a couple of values here b/c winsetup will be lost to sketch_factory
+    let winsetup_width = winsetup.width;
+    let winsetup_height = winsetup.height;
+    let mut app = base::sketch_factory(winsetup);
 
-    info!("--Logging does not start before DefaultPlugins so this log won't appear--");
-    app.add_plugins(DefaultPlugins);
-    info!("--Logging has been set up in DefaultPlugins--");
-
+    app.insert_resource(AppGlobals {
+        dest_low_x: -winsetup_width / 2.0,
+        dest_high_x: winsetup_width / 2.0,
+        dest_low_y: -winsetup_height / 2.0,
+        dest_high_y: winsetup_height / 2.0,
+    });
     app.add_plugin(ShapePlugin);
 
-    // Example of "feature-flipping".
-    // See https://doc.rust-lang.org/cargo/reference/features.html
-    #[cfg(feature = "framestats")]
-    app.add_plugin(LogDiagnosticsPlugin::default())
-        .add_plugin(FrameTimeDiagnosticsPlugin::default());
 
     match variation {
         "ufo" => app.add_startup_system(setup_shifty_ufo),
@@ -500,15 +375,12 @@ pub fn app(variation: &str) {
         _ => app.add_startup_system(setup_shifty_circle),
     };
 
-    // If wasm32, the skyline will be drawn in handle_browser_resize
+    // If wasm32, the skyline will be drawn in handle_post_browser_resize
     #[cfg(not(target_arch = "wasm32"))]
     app.add_startup_system(draw_skyline);
 
     #[cfg(target_arch = "wasm32")]
-    app.add_startup_system(setup_browser_size);
-
-    #[cfg(target_arch = "wasm32")]
-    app.add_system(handle_browser_resize.with_run_criteria(FixedTimestep::step(RESIZE_CHECK_STEP)));
+    app.add_system(handle_post_browser_resize);
 
 
     // Note setting with_run_criteria on a single system
