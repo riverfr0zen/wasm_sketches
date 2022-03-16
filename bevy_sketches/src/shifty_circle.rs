@@ -1,3 +1,4 @@
+use super::base;
 use bevy::core::FixedTimestep;
 #[cfg(feature = "framestats")]
 use bevy::diagnostic::{FrameTimeDiagnosticsPlugin, LogDiagnosticsPlugin};
@@ -11,12 +12,6 @@ use rand::prelude::thread_rng;
 use rand::Rng;
 
 
-const TARGET_RES_WIDTH: f32 = 3840.0;
-// const TARGET_RES_HEIGHT: f32 = 2160.0;
-const WINDOW_WIDTH: f32 = 800.0;
-const WINDOW_HEIGHT: f32 = 600.0;
-const WINDOW_WIDTH_DEV: f32 = 1600.0;
-const WINDOW_HEIGHT_DEV: f32 = 1600.0;
 // Place window on top right corner
 const SHIFTY_CIRCLE_STEP: f64 = 0.01;
 const SHIFTY_CHANGE_STEP: f64 = 1.5;
@@ -55,7 +50,7 @@ pub struct AppGlobals {
     pub dest_high_x: f32,
     pub dest_low_y: f32,
     pub dest_high_y: f32,
-    winsetup: WindowSetup,
+    winsetup: base::WindowSetup,
 }
 
 
@@ -91,34 +86,34 @@ enum ShiftyShapes {
 }
 
 
-#[derive(Debug)]
-struct WindowSetup {
-    width: f32,
-    height: f32,
-    position_x: f32,
-    position_y: f32,
-}
+// #[derive(Debug)]
+// struct WindowSetup {
+//     width: f32,
+//     height: f32,
+//     position_x: f32,
+//     position_y: f32,
+// }
 
 
-impl Default for WindowSetup {
-    fn default() -> Self {
-        if cfg!(debug_assertions) {
-            Self {
-                width: WINDOW_WIDTH_DEV,
-                height: WINDOW_HEIGHT_DEV,
-                position_x: TARGET_RES_WIDTH - WINDOW_WIDTH_DEV,
-                position_y: 0.0,
-            }
-        } else {
-            Self {
-                width: WINDOW_WIDTH,
-                height: WINDOW_HEIGHT,
-                position_x: TARGET_RES_WIDTH - WINDOW_WIDTH,
-                position_y: 0.0,
-            }
-        }
-    }
-}
+// impl Default for WindowSetup {
+//     fn default() -> Self {
+//         if cfg!(debug_assertions) {
+//             Self {
+//                 width: WINDOW_WIDTH_DEV,
+//                 height: WINDOW_HEIGHT_DEV,
+//                 position_x: TARGET_RES_WIDTH - WINDOW_WIDTH_DEV,
+//                 position_y: 0.0,
+//             }
+//         } else {
+//             Self {
+//                 width: WINDOW_WIDTH,
+//                 height: WINDOW_HEIGHT,
+//                 position_x: TARGET_RES_WIDTH - WINDOW_WIDTH,
+//                 position_y: 0.0,
+//             }
+//         }
+//     }
+// }
 
 
 fn get_shape(
@@ -467,7 +462,7 @@ fn do_pulsating_effect(time: Res<Time>, mut query: Query<&mut DrawMode, With<Shi
 
 pub fn app(variation: &str) {
     let mut app = App::new();
-    let winsetup = WindowSetup::default();
+    let winsetup = base::WindowSetup::default();
     app.insert_resource(WindowDescriptor {
         title: "Shifty Circle".to_string(),
         width: winsetup.width,
