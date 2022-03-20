@@ -8,6 +8,7 @@ use bevy::render::renderer::RenderDevice;
 #[cfg(target_arch = "wasm32")]
 use bevy::window::WindowCreated;
 
+pub mod prelude;
 
 const TARGET_RES_WIDTH: f32 = 3840.0;
 // const TARGET_RES_HEIGHT: f32 = 2160.0;

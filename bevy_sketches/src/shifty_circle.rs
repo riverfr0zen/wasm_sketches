@@ -1,4 +1,4 @@
-use super::base;
+use crate::base::prelude::*;
 use bevy::core::FixedTimestep;
 use bevy::prelude::*;
 use bevy_prototype_lyon::prelude::*;
@@ -232,7 +232,7 @@ fn draw_skyline_layer(
 
 fn draw_skyline(
     mut commands: Commands,
-    winsetup: ResMut<base::WindowSetup>,
+    winsetup: ResMut<WindowSetup>,
     mut q: Query<Entity, With<Building>>,
 ) {
     for entity in q.iter_mut() {
@@ -334,8 +334,8 @@ fn do_pulsating_effect(time: Res<Time>, mut query: Query<&mut DrawMode, With<Shi
 #[cfg(target_arch = "wasm32")]
 fn handle_post_browser_resize(
     commands: Commands,
-    winsetup: ResMut<base::WindowSetup>,
-    mut resize_event_reader: EventReader<base::BrowserResized>,
+    winsetup: ResMut<WindowSetup>,
+    mut resize_event_reader: EventReader<BrowserResized>,
     mut app_globals: ResMut<AppGlobals>,
     buildings_query: Query<Entity, With<Building>>,
 ) {
@@ -350,7 +350,7 @@ fn handle_post_browser_resize(
 
 
 pub fn app(variation: &str) {
-    let winsetup = base::WindowSetup {
+    let winsetup = WindowSetup {
         clear_color: CLEAR_COLOR,
         title: format!("shifty{}", String::from(variation)),
         ..Default::default()
@@ -358,7 +358,7 @@ pub fn app(variation: &str) {
     // Need to copy a couple of values here b/c winsetup will be lost to sketch_factory
     let winsetup_width = winsetup.width;
     let winsetup_height = winsetup.height;
-    let mut app = base::sketch_factory(winsetup);
+    let mut app = sketch_factory(winsetup);
 
     app.insert_resource(AppGlobals {
         dest_low_x: -winsetup_width / 2.0,
