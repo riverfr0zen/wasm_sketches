@@ -67,7 +67,7 @@ pub struct BrowserResized;
 // to cover for the short period before handle_browser_resize kicks in
 // (since that system will likely be set to a FixedTimeStep)
 #[cfg(target_arch = "wasm32")]
-fn setup_browser_size(
+fn setup_browser(
     winsetup: ResMut<WindowSetup>,
     windows: ResMut<Windows>,
     resize_event_writer: EventWriter<BrowserResized>,
@@ -75,6 +75,19 @@ fn setup_browser_size(
     mut window_created_reader: EventReader<WindowCreated>,
 ) {
     if window_created_reader.iter().next().is_some() {
+        let wasm_window = web_sys::window().unwrap();
+        // Match background to clear color
+        let body = wasm_window.document().unwrap().body().unwrap();
+        let _ = body.style().set_property(
+            "background-color",
+            format!(
+                "rgb({}, {}, {})",
+                winsetup.clear_color.r() * 255.0,
+                winsetup.clear_color.g() * 255.0,
+                winsetup.clear_color.b() * 255.0
+            )
+            .as_str(),
+        );
         handle_browser_resize(render_device, winsetup, windows, resize_event_writer);
     }
 }
@@ -121,7 +134,7 @@ fn handle_browser_resize(
     }
 
     // Have to apply floor() to window.width() since it seems set_resolution does not
-    // always set the exact floating point value, and so this was triggering on every
+    // always set the same floating point resolution, and so this was triggering on every
     // step.
     //
     // if window.width() != target_width || window.height() != target_height {
@@ -176,7 +189,7 @@ pub fn sketch_factory(winsetup: WindowSetup) -> App {
     app.add_event::<BrowserResized>();
 
     #[cfg(target_arch = "wasm32")]
-    app.add_startup_system(setup_browser_size);
+    app.add_startup_system(setup_browser);
 
     #[cfg(target_arch = "wasm32")]
     app.add_system(handle_browser_resize.with_run_criteria(FixedTimestep::step(RESIZE_CHECK_STEP)));
