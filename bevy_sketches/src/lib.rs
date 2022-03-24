@@ -12,3 +12,5 @@ pub mod base;
 pub mod shifty_circle;
 
 pub mod cellular;
+
+pub mod path_changer;

@@ -28,6 +28,8 @@ pub struct WindowSetup {
     pub clear_color: Color,
     pub width: f32,
     pub height: f32,
+    pub max_x: f32,
+    pub max_y: f32,
     pub position_x: f32,
     pub position_y: f32,
 }
@@ -41,6 +43,8 @@ impl Default for WindowSetup {
                 clear_color: CLEAR_COLOR,
                 width: WINDOW_WIDTH_DEV,
                 height: WINDOW_HEIGHT_DEV,
+                max_x: WINDOW_WIDTH_DEV / 2.0,
+                max_y: WINDOW_HEIGHT_DEV / 2.0,
                 position_x: TARGET_RES_WIDTH - WINDOW_WIDTH_DEV,
                 position_y: 0.0,
             }
@@ -50,6 +54,8 @@ impl Default for WindowSetup {
                 clear_color: CLEAR_COLOR,
                 width: WINDOW_WIDTH,
                 height: WINDOW_HEIGHT,
+                max_x: WINDOW_WIDTH / 2.0,
+                max_y: WINDOW_HEIGHT / 2.0,
                 position_x: TARGET_RES_WIDTH - WINDOW_WIDTH,
                 position_y: 0.0,
             }
@@ -150,6 +156,8 @@ fn handle_browser_resize(
         window.set_resolution(target_width, target_height);
         winsetup.width = target_width;
         winsetup.height = target_height;
+        winsetup.max_x = winsetup.width / 2.0;
+        winsetup.max_y = winsetup.height / 2.0;
         resize_event_writer.send(BrowserResized)
     }
 }
