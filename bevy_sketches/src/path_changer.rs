@@ -15,12 +15,12 @@ use rand::Rng;
  */
 
 
-pub const CHANGER_STEP: f64 = 0.5;
+pub const CHANGER_STEP: f64 = 1.0;
 pub const CHANGER_CLEAR_CLR: Color = Color::MIDNIGHT_BLUE;
 const CHANGER_FILL_CLR: Color = Color::ORANGE;
 const CHANGER_STROKE_CLR: Color = Color::BLACK;
 const CHANGER_STROKE: f32 = 10.0;
-const CHANGER_MAX_SEGMENTS: u8 = 8;
+const CHANGER_MAX_SEGMENTS: u8 = 10;
 
 pub fn path_changing_eg_setup(mut commands: Commands) {
     let mut path_builder = PathBuilder::new();
@@ -53,13 +53,16 @@ pub fn path_changing_eg_setup(mut commands: Commands) {
 pub fn path_changer(winsetup: Res<WindowSetup>, mut query: Query<&mut Path>) {
     let mut rng = thread_rng();
 
-    let num_segments = rng.gen_range(2..CHANGER_MAX_SEGMENTS);
+    let num_segments = rng.gen_range(3..CHANGER_MAX_SEGMENTS);
     let mut path_builder = PathBuilder::new();
-    path_builder.move_to(Vec2::ZERO);
+
+    let mut last_x: f32 = 0.0;
+    let mut last_y: f32 = 0.0;
+    let mut current_quad = 1;
 
     // @HINT
     // Using an underscore to discard the iterator value since it's not being used
-    for _i in 0..num_segments {
+    for _i in 1..(num_segments + 1) {
         // if i / num_vertices <= .25:
         // (next vertex should be: x: range(-maxX, 0), y: range(0, maxY))
 
@@ -77,33 +80,74 @@ pub fn path_changer(winsetup: Res<WindowSetup>, mut query: Query<&mut Path>) {
 
         let segment_place: f32 = _i as f32 / num_segments as f32;
 
+        info!("---0---{}:{}", _i, segment_place);
         if segment_place <= 0.25 {
-            path_builder.line_to(Vec2::new(
-                rng.gen_range(-winsetup.max_x..0.0),
-                rng.gen_range(0.0..winsetup.max_y),
-            ));
+            info!("---1---");
+            if last_x == 0.0 {
+                info!("---1a---");
+                last_x = rng.gen_range(-winsetup.max_x..0.0);
+                last_y = rng.gen_range(0.0..winsetup.max_y);
+                path_builder.move_to(Vec2::new(last_x, last_y));
+            } else {
+                last_x = rng.gen_range(last_x..0.0);
+                last_y = rng.gen_range(0.0..winsetup.max_y);
+                path_builder.line_to(Vec2::new(last_x, last_y));
+            }
             continue;
         }
 
         if segment_place > 0.25 && segment_place <= 0.5 {
-            path_builder.line_to(Vec2::new(
-                rng.gen_range(0.0..winsetup.max_x),
-                rng.gen_range(0.0..winsetup.max_y),
-            ));
+            info!("---2---");
+            // Check if it's the first time in this quadrant
+            if current_quad < 2 {
+                last_x = rng.gen_range(0.0..winsetup.max_x);
+                last_y = rng.gen_range(0.0..winsetup.max_y);
+                path_builder.line_to(Vec2::new(last_x, last_y));
+            } else {
+                last_x = rng.gen_range(last_x..winsetup.max_x);
+                last_y = rng.gen_range(0.0..winsetup.max_y);
+                path_builder.line_to(Vec2::new(last_x, last_y));
+            }
+            current_quad = 2;
+            continue;
         }
 
         if segment_place > 0.5 && segment_place <= 0.75 {
-            path_builder.line_to(Vec2::new(
-                rng.gen_range(0.0..winsetup.max_x),
-                rng.gen_range(-winsetup.max_y..0.0),
-            ));
+            info!("---3---");
+            // Check if it's the first time in this quadrant
+            if current_quad < 2 {
+                last_x = rng.gen_range(0.0..winsetup.max_x);
+                last_y = rng.gen_range(-winsetup.max_y..0.0);
+                path_builder.line_to(Vec2::new(last_x, last_y));
+            } else {
+                last_x = rng.gen_range(0.0..last_x);
+                last_y = rng.gen_range(-winsetup.max_y..0.0);
+                path_builder.line_to(Vec2::new(last_x, last_y));
+            }
+            current_quad = 3;
+            continue;
         }
 
         if segment_place > 0.75 && segment_place <= 1.0 {
-            path_builder.line_to(Vec2::new(
-                rng.gen_range(-winsetup.max_x..0.0),
-                rng.gen_range(-winsetup.max_y..0.0),
-            ));
+            info!("---4---");
+            // Check if it's the first time in this quadrant
+            if current_quad < 2 {
+                last_x = rng.gen_range(-winsetup.max_x..0.0);
+                last_y = rng.gen_range(-winsetup.max_y..0.0);
+                path_builder.line_to(Vec2::new(last_x, last_y));
+            } else {
+                last_x = rng.gen_range(-winsetup.max_x..last_x);
+                last_y = rng.gen_range(-winsetup.max_y..0.0);
+                path_builder.line_to(Vec2::new(last_x, last_y));
+            }
+            current_quad = 4;
+
+
+            // path_builder.line_to(Vec2::new(
+            //     rng.gen_range(-winsetup.max_x..0.0),
+            //     rng.gen_range(-winsetup.max_y..0.0),
+            // ));
+            continue;
         }
 
         // path_builder.line_to(Vec2::new(
