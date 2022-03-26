@@ -22,7 +22,6 @@ const CHANGER_FILL_CLR: Color = Color::MIDNIGHT_BLUE;
 const CHANGER_STROKE_CLR: Color = Color::BLACK;
 const CHANGER_STROKE: f32 = 5.0;
 const CHANGER_MAX_SEGMENTS: u8 = 120;
-const SAFELY_MODIFIER_RANGE: RangeInclusive<f32> = 0.75..=1.0;
 
 pub fn path_changing_eg_setup(mut commands: Commands) {
     let mut path_builder = PathBuilder::new();
@@ -55,23 +54,10 @@ pub fn path_changing_eg_setup(mut commands: Commands) {
 fn gen_random_safely(start: f32, end: f32) -> f32 {
     let mut rng = thread_rng();
 
-    // if start >= end {
-    //     return end;
-    // }
-    // return rng.gen_range(start..end);
-
-    let modifier: f32 = rng.gen_range(SAFELY_MODIFIER_RANGE);
-    let mod_end = end * modifier;
-    if start >= mod_end {
-        if start >= end {
-            info!("XX--end---");
-            return end;
-        }
-        info!("XX--start..end---");
-        return rng.gen_range(start..end);
+    if start >= end {
+        return end;
     }
-    info!("XX--start..mod_end---");
-    return rng.gen_range(start..mod_end);
+    return rng.gen_range(start..end);
 }
 
 pub fn path_changer(winsetup: Res<WindowSetup>, mut query: Query<&mut Path>) {
