@@ -68,8 +68,6 @@ pub fn path_changer(winsetup: Res<WindowSetup>, mut query: Query<&mut Path>) {
     let mut last_x: f32 = 0.0;
     let mut last_y: f32 = 0.0;
     let mut current_quad = 1;
-    let mut place_in_quad = 1;
-    let segs_per_quad = num_segments / 4;
 
     // @HINT
     // Using an underscore to discard the iterator value since it's not being used
@@ -92,18 +90,13 @@ pub fn path_changer(winsetup: Res<WindowSetup>, mut query: Query<&mut Path>) {
                 // last_y = rng.gen_range(0.0..winsetup.max_y);
                 path_builder.line_to(Vec2::new(last_x, last_y));
             }
-            info!(
-                "---i: {}, segment_place: {}, in_quad: {}",
-                _i, segment_place, place_in_quad
-            );
-            place_in_quad += 1;
+            info!("---i: {}, segment_place: {}", _i, segment_place);
             continue;
         }
 
         if segment_place > 0.25 && segment_place <= 0.5 {
             if current_quad < 2 {
                 info!("entered quad 2");
-                place_in_quad = 1;
                 last_x = rng.gen_range(0.0..winsetup.max_x);
                 last_y = rng.gen_range(0.0..winsetup.max_y);
                 path_builder.line_to(Vec2::new(last_x, last_y));
@@ -117,19 +110,14 @@ pub fn path_changer(winsetup: Res<WindowSetup>, mut query: Query<&mut Path>) {
                 last_y = gen_random_safely(0.0, last_y);
                 path_builder.line_to(Vec2::new(last_x, last_y));
             }
-            info!(
-                "---i: {}, segment_place: {}, in_quad: {}",
-                _i, segment_place, place_in_quad
-            );
+            info!("---i: {}, segment_place: {}", _i, segment_place);
             current_quad = 2;
-            place_in_quad += 1;
             continue;
         }
 
         if segment_place > 0.5 && segment_place <= 0.75 {
             if current_quad < 3 {
                 info!("entered quad 3");
-                place_in_quad = 1;
                 last_x = rng.gen_range(0.0..winsetup.max_x);
                 last_y = rng.gen_range(-winsetup.max_y..0.0);
                 path_builder.line_to(Vec2::new(last_x, last_y));
@@ -143,11 +131,7 @@ pub fn path_changer(winsetup: Res<WindowSetup>, mut query: Query<&mut Path>) {
                 // last_y = rng.gen_range(-winsetup.max_y..0.0);
                 path_builder.line_to(Vec2::new(last_x, last_y));
             }
-            info!(
-                "---i: {}, segment_place: {}, in_quad: {}",
-                _i, segment_place, place_in_quad
-            );
-            place_in_quad += 1;
+            info!("---i: {}, segment_place: {}", _i, segment_place);
             current_quad = 3;
             continue;
         }
@@ -156,7 +140,6 @@ pub fn path_changer(winsetup: Res<WindowSetup>, mut query: Query<&mut Path>) {
             // Check if it's the first time in this quadrant
             if current_quad < 4 {
                 info!("entered quad 4");
-                place_in_quad = 1;
                 last_x = rng.gen_range(-winsetup.max_x..0.0);
                 last_y = rng.gen_range(-winsetup.max_y..0.0);
                 path_builder.line_to(Vec2::new(last_x, last_y));
@@ -170,11 +153,7 @@ pub fn path_changer(winsetup: Res<WindowSetup>, mut query: Query<&mut Path>) {
                 last_y = gen_random_safely(last_y, 0.0);
                 path_builder.line_to(Vec2::new(last_x, last_y));
             }
-            info!(
-                "---i: {}, segment_place: {}, in_quad: {}",
-                _i, segment_place, place_in_quad
-            );
-            place_in_quad += 1;
+            info!("---i: {}, segment_place: {}", _i, segment_place);
             current_quad = 4;
             continue;
         }
