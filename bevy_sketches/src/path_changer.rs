@@ -15,12 +15,12 @@ use rand::Rng;
  */
 
 
-pub const CHANGER_STEP: f64 = 0.5;
+pub const CHANGER_STEP: f64 = 1.0;
 pub const CHANGER_CLEAR_CLR: Color = Color::BLUE;
 const CHANGER_FILL_CLR: Color = Color::MIDNIGHT_BLUE;
 const CHANGER_STROKE_CLR: Color = Color::BLACK;
 const CHANGER_STROKE: f32 = 5.0;
-const CHANGER_MAX_SEGMENTS: u8 = 64;
+const CHANGER_MAX_SEGMENTS: u8 = 12;
 
 pub fn path_changing_eg_setup(mut commands: Commands) {
     let mut path_builder = PathBuilder::new();
@@ -54,7 +54,7 @@ fn gen_random_safely(start: f32, end: f32) -> f32 {
     let mut rng = thread_rng();
 
     if start >= end {
-        return start;
+        return end;
     }
     return rng.gen_range(start..end);
 }
@@ -62,7 +62,7 @@ fn gen_random_safely(start: f32, end: f32) -> f32 {
 pub fn path_changer(winsetup: Res<WindowSetup>, mut query: Query<&mut Path>) {
     let mut rng = thread_rng();
 
-    let num_segments = rng.gen_range(3..CHANGER_MAX_SEGMENTS);
+    let num_segments = rng.gen_range(3..=CHANGER_MAX_SEGMENTS);
     let mut path_builder = PathBuilder::new();
 
     let mut last_x: f32 = 0.0;
@@ -71,12 +71,12 @@ pub fn path_changer(winsetup: Res<WindowSetup>, mut query: Query<&mut Path>) {
 
     // @HINT
     // Using an underscore to discard the iterator value since it's not being used
-    for _i in 1..(num_segments + 1) {
+    for _i in 1..=num_segments {
         let segment_place: f32 = _i as f32 / num_segments as f32;
 
-        // info!("---0---{}:{}", _i, segment_place);
         if segment_place <= 0.25 {
             if last_x == 0.0 {
+                info!("entered quad 1");
                 last_x = rng.gen_range(-winsetup.max_x..0.0);
                 last_y = rng.gen_range(0.0..winsetup.max_y);
                 path_builder.move_to(Vec2::new(last_x, last_y));
@@ -90,12 +90,13 @@ pub fn path_changer(winsetup: Res<WindowSetup>, mut query: Query<&mut Path>) {
                 // last_y = rng.gen_range(0.0..winsetup.max_y);
                 path_builder.line_to(Vec2::new(last_x, last_y));
             }
+            info!("---i: {}, segment_place: {}", _i, segment_place);
             continue;
         }
 
         if segment_place > 0.25 && segment_place <= 0.5 {
-            // Check if it's the first time in this quadrant
             if current_quad < 2 {
+                info!("entered quad 2");
                 last_x = rng.gen_range(0.0..winsetup.max_x);
                 last_y = rng.gen_range(0.0..winsetup.max_y);
                 path_builder.line_to(Vec2::new(last_x, last_y));
@@ -110,12 +111,13 @@ pub fn path_changer(winsetup: Res<WindowSetup>, mut query: Query<&mut Path>) {
                 path_builder.line_to(Vec2::new(last_x, last_y));
             }
             current_quad = 2;
+            info!("---i: {}, segment_place: {}", _i, segment_place);
             continue;
         }
 
         if segment_place > 0.5 && segment_place <= 0.75 {
-            // Check if it's the first time in this quadrant
             if current_quad < 3 {
+                info!("entered quad 3");
                 last_x = rng.gen_range(0.0..winsetup.max_x);
                 last_y = rng.gen_range(-winsetup.max_y..0.0);
                 path_builder.line_to(Vec2::new(last_x, last_y));
@@ -130,12 +132,14 @@ pub fn path_changer(winsetup: Res<WindowSetup>, mut query: Query<&mut Path>) {
                 path_builder.line_to(Vec2::new(last_x, last_y));
             }
             current_quad = 3;
+            info!("---i: {}, segment_place: {}", _i, segment_place);
             continue;
         }
 
         if segment_place > 0.75 && segment_place <= 1.0 {
             // Check if it's the first time in this quadrant
             if current_quad < 4 {
+                info!("entered quad 4");
                 last_x = rng.gen_range(-winsetup.max_x..0.0);
                 last_y = rng.gen_range(-winsetup.max_y..0.0);
                 path_builder.line_to(Vec2::new(last_x, last_y));
@@ -150,9 +154,11 @@ pub fn path_changer(winsetup: Res<WindowSetup>, mut query: Query<&mut Path>) {
                 path_builder.line_to(Vec2::new(last_x, last_y));
             }
             current_quad = 4;
+            info!("---i: {}, segment_place: {}", _i, segment_place);
             continue;
         }
     }
+    info!("--end-{} segments shape---\n", num_segments);
     path_builder.close();
     let new_path = path_builder.build().0;
 
