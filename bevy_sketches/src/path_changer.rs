@@ -16,11 +16,11 @@ use rand::Rng;
 
 
 pub const CHANGER_STEP: f64 = 0.5;
-pub const CHANGER_CLEAR_CLR: Color = Color::MIDNIGHT_BLUE;
-const CHANGER_FILL_CLR: Color = Color::ORANGE;
+pub const CHANGER_CLEAR_CLR: Color = Color::BLUE;
+const CHANGER_FILL_CLR: Color = Color::MIDNIGHT_BLUE;
 const CHANGER_STROKE_CLR: Color = Color::BLACK;
 const CHANGER_STROKE: f32 = 5.0;
-const CHANGER_MAX_SEGMENTS: u8 = 24;
+const CHANGER_MAX_SEGMENTS: u8 = 64;
 
 pub fn path_changing_eg_setup(mut commands: Commands) {
     let mut path_builder = PathBuilder::new();
@@ -82,7 +82,12 @@ pub fn path_changer(winsetup: Res<WindowSetup>, mut query: Query<&mut Path>) {
                 path_builder.move_to(Vec2::new(last_x, last_y));
             } else {
                 last_x = gen_random_safely(last_x, 0.0);
-                last_y = rng.gen_range(0.0..winsetup.max_y);
+                // For quads 1 & 3 using `last_y` seems less necessary in terms of
+                // edges crossing each other. Crossing does occur, but much less
+                // frequently. However, using it does eliminate all crossing, seemingly
+                // at the cost of more "conservative shapes" (but I have not verified it).
+                last_y = gen_random_safely(last_y, winsetup.max_y);
+                // last_y = rng.gen_range(0.0..winsetup.max_y);
                 path_builder.line_to(Vec2::new(last_x, last_y));
             }
             continue;
@@ -98,7 +103,7 @@ pub fn path_changer(winsetup: Res<WindowSetup>, mut query: Query<&mut Path>) {
                 last_x = gen_random_safely(last_x, winsetup.max_x);
                 // In quads 2 & 4, where the horizontal direction of the shape generation
                 // changes on the next quadrant, it seems that using `last_y` in the range
-                // makes better shapes
+                // makes better shapes (edges don't cross)
                 //
                 // last_y = rng.gen_range(0.0..winsetup.max_y);
                 last_y = gen_random_safely(0.0, last_y);
@@ -116,7 +121,12 @@ pub fn path_changer(winsetup: Res<WindowSetup>, mut query: Query<&mut Path>) {
                 path_builder.line_to(Vec2::new(last_x, last_y));
             } else {
                 last_x = gen_random_safely(0.0, last_x);
-                last_y = rng.gen_range(-winsetup.max_y..0.0);
+                // For quads 1 & 3 using `last_y` seems less necessary in terms of
+                // edges crossing each other. Crossing does occur, but much less
+                // frequently. However, using it does eliminate all crossing, seemingly
+                // at the cost of more "conservative shapes" (but I have not verified it).
+                last_y = gen_random_safely(-winsetup.max_y, last_y);
+                // last_y = rng.gen_range(-winsetup.max_y..0.0);
                 path_builder.line_to(Vec2::new(last_x, last_y));
             }
             current_quad = 3;
@@ -133,7 +143,7 @@ pub fn path_changer(winsetup: Res<WindowSetup>, mut query: Query<&mut Path>) {
                 last_x = gen_random_safely(-winsetup.max_x, last_x);
                 // In quads 2 & 4, where the horizontal direction of the shape generation
                 // changes on the next quadrant, it seems that using `last_y` in the range
-                // makes better shapes
+                // makes better shapes (edges don't cross)
                 //
                 // last_y = rng.gen_range(-winsetup.max_y..0.0);
                 last_y = gen_random_safely(last_y, 0.0);
