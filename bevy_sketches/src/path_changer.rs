@@ -4,7 +4,6 @@ use bevy::prelude::*;
 use bevy_prototype_lyon::prelude::*;
 use rand::prelude::thread_rng;
 use rand::Rng;
-use std::ops::RangeInclusive;
 
 
 /*
@@ -16,7 +15,7 @@ use std::ops::RangeInclusive;
  */
 
 
-pub const CHANGER_STEP: f64 = 1.0;
+pub const CHANGER_STEP: f64 = 0.1;
 pub const CHANGER_CLEAR_CLR: Color = Color::BLUE;
 const CHANGER_FILL_CLR: Color = Color::MIDNIGHT_BLUE;
 const CHANGER_STROKE_CLR: Color = Color::BLACK;
@@ -91,7 +90,10 @@ pub fn path_changer(winsetup: Res<WindowSetup>, mut query: Query<&mut Path>) {
                 // last_y = rng.gen_range(0.0..winsetup.max_y);
                 path_builder.line_to(Vec2::new(last_x, last_y));
             }
-            info!("---i: {}, segment_place: {}", _i, segment_place);
+            info!(
+                "---i: {}, segment_place: {}, x: {}, y: {}",
+                _i, segment_place, last_x, last_y
+            );
             continue;
         }
 
@@ -111,7 +113,10 @@ pub fn path_changer(winsetup: Res<WindowSetup>, mut query: Query<&mut Path>) {
                 last_y = gen_random_safely(0.0, last_y);
                 path_builder.line_to(Vec2::new(last_x, last_y));
             }
-            info!("---i: {}, segment_place: {}", _i, segment_place);
+            info!(
+                "---i: {}, segment_place: {}, x: {}, y: {}",
+                _i, segment_place, last_x, last_y
+            );
             current_quad = 2;
             continue;
         }
@@ -132,7 +137,10 @@ pub fn path_changer(winsetup: Res<WindowSetup>, mut query: Query<&mut Path>) {
                 // last_y = rng.gen_range(-winsetup.max_y..0.0);
                 path_builder.line_to(Vec2::new(last_x, last_y));
             }
-            info!("---i: {}, segment_place: {}", _i, segment_place);
+            info!(
+                "---i: {}, segment_place: {}, x: {}, y: {}",
+                _i, segment_place, last_x, last_y
+            );
             current_quad = 3;
             continue;
         }
@@ -154,7 +162,10 @@ pub fn path_changer(winsetup: Res<WindowSetup>, mut query: Query<&mut Path>) {
                 last_y = gen_random_safely(last_y, 0.0);
                 path_builder.line_to(Vec2::new(last_x, last_y));
             }
-            info!("---i: {}, segment_place: {}", _i, segment_place);
+            info!(
+                "---i: {}, segment_place: {}, x: {}, y: {}",
+                _i, segment_place, last_x, last_y
+            );
             current_quad = 4;
             continue;
         }
