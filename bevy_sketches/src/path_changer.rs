@@ -20,7 +20,7 @@ pub const CHANGER_CLEAR_CLR: Color = Color::BLUE;
 const CHANGER_FILL_CLR: Color = Color::MIDNIGHT_BLUE;
 const CHANGER_STROKE_CLR: Color = Color::BLACK;
 const CHANGER_STROKE: f32 = 5.0;
-const CHANGER_MAX_SEGMENTS: u8 = 120;
+const CHANGER_MAX_SEGMENTS: u8 = 32;
 
 pub fn path_changing_eg_setup(mut commands: Commands) {
     let mut path_builder = PathBuilder::new();
@@ -57,17 +57,19 @@ fn gen_random_safely(start: f32, end: f32) -> f32 {
         info!("!!! s {}, e {}", start, end);
         return end;
     }
-    return rng.gen_range(start..end);
+    // return rng.gen_range(start..end);
 
     // Tried returning as i16 to somewhat improve results (not as many small floating point
-    // variationsthat don't translate to screen). But dunno if it does much good.
-    // return rng.gen_range(start as i16..end as i16) as f32;
+    // variations that don't translate to screen). But dunno if it does much good.
+    return rng.gen_range(start as i16..end as i16) as f32;
 }
 
 /// @TODO Good enough for now, but can be improved.
 ///
 /// Currently the randomization reaches the end of range in a quadrant too quickly,
 /// so even if you increase number of segments, this function reaches the end of the range sooner.
+///
+/// So it doesn't work well for a large number of segments.
 ///
 /// One idea for improvement is to break down each quadrant to sub-ranges for gen_range().
 pub fn path_changer(winsetup: Res<WindowSetup>, mut query: Query<&mut Path>) {
