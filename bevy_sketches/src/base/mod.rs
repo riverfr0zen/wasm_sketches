@@ -130,6 +130,10 @@ fn handle_browser_resize(
     // debug!("target_width: {}", target_width);
     // debug!("target_height: {}", target_height);
 
+
+    // Handle scale factor differences resulting in a texture memory error on
+    // some mobile devices
+    // See: https://github.com/bevyengine/bevy/discussions/4021
     if window.scale_factor() >= 1.0 {
         let max_2d = render_device.limits().max_texture_dimension_2d;
         let scale_factor = window.scale_factor() as f32;
