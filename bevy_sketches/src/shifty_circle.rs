@@ -199,7 +199,7 @@ fn draw_skyline_layer(
     let mut rng = thread_rng();
 
     while remaining_space > 0.0 {
-        // info!("{:?}, {:?}", available_space, remaining_space);
+        // debug!("{:?}, {:?}", available_space, remaining_space);
 
         let building_width = if remaining_space > BUILDING_MAX_WIDTH {
             rng.gen_range(BUILDING_MIN_WIDTH..BUILDING_MAX_WIDTH)
@@ -307,7 +307,7 @@ fn do_pulsating_effect(time: Res<Time>, mut query: Query<&mut DrawMode, With<Shi
     let secs_since = time.seconds_since_startup();
     let secs_theta = secs_since % 360.0;
     let pulse_wave = PULSE_AMPLITUDE * (secs_theta * PULSE_FREQ).sin().abs() * PULSE_SCALE;
-    // info!(
+    // debug!(
     //     "since: {:?}, theta: {:?}, pulse: {}",
     //     secs_since, secs_theta, pulse_wave
     // );
