@@ -27,7 +27,7 @@ cargo build --release --example shiftyc --target wasm32-unknown-unknown --featur
 
 
 ```
-wasm-bindgen --out-dir sketches/www/wasms --target web target/wasm32-unknown-unknown/release/examples/shiftyc.wasm
+wasm-bindgen --out-dir bevy_sketches/www/wasms --target web target/wasm32-unknown-unknown/release/examples/shiftyc.wasm
 ```
 
 For quick copy:
@@ -35,16 +35,16 @@ For quick copy:
 ```
 circle:
 cargo build --release --example shiftyc --target wasm32-unknown-unknown
-wasm-bindgen --out-dir sketches/www/wasms --target web target/wasm32-unknown-unknown/release/examples/shiftyc.wasm
+wasm-bindgen --out-dir bevy_sketches/www/wasms --target web target/wasm32-unknown-unknown/release/examples/shiftyc.wasm
 
 
 ufo:
 cargo build --release --example shiftyufo --target wasm32-unknown-unknown
-wasm-bindgen --out-dir sketches/www/wasms --target web target/wasm32-unknown-unknown/release/examples/shiftyufo.wasm
+wasm-bindgen --out-dir bevy_sketches/www/wasms --target web target/wasm32-unknown-unknown/release/examples/shiftyufo.wasm
 
 rect:
 cargo build --release --example shiftyrect --target wasm32-unknown-unknown
-wasm-bindgen --out-dir sketches/www/wasms --target web target/wasm32-unknown-unknown/release/examples/shiftyrect.wasm
+wasm-bindgen --out-dir bevy_sketches/www/wasms --target web target/wasm32-unknown-unknown/release/examples/shiftyrect.wasm
 ```
 
 
@@ -70,6 +70,8 @@ cargo run -- --no-html --sketch shiftyc
 # Enable frame stats log
 cargo run -- --framestats --sketch shiftyc
 
+# Display DEBUG level logs
+cargo run -- --debuglog --sketch shiftyc
 ```
 
 ## Run with cargo (release)

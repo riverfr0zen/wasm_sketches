@@ -15,7 +15,7 @@ use rand::Rng;
  */
 
 
-pub const CHANGER_STEP: f64 = 1.0;
+pub const CHANGER_STEP: f64 = 0.5;
 pub const CHANGER_CLEAR_CLR: Color = Color::BLUE;
 const CHANGER_FILL_CLR: Color = Color::MIDNIGHT_BLUE;
 const CHANGER_STROKE_CLR: Color = Color::BLACK;
@@ -53,15 +53,23 @@ pub fn path_changing_eg_setup(mut commands: Commands) {
 fn gen_random_safely(start: f32, end: f32) -> f32 {
     let mut rng = thread_rng();
 
-    if start >= end {
-        info!("!!! s {}, e {}", start, end);
-        return end;
-    }
+    // if start >= end {
+    //     debug!("!!! s {}, e {}", start, end);
+    //     return end;
+    // }
     // return rng.gen_range(start..end);
 
-    // Tried returning as i16 to somewhat improve results (not as many small floating point
-    // variations that don't translate to screen). But dunno if it does much good.
-    return rng.gen_range(start as i16..end as i16) as f32;
+    // Returning as i16 might somewhat improve results (not as many small floating point
+    // variations that translate to screen coord variations). But dunno if it does much good.
+    let start = start as i16;
+    let end = end as i16;
+
+    if start >= end {
+        debug!("!!! s {}, e {}", start, end);
+        // return end;
+        return end as f32;
+    }
+    return rng.gen_range(start..end) as f32;
 }
 
 /// @TODO Good enough for now, but can be improved.
@@ -89,7 +97,7 @@ pub fn path_changer(winsetup: Res<WindowSetup>, mut query: Query<&mut Path>) {
 
         if segment_place <= 0.25 {
             if last_x == 0.0 {
-                info!("entered quad 1");
+                debug!("entered quad 1");
                 last_x = gen_random_safely(-winsetup.max_x, 0.0);
                 last_y = gen_random_safely(0.0, winsetup.max_y);
                 path_builder.move_to(Vec2::new(last_x, last_y));
@@ -103,7 +111,7 @@ pub fn path_changer(winsetup: Res<WindowSetup>, mut query: Query<&mut Path>) {
                 // last_y = rng.gen_range(0.0..winsetup.max_y);
                 path_builder.line_to(Vec2::new(last_x, last_y));
             }
-            info!(
+            debug!(
                 "---i: {}, segment_place: {}, x: {}, y: {}",
                 _i, segment_place, last_x, last_y
             );
@@ -112,7 +120,7 @@ pub fn path_changer(winsetup: Res<WindowSetup>, mut query: Query<&mut Path>) {
 
         if segment_place > 0.25 && segment_place <= 0.5 {
             if current_quad < 2 {
-                info!("entered quad 2");
+                debug!("entered quad 2");
                 last_x = gen_random_safely(0.0, winsetup.max_x);
                 last_y = gen_random_safely(0.0, winsetup.max_y);
                 path_builder.line_to(Vec2::new(last_x, last_y));
@@ -126,7 +134,7 @@ pub fn path_changer(winsetup: Res<WindowSetup>, mut query: Query<&mut Path>) {
                 last_y = gen_random_safely(0.0, last_y);
                 path_builder.line_to(Vec2::new(last_x, last_y));
             }
-            info!(
+            debug!(
                 "---i: {}, segment_place: {}, x: {}, y: {}",
                 _i, segment_place, last_x, last_y
             );
@@ -136,7 +144,7 @@ pub fn path_changer(winsetup: Res<WindowSetup>, mut query: Query<&mut Path>) {
 
         if segment_place > 0.5 && segment_place <= 0.75 {
             if current_quad < 3 {
-                info!("entered quad 3");
+                debug!("entered quad 3");
                 last_x = gen_random_safely(0.0, winsetup.max_x);
                 last_y = gen_random_safely(-winsetup.max_y, 0.0);
                 path_builder.line_to(Vec2::new(last_x, last_y));
@@ -150,7 +158,7 @@ pub fn path_changer(winsetup: Res<WindowSetup>, mut query: Query<&mut Path>) {
                 // last_y = rng.gen_range(-winsetup.max_y..0.0);
                 path_builder.line_to(Vec2::new(last_x, last_y));
             }
-            info!(
+            debug!(
                 "---i: {}, segment_place: {}, x: {}, y: {}",
                 _i, segment_place, last_x, last_y
             );
@@ -161,7 +169,7 @@ pub fn path_changer(winsetup: Res<WindowSetup>, mut query: Query<&mut Path>) {
         if segment_place > 0.75 && segment_place <= 1.0 {
             // Check if it's the first time in this quadrant
             if current_quad < 4 {
-                info!("entered quad 4");
+                debug!("entered quad 4");
                 last_x = gen_random_safely(-winsetup.max_x, 0.0);
                 last_y = gen_random_safely(-winsetup.max_y, 0.0);
                 path_builder.line_to(Vec2::new(last_x, last_y));
@@ -175,7 +183,7 @@ pub fn path_changer(winsetup: Res<WindowSetup>, mut query: Query<&mut Path>) {
                 last_y = gen_random_safely(last_y, 0.0);
                 path_builder.line_to(Vec2::new(last_x, last_y));
             }
-            info!(
+            debug!(
                 "---i: {}, segment_place: {}, x: {}, y: {}",
                 _i, segment_place, last_x, last_y
             );
@@ -183,7 +191,7 @@ pub fn path_changer(winsetup: Res<WindowSetup>, mut query: Query<&mut Path>) {
             continue;
         }
     }
-    info!("--end-{} segments shape---\n", num_segments);
+    debug!("--end-{} segments shape---\n", num_segments);
     path_builder.close();
     let new_path = path_builder.build().0;
 

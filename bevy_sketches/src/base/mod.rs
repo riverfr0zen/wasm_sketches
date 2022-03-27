@@ -2,9 +2,13 @@
 use bevy::core::FixedTimestep;
 #[cfg(feature = "framestats")]
 use bevy::diagnostic::{FrameTimeDiagnosticsPlugin, LogDiagnosticsPlugin};
+#[cfg(feature = "debuglog")]
+use bevy::log::LogSettings;
 use bevy::prelude::*;
 #[cfg(target_arch = "wasm32")]
 use bevy::render::renderer::RenderDevice;
+#[cfg(feature = "debuglog")]
+use bevy::utils::tracing::Level;
 #[cfg(target_arch = "wasm32")]
 use bevy::window::WindowCreated;
 
@@ -116,15 +120,15 @@ fn handle_browser_resize(
         wasm_window.inner_height().unwrap().as_f64().unwrap() as f32,
     );
 
-    // info!("wasm_window.device_pixel_ratio: {}", wasm_window.device_pixel_ratio());
-    // info!("window.scale_factor: {}", window.scale_factor());
-    // info!("window.backend_scale_factor: {}", window.backend_scale_factor());
-    // info!("window.width: {}", window.width());
-    // info!("window.height: {}", window.height());
-    // info!("window.physical_width: {}", window.physical_width());
-    // info!("window.physical_height: {}", window.physical_height());
-    // info!("target_width: {}", target_width);
-    // info!("target_height: {}", target_height);
+    // debug!("wasm_window.device_pixel_ratio: {}", wasm_window.device_pixel_ratio());
+    // debug!("window.scale_factor: {}", window.scale_factor());
+    // debug!("window.backend_scale_factor: {}", window.backend_scale_factor());
+    // debug!("window.width: {}", window.width());
+    // debug!("window.height: {}", window.height());
+    // debug!("window.physical_width: {}", window.physical_width());
+    // debug!("window.physical_height: {}", window.physical_height());
+    // debug!("target_width: {}", target_width);
+    // debug!("target_height: {}", target_height);
 
     if window.scale_factor() >= 1.0 {
         let max_2d = render_device.limits().max_texture_dimension_2d;
@@ -132,11 +136,11 @@ fn handle_browser_resize(
 
         if target_width * scale_factor > max_2d as f32 {
             target_width = (max_2d as f32 / scale_factor).floor();
-            // info!("corrected target_width: {}", target_width);
+            // debug!("corrected target_width: {}", target_width);
         }
         if target_height * scale_factor > max_2d as f32 {
             target_height = (max_2d as f32 / scale_factor).floor();
-            // info!("corrected target_height: {}", target_height);
+            // debug!("corrected target_height: {}", target_height);
         }
     }
 
@@ -146,7 +150,7 @@ fn handle_browser_resize(
     //
     // if window.width() != target_width || window.height() != target_height {
     if window.width().floor() != target_width || window.height().floor() != target_height {
-        // info!(
+        // debug!(
         //     "{:?} {:?}, {:?} {:?}",
         //     window.width(),
         //     target_width,
@@ -184,9 +188,14 @@ pub fn sketch_factory(winsetup: WindowSetup) -> App {
     .insert_resource(Msaa { samples: 4 })
     .insert_resource(winsetup);
 
-    info!("--Logging does not start before DefaultPlugins so this log won't appear--");
+    #[cfg(feature = "debuglog")]
+    app.insert_resource(LogSettings {
+        level: Level::DEBUG,
+        filter: "wgpu=error,bevy_render=info".to_string(),
+    });
     app.add_plugins(DefaultPlugins);
-    info!("--Logging has been set up in DefaultPlugins--");
+    debug!("debug log level enabled");
+    info!("info log level enabled");
 
     // Example of "feature-flipping".
     // See https://doc.rust-lang.org/cargo/reference/features.html
