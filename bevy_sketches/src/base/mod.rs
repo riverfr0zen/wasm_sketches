@@ -2,9 +2,11 @@
 use bevy::core::FixedTimestep;
 #[cfg(feature = "framestats")]
 use bevy::diagnostic::{FrameTimeDiagnosticsPlugin, LogDiagnosticsPlugin};
+use bevy::log::LogSettings;
 use bevy::prelude::*;
 #[cfg(target_arch = "wasm32")]
 use bevy::render::renderer::RenderDevice;
+use bevy::utils::tracing::Level;
 #[cfg(target_arch = "wasm32")]
 use bevy::window::WindowCreated;
 
@@ -184,9 +186,14 @@ pub fn sketch_factory(winsetup: WindowSetup) -> App {
     .insert_resource(Msaa { samples: 4 })
     .insert_resource(winsetup);
 
-    info!("--Logging does not start before DefaultPlugins so this log won't appear--");
+    if cfg!(feature = "debuglog") {
+        app.insert_resource(LogSettings {
+            level: Level::DEBUG,
+            filter: "wgpu=error,bevy_render=info".to_string(),
+        });
+    }
     app.add_plugins(DefaultPlugins);
-    info!("--Logging has been set up in DefaultPlugins--");
+    debug!("Debug logging enabled");
 
     // Example of "feature-flipping".
     // See https://doc.rust-lang.org/cargo/reference/features.html
