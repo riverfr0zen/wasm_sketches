@@ -351,22 +351,22 @@ fn handle_post_browser_resize(
 
 pub fn app(variation: &str) {
     let winsetup = WindowSetup {
-        clear_color: CLEAR_COLOR,
         title: format!("shifty{}", String::from(variation)),
+        match_clear_color_always: true,
         ..Default::default()
     };
     // Need to copy a couple of values here b/c winsetup will be lost to `web_app`
     let winsetup_max_x = winsetup.max_x;
     let winsetup_max_y = winsetup.max_y;
     let mut app = web_app(winsetup);
-
-    app.insert_resource(AppGlobals {
-        dest_low_x: -winsetup_max_x,
-        dest_high_x: winsetup_max_x,
-        dest_low_y: -winsetup_max_y,
-        dest_high_y: winsetup_max_y,
-    });
-    app.add_plugin(ShapePlugin);
+    app.insert_resource(ClearColor(CLEAR_COLOR))
+        .insert_resource(AppGlobals {
+            dest_low_x: -winsetup_max_x,
+            dest_high_x: winsetup_max_x,
+            dest_low_y: -winsetup_max_y,
+            dest_high_y: winsetup_max_y,
+        })
+        .add_plugin(ShapePlugin);
 
 
     match variation {

@@ -52,12 +52,12 @@ pub fn path_changer(winsetup: Res<WindowSetup>, mut query: Query<&mut Path>) {
 
 pub fn app() {
     let winsetup = WindowSetup {
-        clear_color: CHANGER_CLEAR_CLR,
+        match_clear_color: true,
         ..Default::default()
     };
     let mut app = web_app(winsetup);
-
-    app.add_plugin(ShapePlugin)
+    app.insert_resource(ClearColor(CHANGER_CLEAR_CLR))
+        .add_plugin(ShapePlugin)
         .add_startup_system(path_changing_eg_setup)
         .add_system(path_changer.with_run_criteria(FixedTimestep::step(CHANGER_STEP)))
         .run();
