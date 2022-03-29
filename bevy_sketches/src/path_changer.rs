@@ -52,6 +52,7 @@ pub fn path_changer(winsetup: Res<WindowSetup>, mut query: Query<&mut Path>) {
 
 pub fn app() {
     let winsetup = WindowSetup {
+        title: String::from("path changer example"),
         match_clear_color: true,
         ..Default::default()
     };
