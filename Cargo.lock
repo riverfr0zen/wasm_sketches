@@ -606,9 +606,8 @@ version = "0.1.0"
 dependencies = [
  "bevy",
  "bevy_prototype_lyon",
+ "bevy_web_extras",
  "rand",
- "wasm-bindgen",
- "web-sys",
 ]
 
 [[package]]
@@ -729,6 +728,15 @@ dependencies = [
  "instant",
  "tracing",
  "uuid",
+]
+
+[[package]]
+name = "bevy_web_extras"
+version = "0.1.0"
+dependencies = [
+ "bevy",
+ "wasm-bindgen",
+ "web-sys",
 ]
 
 [[package]]

@@ -26,6 +26,16 @@ const CLEAR_COLOR: Color = Color::GRAY;
 const RESIZE_CHECK_STEP: f64 = 1.0;
 
 
+#[cfg(test)]
+mod tests {
+    #[test]
+    fn it_works() {
+        let result = 2 + 2;
+        assert_eq!(result, 4);
+    }
+}
+
+
 #[derive(Clone, Debug)]
 pub struct WindowSetup {
     pub title: String,
@@ -171,13 +181,8 @@ fn handle_browser_resize(
 }
 
 
-/// Create a base "sketch" Bevy app that provides:
-///
-/// * Window setup
-/// * A way to provide app_globals by passing a Struct that implements SketchCoreSettingsProvider
-/// * Browser window size matching for WASM targets
-///
-pub fn sketch_factory(winsetup: WindowSetup) -> App {
+/// Create a web-oriented Bevy app that matches canvas to window size
+pub fn web_app(winsetup: WindowSetup) -> App {
     let mut app = App::new();
     app.insert_resource(WindowDescriptor {
         title: winsetup.title.to_string(),

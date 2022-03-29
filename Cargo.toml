@@ -1,6 +1,6 @@
 [workspace]
 resolver = "2"
-members = ["bevy_sketches", "build-sketches"]
+members = ["bevy_sketches", "build-sketches", "bevy_web_extras"]
 
 
 [profile.release]

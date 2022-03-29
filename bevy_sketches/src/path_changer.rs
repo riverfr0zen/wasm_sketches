@@ -1,8 +1,8 @@
-use crate::base::prelude::*;
 use crate::shapegen::random_polygon_builder;
 use bevy::core::FixedTimestep;
 use bevy::prelude::*;
 use bevy_prototype_lyon::prelude::*;
+use bevy_web_extras::prelude::*;
 
 /*
  * path_changer
@@ -55,7 +55,7 @@ pub fn app() {
         clear_color: CHANGER_CLEAR_CLR,
         ..Default::default()
     };
-    let mut app = sketch_factory(winsetup);
+    let mut app = web_app(winsetup);
 
     app.add_plugin(ShapePlugin)
         .add_startup_system(path_changing_eg_setup)

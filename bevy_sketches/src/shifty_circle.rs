@@ -1,7 +1,7 @@
-use crate::base::prelude::*;
 use bevy::core::FixedTimestep;
 use bevy::prelude::*;
 use bevy_prototype_lyon::prelude::*;
+use bevy_web_extras::prelude::*;
 use rand::prelude::thread_rng;
 use rand::Rng;
 
@@ -239,8 +239,8 @@ fn draw_skyline(
         commands.entity(entity).despawn();
     }
 
-    let buildings_start_x = -winsetup.width / 2.0;
-    let buildings_start_y = -winsetup.height / 2.0;
+    let buildings_start_x = -winsetup.max_x;
+    let buildings_start_y = -winsetup.max_y;
     let building_max_height = winsetup.height / BUILDING_MAX_HEIGHT_RATIO;
     let building_min_height = winsetup.height / BUILDING_MIN_HEIGHT_RATIO;
 
@@ -340,10 +340,10 @@ fn handle_post_browser_resize(
     buildings_query: Query<Entity, With<Building>>,
 ) {
     if resize_event_reader.iter().next().is_some() {
-        app_globals.dest_low_x = -winsetup.width / 2.0 + SHIFTY_CIRCLE_RADIUS;
-        app_globals.dest_high_x = winsetup.width / 2.0 - SHIFTY_CIRCLE_RADIUS;
-        app_globals.dest_low_y = -winsetup.height / 2.0 + SHIFTY_CIRCLE_RADIUS;
-        app_globals.dest_high_y = winsetup.height / 2.0 - SHIFTY_CIRCLE_RADIUS;
+        app_globals.dest_low_x = -winsetup.max_x + SHIFTY_CIRCLE_RADIUS;
+        app_globals.dest_high_x = winsetup.max_x - SHIFTY_CIRCLE_RADIUS;
+        app_globals.dest_low_y = -winsetup.max_y + SHIFTY_CIRCLE_RADIUS;
+        app_globals.dest_high_y = winsetup.max_y - SHIFTY_CIRCLE_RADIUS;
         draw_skyline(commands, winsetup, buildings_query);
     }
 }
@@ -356,15 +356,15 @@ pub fn app(variation: &str) {
         ..Default::default()
     };
     // Need to copy a couple of values here b/c winsetup will be lost to sketch_factory
-    let winsetup_width = winsetup.width;
-    let winsetup_height = winsetup.height;
-    let mut app = sketch_factory(winsetup);
+    let winsetup_max_x = winsetup.max_x;
+    let winsetup_max_y = winsetup.max_y;
+    let mut app = web_app(winsetup);
 
     app.insert_resource(AppGlobals {
-        dest_low_x: -winsetup_width / 2.0,
-        dest_high_x: winsetup_width / 2.0,
-        dest_low_y: -winsetup_height / 2.0,
-        dest_high_y: winsetup_height / 2.0,
+        dest_low_x: -winsetup_max_x,
+        dest_high_x: winsetup_max_x,
+        dest_low_y: -winsetup_max_y,
+        dest_high_y: winsetup_max_y,
     });
     app.add_plugin(ShapePlugin);
 
