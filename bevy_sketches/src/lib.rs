@@ -9,6 +9,8 @@ mod tests {
 
 pub mod base;
 
+pub mod shapeutils;
+
 pub mod shifty_circle;
 
 pub mod cellular;

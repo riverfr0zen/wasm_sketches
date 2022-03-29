@@ -1,10 +1,9 @@
 use crate::base::prelude::*;
+use crate::shapeutils::random_shape_builder;
 use bevy::core::FixedTimestep;
 use bevy::prelude::*;
+use bevy_prototype_lyon::entity::Path;
 use bevy_prototype_lyon::prelude::*;
-use rand::prelude::thread_rng;
-use rand::Rng;
-
 
 /*
  * path_changer
@@ -22,24 +21,14 @@ const CHANGER_STROKE_CLR: Color = Color::BLACK;
 const CHANGER_STROKE: f32 = 5.0;
 const CHANGER_MAX_SEGMENTS: u8 = 32;
 
-pub fn path_changing_eg_setup(mut commands: Commands) {
-    let mut path_builder = PathBuilder::new();
-    path_builder.move_to(Vec2::ZERO);
-    path_builder.line_to(100.0 * Vec2::ONE);
 
-    path_builder.line_to(Vec2::new(100.0, 0.0));
-    path_builder.close();
-
-    /*
-     * Irf: Temporary workaround until the fix mentioned in this issue is released:
-     * https://github.com/Nilirad/bevy_prototype_lyon/issues/138
-     */
-    // let line = path_builder.build();
-    let line = path_builder.build().0;
+pub fn path_changing_eg_setup(winsetup: Res<WindowSetup>, mut commands: Commands) {
+    let path_builder = random_shape_builder(winsetup.max_x, winsetup.max_y, CHANGER_MAX_SEGMENTS);
+    let shape = path_builder.build().0;
 
     commands.spawn_bundle(OrthographicCameraBundle::new_2d());
     commands.spawn_bundle(GeometryBuilder::build_as(
-        &line,
+        &shape,
         // DrawMode::Stroke(StrokeMode::new(Color::BLACK, 10.0)),
         DrawMode::Outlined {
             fill_mode: FillMode::color(CHANGER_FILL_CLR),
@@ -49,154 +38,16 @@ pub fn path_changing_eg_setup(mut commands: Commands) {
     ));
 }
 
-/// Function to safeguard against invalid arguments when generating random range
-fn gen_random_safely(start: f32, end: f32) -> f32 {
-    let mut rng = thread_rng();
 
-    // if start >= end {
-    //     debug!("!!! s {}, e {}", start, end);
-    //     return end;
-    // }
-    // return rng.gen_range(start..end);
-
-    // Returning as i16 might somewhat improve results (not as many small floating point
-    // variations that translate to screen coord variations). But dunno if it does much good.
-    let start = start as i16;
-    let end = end as i16;
-
-    if start >= end {
-        debug!("!!! s {}, e {}", start, end);
-        // return end;
-        return end as f32;
-    }
-    return rng.gen_range(start..end) as f32;
-}
-
-/// @TODO Good enough for now, but can be improved.
-///
-/// Currently the randomization reaches the end of range in a quadrant too quickly,
-/// so even if you increase number of segments, this function reaches the end of the range sooner.
-///
-/// So it doesn't work well for a large number of segments.
-///
-/// One idea for improvement is to break down each quadrant to sub-ranges for gen_range().
 pub fn path_changer(winsetup: Res<WindowSetup>, mut query: Query<&mut Path>) {
-    let mut rng = thread_rng();
+    let path_builder = random_shape_builder(winsetup.max_x, winsetup.max_y, CHANGER_MAX_SEGMENTS);
 
-    let num_segments = rng.gen_range(3..=CHANGER_MAX_SEGMENTS);
-    let mut path_builder = PathBuilder::new();
-
-    let mut last_x: f32 = 0.0;
-    let mut last_y: f32 = 0.0;
-    let mut current_quad = 1;
-
-    // @HINT
-    // Using an underscore to discard the iterator value since it's not being used
-    for _i in 1..=num_segments {
-        let segment_place: f32 = _i as f32 / num_segments as f32;
-
-        if segment_place <= 0.25 {
-            if last_x == 0.0 {
-                debug!("entered quad 1");
-                last_x = gen_random_safely(-winsetup.max_x, 0.0);
-                last_y = gen_random_safely(0.0, winsetup.max_y);
-                path_builder.move_to(Vec2::new(last_x, last_y));
-            } else {
-                last_x = gen_random_safely(last_x, 0.0);
-                // For quads 1 & 3 using `last_y` seems less necessary in terms of
-                // edges crossing each other. Crossing does occur, but much less
-                // frequently. However, using it does eliminate all crossing, seemingly
-                // at the cost of more "conservative shapes" (but I have not verified it).
-                last_y = gen_random_safely(last_y, winsetup.max_y);
-                // last_y = rng.gen_range(0.0..winsetup.max_y);
-                path_builder.line_to(Vec2::new(last_x, last_y));
-            }
-            debug!(
-                "---i: {}, segment_place: {}, x: {}, y: {}",
-                _i, segment_place, last_x, last_y
-            );
-            continue;
-        }
-
-        if segment_place > 0.25 && segment_place <= 0.5 {
-            if current_quad < 2 {
-                debug!("entered quad 2");
-                last_x = gen_random_safely(0.0, winsetup.max_x);
-                last_y = gen_random_safely(0.0, winsetup.max_y);
-                path_builder.line_to(Vec2::new(last_x, last_y));
-            } else {
-                last_x = gen_random_safely(last_x, winsetup.max_x);
-                // In quads 2 & 4, where the horizontal direction of the shape generation
-                // changes on the next quadrant, it seems that using `last_y` in the range
-                // makes better shapes (edges don't cross)
-                //
-                // last_y = rng.gen_range(0.0..winsetup.max_y);
-                last_y = gen_random_safely(0.0, last_y);
-                path_builder.line_to(Vec2::new(last_x, last_y));
-            }
-            debug!(
-                "---i: {}, segment_place: {}, x: {}, y: {}",
-                _i, segment_place, last_x, last_y
-            );
-            current_quad = 2;
-            continue;
-        }
-
-        if segment_place > 0.5 && segment_place <= 0.75 {
-            if current_quad < 3 {
-                debug!("entered quad 3");
-                last_x = gen_random_safely(0.0, winsetup.max_x);
-                last_y = gen_random_safely(-winsetup.max_y, 0.0);
-                path_builder.line_to(Vec2::new(last_x, last_y));
-            } else {
-                last_x = gen_random_safely(0.0, last_x);
-                // For quads 1 & 3 using `last_y` seems less necessary in terms of
-                // edges crossing each other. Crossing does occur, but much less
-                // frequently. However, using it does eliminate all crossing, seemingly
-                // at the cost of more "conservative shapes" (but I have not verified it).
-                last_y = gen_random_safely(-winsetup.max_y, last_y);
-                // last_y = rng.gen_range(-winsetup.max_y..0.0);
-                path_builder.line_to(Vec2::new(last_x, last_y));
-            }
-            debug!(
-                "---i: {}, segment_place: {}, x: {}, y: {}",
-                _i, segment_place, last_x, last_y
-            );
-            current_quad = 3;
-            continue;
-        }
-
-        if segment_place > 0.75 && segment_place <= 1.0 {
-            // Check if it's the first time in this quadrant
-            if current_quad < 4 {
-                debug!("entered quad 4");
-                last_x = gen_random_safely(-winsetup.max_x, 0.0);
-                last_y = gen_random_safely(-winsetup.max_y, 0.0);
-                path_builder.line_to(Vec2::new(last_x, last_y));
-            } else {
-                last_x = gen_random_safely(-winsetup.max_x, last_x);
-                // In quads 2 & 4, where the horizontal direction of the shape generation
-                // changes on the next quadrant, it seems that using `last_y` in the range
-                // makes better shapes (edges don't cross)
-                //
-                // last_y = rng.gen_range(-winsetup.max_y..0.0);
-                last_y = gen_random_safely(last_y, 0.0);
-                path_builder.line_to(Vec2::new(last_x, last_y));
-            }
-            debug!(
-                "---i: {}, segment_place: {}, x: {}, y: {}",
-                _i, segment_place, last_x, last_y
-            );
-            current_quad = 4;
-            continue;
-        }
-    }
-    debug!("--end-{} segments shape---\n", num_segments);
-    path_builder.close();
-    let new_path = path_builder.build().0;
+    //  * Irf: Temporary workaround until the fix mentioned in this issue is released:
+    //  * https://github.com/Nilirad/bevy_prototype_lyon/issues/138
+    let new_shape = path_builder.build().0;
 
     let mut path = query.iter_mut().next().unwrap();
-    *path = ShapePath::build_as(&new_path);
+    *path = ShapePath::build_as(&new_shape);
 }
 
 
