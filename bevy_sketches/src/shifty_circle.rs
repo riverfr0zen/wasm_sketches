@@ -355,7 +355,7 @@ pub fn app(variation: &str) {
         title: format!("shifty{}", String::from(variation)),
         ..Default::default()
     };
-    // Need to copy a couple of values here b/c winsetup will be lost to sketch_factory
+    // Need to copy a couple of values here b/c winsetup will be lost to `web_app`
     let winsetup_max_x = winsetup.max_x;
     let winsetup_max_y = winsetup.max_y;
     let mut app = web_app(winsetup);
