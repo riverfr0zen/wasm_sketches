@@ -1,8 +1,7 @@
 use crate::base::prelude::*;
-use crate::shapeutils::random_shape_builder;
+use crate::shapegen::random_polygon_builder;
 use bevy::core::FixedTimestep;
 use bevy::prelude::*;
-use bevy_prototype_lyon::entity::Path;
 use bevy_prototype_lyon::prelude::*;
 
 /*
@@ -23,7 +22,7 @@ const CHANGER_MAX_SEGMENTS: u8 = 32;
 
 
 pub fn path_changing_eg_setup(winsetup: Res<WindowSetup>, mut commands: Commands) {
-    let path_builder = random_shape_builder(winsetup.max_x, winsetup.max_y, CHANGER_MAX_SEGMENTS);
+    let path_builder = random_polygon_builder(winsetup.max_x, winsetup.max_y, CHANGER_MAX_SEGMENTS);
     let shape = path_builder.build().0;
 
     commands.spawn_bundle(OrthographicCameraBundle::new_2d());
@@ -40,7 +39,7 @@ pub fn path_changing_eg_setup(winsetup: Res<WindowSetup>, mut commands: Commands
 
 
 pub fn path_changer(winsetup: Res<WindowSetup>, mut query: Query<&mut Path>) {
-    let path_builder = random_shape_builder(winsetup.max_x, winsetup.max_y, CHANGER_MAX_SEGMENTS);
+    let path_builder = random_polygon_builder(winsetup.max_x, winsetup.max_y, CHANGER_MAX_SEGMENTS);
 
     //  * Irf: Temporary workaround until the fix mentioned in this issue is released:
     //  * https://github.com/Nilirad/bevy_prototype_lyon/issues/138

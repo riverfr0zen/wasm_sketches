@@ -36,7 +36,7 @@ fn gen_random_safely(start: f32, end: f32) -> f32 {
 /// So it doesn't work well for a large number of segments.
 ///
 /// One idea for improvement is to break down each quadrant to sub-ranges for gen_range().
-pub fn random_shape_builder(max_x: f32, max_y: f32, max_segments: u8) -> PathBuilder {
+pub fn random_polygon_builder(max_x: f32, max_y: f32, max_segments: u8) -> PathBuilder {
     let mut rng = thread_rng();
 
     let num_segments = rng.gen_range(3..=max_segments);

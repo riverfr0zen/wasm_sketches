@@ -9,7 +9,7 @@ mod tests {
 
 pub mod base;
 
-pub mod shapeutils;
+pub mod shapegen;
 
 pub mod shifty_circle;
 
