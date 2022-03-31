@@ -232,21 +232,21 @@ fn draw_skyline_layer(
 
 fn draw_skyline(
     mut commands: Commands,
-    winsetup: ResMut<WindowSetup>,
+    webcfg: ResMut<WebExtrasCfg>,
     mut q: Query<Entity, With<Building>>,
 ) {
     for entity in q.iter_mut() {
         commands.entity(entity).despawn();
     }
 
-    let buildings_start_x = -winsetup.max_x;
-    let buildings_start_y = -winsetup.max_y;
-    let building_max_height = winsetup.height / BUILDING_MAX_HEIGHT_RATIO;
-    let building_min_height = winsetup.height / BUILDING_MIN_HEIGHT_RATIO;
+    let buildings_start_x = -webcfg.max_x;
+    let buildings_start_y = -webcfg.max_y;
+    let building_max_height = webcfg.height / BUILDING_MAX_HEIGHT_RATIO;
+    let building_min_height = webcfg.height / BUILDING_MIN_HEIGHT_RATIO;
 
     draw_skyline_layer(
         &mut commands,
-        winsetup.width,
+        webcfg.width,
         buildings_start_x,
         buildings_start_y,
         building_min_height,
@@ -257,7 +257,7 @@ fn draw_skyline(
 
     draw_skyline_layer(
         &mut commands,
-        winsetup.width,
+        webcfg.width,
         buildings_start_x,
         buildings_start_y,
         building_min_height,
@@ -334,37 +334,37 @@ fn do_pulsating_effect(time: Res<Time>, mut query: Query<&mut DrawMode, With<Shi
 #[cfg(target_arch = "wasm32")]
 fn handle_post_browser_resize(
     commands: Commands,
-    winsetup: ResMut<WindowSetup>,
+    webcfg: ResMut<WebExtrasCfg>,
     mut resize_event_reader: EventReader<BrowserResized>,
     mut app_globals: ResMut<AppGlobals>,
     buildings_query: Query<Entity, With<Building>>,
 ) {
     if resize_event_reader.iter().next().is_some() {
-        app_globals.dest_low_x = -winsetup.max_x + SHIFTY_CIRCLE_RADIUS;
-        app_globals.dest_high_x = winsetup.max_x - SHIFTY_CIRCLE_RADIUS;
-        app_globals.dest_low_y = -winsetup.max_y + SHIFTY_CIRCLE_RADIUS;
-        app_globals.dest_high_y = winsetup.max_y - SHIFTY_CIRCLE_RADIUS;
-        draw_skyline(commands, winsetup, buildings_query);
+        app_globals.dest_low_x = -webcfg.max_x + SHIFTY_CIRCLE_RADIUS;
+        app_globals.dest_high_x = webcfg.max_x - SHIFTY_CIRCLE_RADIUS;
+        app_globals.dest_low_y = -webcfg.max_y + SHIFTY_CIRCLE_RADIUS;
+        app_globals.dest_high_y = webcfg.max_y - SHIFTY_CIRCLE_RADIUS;
+        draw_skyline(commands, webcfg, buildings_query);
     }
 }
 
 
 pub fn app(variation: &str) {
-    let winsetup = WindowSetup {
+    let webcfg = WebExtrasCfg {
         title: format!("shifty{}", String::from(variation)),
         match_clear_color_always: true,
         ..Default::default()
     };
-    // Need to copy a couple of values here b/c winsetup will be lost to `web_app`
-    let winsetup_max_x = winsetup.max_x;
-    let winsetup_max_y = winsetup.max_y;
-    let mut app = web_app(winsetup);
+    // Need to copy a couple of values here b/c webcfg will be lost to `web_app`
+    let webcfg_max_x = webcfg.max_x;
+    let webcfg_max_y = webcfg.max_y;
+    let mut app = web_app(webcfg);
     app.insert_resource(ClearColor(CLEAR_COLOR))
         .insert_resource(AppGlobals {
-            dest_low_x: -winsetup_max_x,
-            dest_high_x: winsetup_max_x,
-            dest_low_y: -winsetup_max_y,
-            dest_high_y: winsetup_max_y,
+            dest_low_x: -webcfg_max_x,
+            dest_high_x: webcfg_max_x,
+            dest_low_y: -webcfg_max_y,
+            dest_high_y: webcfg_max_y,
         })
         .add_plugin(ShapePlugin);
 
