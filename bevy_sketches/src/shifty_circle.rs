@@ -1,3 +1,4 @@
+use crate::base::sketch;
 use bevy::core::FixedTimestep;
 use bevy::prelude::*;
 use bevy_prototype_lyon::prelude::*;
@@ -358,7 +359,7 @@ pub fn app(variation: &str) {
     // Need to copy a couple of values here b/c webcfg will be lost to `web_app`
     let webcfg_max_x = webcfg.max_x;
     let webcfg_max_y = webcfg.max_y;
-    let mut app = web_app(webcfg);
+    let mut app = sketch(webcfg);
     app.insert_resource(ClearColor(CLEAR_COLOR))
         .insert_resource(AppGlobals {
             dest_low_x: -webcfg_max_x,

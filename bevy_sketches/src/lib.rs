@@ -7,6 +7,8 @@ mod tests {
     }
 }
 
+pub mod base;
+
 pub mod shapegen;
 
 pub mod shifty_circle;

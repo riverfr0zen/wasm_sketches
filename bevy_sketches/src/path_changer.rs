@@ -1,3 +1,4 @@
+use crate::base::sketch;
 use crate::shapegen::random_polygon_builder;
 use bevy::core::FixedTimestep;
 use bevy::prelude::*;
@@ -56,7 +57,7 @@ pub fn app() {
         match_clear_color: true,
         ..Default::default()
     };
-    let mut app = web_app(webcfg);
+    let mut app = sketch(webcfg);
     app.insert_resource(ClearColor(CHANGER_CLEAR_CLR))
         .add_plugin(ShapePlugin)
         .add_startup_system(path_changing_eg_setup)
