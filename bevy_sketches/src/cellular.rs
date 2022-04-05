@@ -3,6 +3,8 @@ use bevy::core::FixedTimestep;
 use bevy::prelude::*;
 use bevy_prototype_lyon::prelude::*;
 use bevy_web_extras::prelude::*;
+use rand::prelude::thread_rng;
+use rand::Rng;
 
 
 /*
@@ -16,10 +18,10 @@ pub const CURVE_CLEAR_CLR: Color = Color::DARK_GRAY;
 const CURVE_FILL_CLR: Color = Color::ORANGE;
 const CURVE_STROKE_CLR: Color = Color::BLACK;
 const CURVE_STROKE: f32 = 5.0;
-
-const CELL_CTRL_X: f32 = 300.0;
-const CELL_CTRL_Y: f32 = 300.0;
-const CELL_RADIUS: f32 = 180.0; // Radius to curve intersection
+const CELL_CTRL_X: f32 = 200.0;
+const CELL_CTRL_Y: f32 = 200.0;
+const CELL_RADIUS: f32 = 50.0; // Radius to curve intersection
+const CELL_MAX_RADIUS: f32 = 300.0;
 pub const CELL_STEP: f64 = 1.0;
 
 
@@ -96,12 +98,15 @@ fn cell_setup(mut commands: Commands) {
 }
 
 
-fn cell_animate(mut query: Query<(&mut Path, &mut Cell)>) {
+fn redraw_cell(mut query: Query<(&mut Path, &mut Cell)>) {
     let (mut path, mut cell) = query.iter_mut().next().unwrap();
-    cell.radius += 100.0;
+    if cell.radius < cell.radius_target {
+        cell.radius += 1.0;
+    } else if cell.radius > cell.radius_target {
+        cell.radius -= 1.0;
+    }
 
     let path_builder = gen_cell_path(&cell);
-
     //  * Irf: Temporary workaround until the fix mentioned in this issue is released:
     //  * https://github.com/Nilirad/bevy_prototype_lyon/issues/138
     let new_path = path_builder.build().0;
@@ -110,13 +115,20 @@ fn cell_animate(mut query: Query<(&mut Path, &mut Cell)>) {
 }
 
 
+fn mutate_cell(mut query: Query<&mut Cell>) {
+    let mut rng = thread_rng();
+    let mut cell = query.iter_mut().next().unwrap();
+    cell.radius_target = rng.gen_range(CELL_RADIUS..CELL_MAX_RADIUS);
+}
+
 pub fn app() {
     let webcfg = WebExtrasCfg::default();
     let mut app = sketch(webcfg);
     app.insert_resource(ClearColor(Color::rgb(0.72, 0.81, 1.0)))
         .add_plugin(ShapePlugin)
         .add_startup_system(cell_setup)
-        .add_system(cell_animate.with_run_criteria(FixedTimestep::step(CELL_STEP)));
+        .add_system(redraw_cell)
+        .add_system(mutate_cell.with_run_criteria(FixedTimestep::step(CELL_STEP)));
 
     app.run();
 }
