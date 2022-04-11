@@ -14,9 +14,9 @@ use rand::Rng;
  * https://github.com/Nilirad/bevy_prototype_lyon/blob/master/src/path.rs
  */
 
-pub const CURVE_CLEAR_CLR: Color = Color::DARK_GRAY;
-const CURVE_FILL_CLR: Color = Color::ORANGE;
-const CURVE_STROKE_CLR: Color = Color::BLACK;
+pub const CELL_CLEAR_CLR: Color = Color::rgb(0.58, 0.71, 0.87);
+const CURVE_FILL_CLR: Color = Color::rgba(0.95, 0.85, 0.62, 0.2);
+const CURVE_STROKE_CLR: Color = Color::rgba(0.95, 0.91, 0.81, 0.1);
 const CURVE_STROKE: f32 = 5.0;
 const CELL_CTRL_X: f32 = 200.0;
 const CELL_CTRL_Y: f32 = 200.0;
@@ -124,7 +124,7 @@ fn mutate_cell(mut query: Query<&mut Cell>) {
 pub fn app() {
     let webcfg = WebExtrasCfg::default();
     let mut app = sketch(webcfg);
-    app.insert_resource(ClearColor(Color::rgb(0.72, 0.81, 1.0)))
+    app.insert_resource(ClearColor(CELL_CLEAR_CLR))
         .add_plugin(ShapePlugin)
         .add_startup_system(cell_setup)
         .add_system(redraw_cell)
