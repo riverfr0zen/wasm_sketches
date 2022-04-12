@@ -22,18 +22,22 @@ const CELL_CTRL_X: f32 = 200.0;
 const CELL_CTRL_Y: f32 = 200.0;
 const CELL_RADIUS: f32 = 50.0; // Radius to curve intersection
 const CELL_MAX_RADIUS: f32 = 300.0;
+const CELL_SEG_RT: usize = 0;
+const CELL_SEG_RB: usize = 1;
+const CELL_SEG_LB: usize = 2;
+const CELL_SEG_LT: usize = 3;
 pub const CELL_STEP: f64 = 1.0;
 
 
 #[derive(Component)]
-pub struct Cell {
+pub struct CellSegment {
     ctrl_x: f32,
     ctrl_y: f32,
     radius: f32,
     radius_target: f32,
 }
 
-impl Default for Cell {
+impl Default for CellSegment {
     fn default() -> Self {
         Self {
             ctrl_x: CELL_CTRL_X,
@@ -44,33 +48,64 @@ impl Default for Cell {
     }
 }
 
+#[derive(Component)]
+pub struct Cell {
+    segments: [CellSegment; 4],
+}
+
+impl Default for Cell {
+    fn default() -> Self {
+        Self {
+            segments: [
+                CellSegment::default(),
+                CellSegment::default(),
+                CellSegment::default(),
+                CellSegment::default(),
+            ],
+        }
+    }
+}
 
 fn gen_cell_path(cell: &Cell) -> PathBuilder {
     let mut path_builder = PathBuilder::new();
 
     // Right side top
-    path_builder.move_to(Vec2::new(0.0, cell.radius));
+    path_builder.move_to(Vec2::new(0.0, cell.segments[CELL_SEG_RT].radius));
     path_builder.quadratic_bezier_to(
-        Vec2::new(cell.ctrl_x, cell.ctrl_y),
-        Vec2::new(cell.radius, 0.0),
+        Vec2::new(
+            cell.segments[CELL_SEG_RT].ctrl_x,
+            cell.segments[CELL_SEG_RT].ctrl_y,
+        ),
+        Vec2::new(cell.segments[CELL_SEG_RT].radius, 0.0),
     );
 
     // Right side bottom
     path_builder.quadratic_bezier_to(
-        Vec2::new(cell.ctrl_x, -cell.ctrl_y),
-        Vec2::new(0.0, -cell.radius),
+        Vec2::new(
+            cell.segments[CELL_SEG_RB].ctrl_x,
+            -cell.segments[CELL_SEG_RB].ctrl_y,
+        ),
+        Vec2::new(0.0, -cell.segments[CELL_SEG_RB].radius),
     );
 
     // Left side bottom
     path_builder.quadratic_bezier_to(
-        Vec2::new(-cell.ctrl_x, -cell.ctrl_y),
-        Vec2::new(-cell.radius, 0.0),
+        Vec2::new(
+            -cell.segments[CELL_SEG_LB].ctrl_x,
+            -cell.segments[CELL_SEG_LB].ctrl_y,
+        ),
+        Vec2::new(-cell.segments[CELL_SEG_LB].radius, 0.0),
     );
 
     // Left side top
     path_builder.quadratic_bezier_to(
-        Vec2::new(-cell.ctrl_x, cell.ctrl_y),
-        Vec2::new(0.0, cell.radius),
+        Vec2::new(
+            -cell.segments[CELL_SEG_LT].ctrl_x,
+            cell.segments[CELL_SEG_LT].ctrl_y,
+        ),
+        // Need to close up cleanly so we are going back to values from the RT segment
+        // Vec2::new(0.0, cell.segments[3].radius),
+        Vec2::new(0.0, cell.segments[CELL_SEG_RT].radius),
     );
     path_builder.close();
     return path_builder;
@@ -100,12 +135,13 @@ fn cell_setup(mut commands: Commands) {
 
 fn redraw_cell(mut query: Query<(&mut Path, &mut Cell)>) {
     let (mut path, mut cell) = query.iter_mut().next().unwrap();
-    if cell.radius < cell.radius_target {
-        cell.radius += 1.0;
-    } else if cell.radius > cell.radius_target {
-        cell.radius -= 1.0;
+    for seg in &mut cell.segments {
+        if seg.radius < seg.radius_target {
+            seg.radius += 1.0;
+        } else if seg.radius > seg.radius_target {
+            seg.radius -= 1.0;
+        }
     }
-
     let path_builder = gen_cell_path(&cell);
     //  * Irf: Temporary workaround until the fix mentioned in this issue is released:
     //  * https://github.com/Nilirad/bevy_prototype_lyon/issues/138
@@ -118,7 +154,10 @@ fn redraw_cell(mut query: Query<(&mut Path, &mut Cell)>) {
 fn mutate_cell(mut query: Query<&mut Cell>) {
     let mut rng = thread_rng();
     let mut cell = query.iter_mut().next().unwrap();
-    cell.radius_target = rng.gen_range(CELL_RADIUS..CELL_MAX_RADIUS);
+
+    for seg in &mut cell.segments {
+        seg.radius_target = rng.gen_range(CELL_RADIUS..CELL_MAX_RADIUS);
+    }
 }
 
 pub fn app() {
