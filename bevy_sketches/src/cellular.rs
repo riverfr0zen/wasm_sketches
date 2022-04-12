@@ -15,9 +15,9 @@ use rand::Rng;
  */
 
 pub const CELL_CLEAR_CLR: Color = Color::rgb(0.58, 0.71, 0.87);
-const CURVE_FILL_CLR: Color = Color::rgba(0.95, 0.85, 0.62, 0.2);
-const CURVE_STROKE_CLR: Color = Color::rgba(0.95, 0.91, 0.81, 0.1);
-const CURVE_STROKE: f32 = 5.0;
+const CELL_FILL_CLR: Color = Color::rgba(0.95, 0.85, 0.62, 0.2);
+const CELL_STROKE_CLR: Color = Color::rgba(0.95, 0.91, 0.81, 0.1);
+const CELL_STROKE: f32 = 5.0;
 const CELL_CTRL_X: f32 = 200.0;
 const CELL_CTRL_Y: f32 = 200.0;
 const CELL_RADIUS: f32 = 50.0; // Radius to curve intersection
@@ -124,8 +124,8 @@ fn cell_setup(mut commands: Commands) {
             &path,
             // DrawMode::Stroke(StrokeMode::new(Color::BLACK, 10.0)),
             DrawMode::Outlined {
-                fill_mode: FillMode::color(CURVE_FILL_CLR),
-                outline_mode: StrokeMode::new(CURVE_STROKE_CLR, CURVE_STROKE),
+                fill_mode: FillMode::color(CELL_FILL_CLR),
+                outline_mode: StrokeMode::new(CELL_STROKE_CLR, CELL_STROKE),
             },
             Transform::default(),
         ))
