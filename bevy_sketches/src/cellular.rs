@@ -18,9 +18,9 @@ const CELL_FILL_CLR: Color = Color::rgba(0.95, 0.85, 0.62, 0.2);
 const CELL_STROKE_CLR: Color = Color::rgba(0.95, 0.91, 0.81, 0.1);
 const CELL_STROKE: f32 = 5.0;
 const CELL_CTRL_X: f32 = 200.0;
-const CELL_CTRL_Y: f32 = 300.0;
+const CELL_CTRL_Y: f32 = 200.0;
 /// Radius to curve intersection
-const CELL_RADIUS: f32 = 50.0;
+const CELL_MIN_RADIUS: f32 = 50.0;
 /// It seems that keeping radius size under 125% of **the smaller** of ctrl_x or
 /// ctrl_y keeps the shape from getting too sharp.
 const CELL_MAX_RADIUS_MODIFIER: f32 = 1.0;
@@ -54,8 +54,8 @@ impl Default for CellSegment {
         Self {
             ctrl_x: CELL_CTRL_X,
             ctrl_y: CELL_CTRL_Y,
-            radius: CELL_RADIUS,
-            radius_target: CELL_RADIUS,
+            radius: CELL_MIN_RADIUS,
+            radius_target: CELL_MIN_RADIUS,
         }
     }
 }
@@ -168,7 +168,7 @@ fn mutate_cell(mut query: Query<&mut Cell>) {
     let mut cell = query.iter_mut().next().unwrap();
 
     for seg in &mut cell.segments {
-        seg.radius_target = rng.gen_range(CELL_RADIUS..seg.get_max_radius());
+        seg.radius_target = rng.gen_range(CELL_MIN_RADIUS..seg.get_max_radius());
     }
 }
 
