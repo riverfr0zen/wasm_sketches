@@ -6,7 +6,6 @@ use bevy_web_extras::prelude::*;
 use rand::prelude::thread_rng;
 use rand::Rng;
 
-
 /*
  * curve_eg
  *
@@ -19,14 +18,18 @@ const CELL_FILL_CLR: Color = Color::rgba(0.95, 0.85, 0.62, 0.2);
 const CELL_STROKE_CLR: Color = Color::rgba(0.95, 0.91, 0.81, 0.1);
 const CELL_STROKE: f32 = 5.0;
 const CELL_CTRL_X: f32 = 200.0;
-const CELL_CTRL_Y: f32 = 200.0;
-const CELL_RADIUS: f32 = 50.0; // Radius to curve intersection
-const CELL_MAX_RADIUS: f32 = 300.0;
+const CELL_CTRL_Y: f32 = 300.0;
+/// Radius to curve intersection
+const CELL_RADIUS: f32 = 50.0;
+/// It seems that keeping radius size under 125% of **the smaller** of ctrl_x or
+/// ctrl_y keeps the shape from getting too sharp.
+const CELL_MAX_RADIUS_MODIFIER: f32 = 1.0;
 const CELL_SEG_RT: usize = 0;
 const CELL_SEG_RB: usize = 1;
 const CELL_SEG_LB: usize = 2;
 const CELL_SEG_LT: usize = 3;
 pub const CELL_STEP: f64 = 1.0;
+// pub const CELL_STEP: f64 = 5.0;
 
 
 #[derive(Component)]
@@ -35,6 +38,15 @@ pub struct CellSegment {
     ctrl_y: f32,
     radius: f32,
     radius_target: f32,
+}
+
+impl CellSegment {
+    fn get_max_radius(&self) -> f32 {
+        if self.ctrl_x > self.ctrl_y {
+            return self.ctrl_y * CELL_MAX_RADIUS_MODIFIER;
+        }
+        return self.ctrl_x * CELL_MAX_RADIUS_MODIFIER;
+    }
 }
 
 impl Default for CellSegment {
@@ -156,7 +168,7 @@ fn mutate_cell(mut query: Query<&mut Cell>) {
     let mut cell = query.iter_mut().next().unwrap();
 
     for seg in &mut cell.segments {
-        seg.radius_target = rng.gen_range(CELL_RADIUS..CELL_MAX_RADIUS);
+        seg.radius_target = rng.gen_range(CELL_RADIUS..seg.get_max_radius());
     }
 }
 
