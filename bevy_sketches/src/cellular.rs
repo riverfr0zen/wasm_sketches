@@ -28,6 +28,8 @@ const CELL_SEG_RT: usize = 0;
 const CELL_SEG_RB: usize = 1;
 const CELL_SEG_LB: usize = 2;
 const CELL_SEG_LT: usize = 3;
+const CELL_MIN_SPEED: f32 = 1.0;
+const CELL_MAX_SPEED: f32 = 10.0;
 pub const CELL_STEP: f64 = 1.0;
 // pub const CELL_STEP: f64 = 5.0;
 
@@ -38,6 +40,8 @@ pub struct CellSegment {
     ctrl_y: f32,
     radius: f32,
     radius_target: f32,
+    /// A general speed value, initially being used as speed to radius target in mutate_cell
+    speed: f32,
 }
 
 impl CellSegment {
@@ -56,6 +60,7 @@ impl Default for CellSegment {
             ctrl_y: CELL_CTRL_Y,
             radius: CELL_MIN_RADIUS,
             radius_target: CELL_MIN_RADIUS,
+            speed: CELL_MIN_SPEED,
         }
     }
 }
@@ -149,9 +154,9 @@ fn redraw_cell(mut query: Query<(&mut Path, &mut Cell)>) {
     let (mut path, mut cell) = query.iter_mut().next().unwrap();
     for seg in &mut cell.segments {
         if seg.radius < seg.radius_target {
-            seg.radius += 1.0;
+            seg.radius += seg.speed;
         } else if seg.radius > seg.radius_target {
-            seg.radius -= 1.0;
+            seg.radius -= seg.speed;
         }
     }
     let path_builder = gen_cell_path(&cell);
@@ -168,6 +173,7 @@ fn mutate_cell(mut query: Query<&mut Cell>) {
     let mut cell = query.iter_mut().next().unwrap();
 
     for seg in &mut cell.segments {
+        seg.speed = rng.gen_range(CELL_MIN_SPEED..CELL_MAX_SPEED);
         seg.radius_target = rng.gen_range(CELL_MIN_RADIUS..seg.get_max_radius());
     }
 }
