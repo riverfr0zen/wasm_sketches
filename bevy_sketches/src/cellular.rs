@@ -17,19 +17,19 @@ pub const CELL_CLEAR_CLR: Color = Color::rgb(0.58, 0.71, 0.87);
 const CELL_FILL_CLR: Color = Color::rgba(0.95, 0.85, 0.62, 0.2);
 const CELL_STROKE_CLR: Color = Color::rgba(0.95, 0.91, 0.81, 0.1);
 const CELL_STROKE: f32 = 5.0;
-const CELL_CTRL_X: f32 = 200.0;
-const CELL_CTRL_Y: f32 = 200.0;
+const CELL_CTRL_X: f32 = 100.0;
+const CELL_CTRL_Y: f32 = 100.0;
 /// Radius to curve intersection
 const CELL_MIN_RADIUS: f32 = 50.0;
 /// It seems that keeping radius size under 125% of **the smaller** of ctrl_x or
 /// ctrl_y keeps the shape from getting too sharp.
-const CELL_MAX_RADIUS_MODIFIER: f32 = 1.0;
+const CELL_MAX_RADIUS_MODIFIER: f32 = 1.25;
 const CELL_SEG_RT: usize = 0;
 const CELL_SEG_RB: usize = 1;
 const CELL_SEG_LB: usize = 2;
 const CELL_SEG_LT: usize = 3;
 const CELL_MIN_SPEED: f32 = 1.0;
-const CELL_MAX_SPEED: f32 = 10.0;
+const CELL_MAX_SPEED: f32 = 20.0;
 pub const CELL_STEP: f64 = 1.0;
 // pub const CELL_STEP: f64 = 5.0;
 
@@ -154,9 +154,17 @@ fn redraw_cell(mut query: Query<(&mut Path, &mut Cell)>) {
     let (mut path, mut cell) = query.iter_mut().next().unwrap();
     for seg in &mut cell.segments {
         if seg.radius < seg.radius_target {
-            seg.radius += seg.speed;
+            let mut next_location = seg.radius + seg.speed;
+            if next_location > seg.radius_target {
+                next_location = seg.radius_target;
+            }
+            seg.radius = next_location;
         } else if seg.radius > seg.radius_target {
-            seg.radius -= seg.speed;
+            let mut next_location = seg.radius - seg.speed;
+            if next_location < seg.radius_target {
+                next_location = seg.radius_target;
+            }
+            seg.radius = next_location;
         }
     }
     let path_builder = gen_cell_path(&cell);
