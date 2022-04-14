@@ -82,7 +82,7 @@ fn gen_cell_path(cell: &Cell) -> PathBuilder {
     let mut path_builder = PathBuilder::new();
 
     // Right side top
-    path_builder.move_to(Vec2::new(0.0, cell.segments[CELL_SEG_RT].radius));
+    path_builder.move_to(Vec2::new(0.0, cell.segments[CELL_SEG_LT].radius));
     path_builder.quadratic_bezier_to(
         Vec2::new(
             cell.segments[CELL_SEG_RT].ctrl_x,
@@ -117,7 +117,7 @@ fn gen_cell_path(cell: &Cell) -> PathBuilder {
         ),
         // Need to close up cleanly so we are going back to values from the RT segment
         // Vec2::new(0.0, cell.segments[3].radius),
-        Vec2::new(0.0, cell.segments[CELL_SEG_RT].radius),
+        Vec2::new(0.0, cell.segments[CELL_SEG_LT].radius),
     );
     path_builder.close();
     return path_builder;
