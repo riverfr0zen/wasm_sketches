@@ -18,11 +18,11 @@ const CELL_FILL_CLR: Color = Color::rgba(0.95, 0.85, 0.62, 0.2);
 const CELL_STROKE_CLR: Color = Color::rgba(0.95, 0.91, 0.81, 0.2);
 const CELL_STROKE: f32 = 5.0;
 const CELL_CTRL_MIN: f32 = 200.0;
-const CELL_CTRL_MAX: f32 = 600.0;
+const CELL_CTRL_MAX: f32 = 800.0;
 /// Radius to curve intersection
 const CELL_MIN_RADIUS: f32 = 50.0;
 /// It seems that keeping radius size between 100-125% of **the smaller** of ctrl_x or
-/// ctrl_y keeps the shape from getting too sharp.
+/// ctrl_y keeps the shape from getting too sharp, at least on the concave "surfaces".
 const CELL_MAX_RADIUS_MODIFIER: f32 = 1.10;
 const CELL_SEG_RT: usize = 0;
 const CELL_SEG_RB: usize = 1;
@@ -158,15 +158,15 @@ fn get_next_location(current_location: f32, target_location: f32, speed: f32) ->
     }
 
     if current_location < target_location {
-        let mut next_location = current_location + speed;
+        let next_location = current_location + speed;
         if next_location > target_location {
-            next_location = target_location;
+            return target_location;
         }
         return next_location;
     } else {
-        let mut next_location = current_location - speed;
+        let next_location = current_location - speed;
         if next_location < target_location {
-            next_location = target_location;
+            return target_location;
         }
         return next_location;
     }
@@ -176,19 +176,8 @@ fn get_next_location(current_location: f32, target_location: f32, speed: f32) ->
 fn redraw_cell(mut query: Query<(&mut Path, &mut Cell)>) {
     let (mut path, mut cell) = query.iter_mut().next().unwrap();
     for seg in &mut cell.segments {
-        // if seg.radius < seg.radius_target {
-        //     let mut next_location = seg.radius + seg.speed;
-        //     if next_location > seg.radius_target {
-        //         next_location = seg.radius_target;
-        //     }
-        //     seg.radius = next_location;
-        // } else if seg.radius > seg.radius_target {
-        //     let mut next_location = seg.radius - seg.speed;
-        //     if next_location < seg.radius_target {
-        //         next_location = seg.radius_target;
-        //     }
-        //     seg.radius = next_location;
-        // }
+        seg.ctrl_x = get_next_location(seg.ctrl_x, seg.ctrl_target.x, seg.speed);
+        seg.ctrl_y = get_next_location(seg.ctrl_y, seg.ctrl_target.y, seg.speed);
         seg.radius = get_next_location(seg.radius, seg.radius_target, seg.speed);
     }
     let path_builder = gen_cell_path(&cell);
