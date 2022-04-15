@@ -15,15 +15,15 @@ use rand::Rng;
 
 pub const CELL_CLEAR_CLR: Color = Color::rgb(0.58, 0.71, 0.87);
 const CELL_FILL_CLR: Color = Color::rgba(0.95, 0.85, 0.62, 0.2);
-const CELL_STROKE_CLR: Color = Color::rgba(0.95, 0.91, 0.81, 0.1);
+const CELL_STROKE_CLR: Color = Color::rgba(0.95, 0.91, 0.81, 0.2);
 const CELL_STROKE: f32 = 5.0;
-const CELL_CTRL_X: f32 = 100.0;
-const CELL_CTRL_Y: f32 = 100.0;
+const CELL_CTRL_MIN: f32 = 200.0;
+const CELL_CTRL_MAX: f32 = 600.0;
 /// Radius to curve intersection
 const CELL_MIN_RADIUS: f32 = 50.0;
-/// It seems that keeping radius size under 125% of **the smaller** of ctrl_x or
+/// It seems that keeping radius size between 100-125% of **the smaller** of ctrl_x or
 /// ctrl_y keeps the shape from getting too sharp.
-const CELL_MAX_RADIUS_MODIFIER: f32 = 1.25;
+const CELL_MAX_RADIUS_MODIFIER: f32 = 1.10;
 const CELL_SEG_RT: usize = 0;
 const CELL_SEG_RB: usize = 1;
 const CELL_SEG_LB: usize = 2;
@@ -38,6 +38,7 @@ pub const CELL_STEP: f64 = 1.0;
 pub struct CellSegment {
     ctrl_x: f32,
     ctrl_y: f32,
+    ctrl_target: Vec2,
     radius: f32,
     radius_target: f32,
     /// A general speed value, initially being used as speed to radius target in mutate_cell
@@ -56,8 +57,9 @@ impl CellSegment {
 impl Default for CellSegment {
     fn default() -> Self {
         Self {
-            ctrl_x: CELL_CTRL_X,
-            ctrl_y: CELL_CTRL_Y,
+            ctrl_x: CELL_CTRL_MIN,
+            ctrl_y: CELL_CTRL_MIN,
+            ctrl_target: Vec2::new(CELL_CTRL_MIN, CELL_CTRL_MIN),
             radius: CELL_MIN_RADIUS,
             radius_target: CELL_MIN_RADIUS,
             speed: CELL_MIN_SPEED,
@@ -150,22 +152,44 @@ fn cell_setup(mut commands: Commands) {
 }
 
 
+fn get_next_location(current_location: f32, target_location: f32, speed: f32) -> f32 {
+    if current_location == target_location {
+        return current_location;
+    }
+
+    if current_location < target_location {
+        let mut next_location = current_location + speed;
+        if next_location > target_location {
+            next_location = target_location;
+        }
+        return next_location;
+    } else {
+        let mut next_location = current_location - speed;
+        if next_location < target_location {
+            next_location = target_location;
+        }
+        return next_location;
+    }
+}
+
+
 fn redraw_cell(mut query: Query<(&mut Path, &mut Cell)>) {
     let (mut path, mut cell) = query.iter_mut().next().unwrap();
     for seg in &mut cell.segments {
-        if seg.radius < seg.radius_target {
-            let mut next_location = seg.radius + seg.speed;
-            if next_location > seg.radius_target {
-                next_location = seg.radius_target;
-            }
-            seg.radius = next_location;
-        } else if seg.radius > seg.radius_target {
-            let mut next_location = seg.radius - seg.speed;
-            if next_location < seg.radius_target {
-                next_location = seg.radius_target;
-            }
-            seg.radius = next_location;
-        }
+        // if seg.radius < seg.radius_target {
+        //     let mut next_location = seg.radius + seg.speed;
+        //     if next_location > seg.radius_target {
+        //         next_location = seg.radius_target;
+        //     }
+        //     seg.radius = next_location;
+        // } else if seg.radius > seg.radius_target {
+        //     let mut next_location = seg.radius - seg.speed;
+        //     if next_location < seg.radius_target {
+        //         next_location = seg.radius_target;
+        //     }
+        //     seg.radius = next_location;
+        // }
+        seg.radius = get_next_location(seg.radius, seg.radius_target, seg.speed);
     }
     let path_builder = gen_cell_path(&cell);
     //  * Irf: Temporary workaround until the fix mentioned in this issue is released:
@@ -182,6 +206,8 @@ fn mutate_cell(mut query: Query<&mut Cell>) {
 
     for seg in &mut cell.segments {
         seg.speed = rng.gen_range(CELL_MIN_SPEED..CELL_MAX_SPEED);
+        seg.ctrl_target.x = rng.gen_range(CELL_CTRL_MIN..CELL_CTRL_MAX);
+        seg.ctrl_target.y = rng.gen_range(CELL_CTRL_MIN..CELL_CTRL_MAX);
         seg.radius_target = rng.gen_range(CELL_MIN_RADIUS..seg.get_max_radius());
     }
 }
