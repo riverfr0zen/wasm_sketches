@@ -30,7 +30,7 @@ const CELL_SEG_LB: usize = 2;
 const CELL_SEG_LT: usize = 3;
 const CELL_MIN_SPEED: f32 = 1.0;
 const CELL_MAX_SPEED: f32 = 20.0;
-pub const CELL_STEP: f64 = 1.0;
+pub const CELL_STEP: f64 = 0.5;
 // pub const CELL_STEP: f64 = 5.0;
 
 
@@ -39,10 +39,10 @@ pub struct CellSegment {
     ctrl_x: f32,
     ctrl_y: f32,
     ctrl_target: Vec2,
+    ctrl_speed: f32,
     radius: f32,
     radius_target: f32,
-    /// A general speed value, initially being used as speed to radius target in mutate_cell
-    speed: f32,
+    radius_speed: f32,
 }
 
 impl CellSegment {
@@ -59,10 +59,11 @@ impl Default for CellSegment {
         Self {
             ctrl_x: CELL_CTRL_MIN,
             ctrl_y: CELL_CTRL_MIN,
+            ctrl_speed: CELL_MIN_SPEED,
             ctrl_target: Vec2::new(CELL_CTRL_MIN, CELL_CTRL_MIN),
             radius: CELL_MIN_RADIUS,
             radius_target: CELL_MIN_RADIUS,
-            speed: CELL_MIN_SPEED,
+            radius_speed: CELL_MIN_SPEED,
         }
     }
 }
@@ -176,9 +177,9 @@ fn get_next_location(current_location: f32, target_location: f32, speed: f32) ->
 fn redraw_cell(mut query: Query<(&mut Path, &mut Cell)>) {
     let (mut path, mut cell) = query.iter_mut().next().unwrap();
     for seg in &mut cell.segments {
-        seg.ctrl_x = get_next_location(seg.ctrl_x, seg.ctrl_target.x, seg.speed);
-        seg.ctrl_y = get_next_location(seg.ctrl_y, seg.ctrl_target.y, seg.speed);
-        seg.radius = get_next_location(seg.radius, seg.radius_target, seg.speed);
+        seg.ctrl_x = get_next_location(seg.ctrl_x, seg.ctrl_target.x, seg.ctrl_speed);
+        seg.ctrl_y = get_next_location(seg.ctrl_y, seg.ctrl_target.y, seg.ctrl_speed);
+        seg.radius = get_next_location(seg.radius, seg.radius_target, seg.radius_speed);
     }
     let path_builder = gen_cell_path(&cell);
     //  * Irf: Temporary workaround until the fix mentioned in this issue is released:
@@ -194,7 +195,8 @@ fn mutate_cell(mut query: Query<&mut Cell>) {
     let mut cell = query.iter_mut().next().unwrap();
 
     for seg in &mut cell.segments {
-        seg.speed = rng.gen_range(CELL_MIN_SPEED..CELL_MAX_SPEED);
+        seg.radius_speed = rng.gen_range(CELL_MIN_SPEED..CELL_MAX_SPEED);
+        seg.ctrl_speed = rng.gen_range(CELL_MIN_SPEED..CELL_MAX_SPEED / 2.0);
         seg.ctrl_target.x = rng.gen_range(CELL_CTRL_MIN..CELL_CTRL_MAX);
         seg.ctrl_target.y = rng.gen_range(CELL_CTRL_MIN..CELL_CTRL_MAX);
         seg.radius_target = rng.gen_range(CELL_MIN_RADIUS..seg.get_max_radius());
