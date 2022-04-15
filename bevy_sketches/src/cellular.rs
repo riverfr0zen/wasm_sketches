@@ -21,23 +21,24 @@ const CELL_CTRL_MIN: f32 = 200.0;
 const CELL_CTRL_MAX: f32 = 800.0;
 /// Radius to curve intersection
 const CELL_MIN_RADIUS: f32 = 50.0;
-/// It seems that keeping radius size between 100-125% of **the smaller** of ctrl_x or
-/// ctrl_y keeps the shape from getting too sharp, at least on the concave "surfaces".
+/// It seems that keeping radius size between 100-125% of **the smaller** of ctrl.x or
+/// ctrl.y keeps the shape from getting too sharp, at least on the concave "surfaces".
 const CELL_MAX_RADIUS_MODIFIER: f32 = 1.10;
 const CELL_SEG_RT: usize = 0;
 const CELL_SEG_RB: usize = 1;
 const CELL_SEG_LB: usize = 2;
 const CELL_SEG_LT: usize = 3;
+/// Although these speed values are used for both radius and ctrl speeds, the ctrl max speed is
+/// nerfed in the `mutate_cell` system
 const CELL_MIN_SPEED: f32 = 1.0;
 const CELL_MAX_SPEED: f32 = 20.0;
-pub const CELL_STEP: f64 = 0.5;
-// pub const CELL_STEP: f64 = 5.0;
+pub const CELL_STEP: f64 = 0.1;
+// pub const CELL_STEP: f64 = 1.0;
 
 
 #[derive(Component)]
 pub struct CellSegment {
-    ctrl_x: f32,
-    ctrl_y: f32,
+    ctrl: Vec2,
     ctrl_target: Vec2,
     ctrl_speed: f32,
     radius: f32,
@@ -47,18 +48,17 @@ pub struct CellSegment {
 
 impl CellSegment {
     fn get_max_radius(&self) -> f32 {
-        if self.ctrl_x > self.ctrl_y {
-            return self.ctrl_y * CELL_MAX_RADIUS_MODIFIER;
+        if self.ctrl.x > self.ctrl.y {
+            return self.ctrl.y * CELL_MAX_RADIUS_MODIFIER;
         }
-        return self.ctrl_x * CELL_MAX_RADIUS_MODIFIER;
+        return self.ctrl.x * CELL_MAX_RADIUS_MODIFIER;
     }
 }
 
 impl Default for CellSegment {
     fn default() -> Self {
         Self {
-            ctrl_x: CELL_CTRL_MIN,
-            ctrl_y: CELL_CTRL_MIN,
+            ctrl: Vec2::new(CELL_CTRL_MIN, CELL_CTRL_MIN),
             ctrl_speed: CELL_MIN_SPEED,
             ctrl_target: Vec2::new(CELL_CTRL_MIN, CELL_CTRL_MIN),
             radius: CELL_MIN_RADIUS,
@@ -93,8 +93,8 @@ fn gen_cell_path(cell: &Cell) -> PathBuilder {
     path_builder.move_to(Vec2::new(0.0, cell.segments[CELL_SEG_LT].radius));
     path_builder.quadratic_bezier_to(
         Vec2::new(
-            cell.segments[CELL_SEG_RT].ctrl_x,
-            cell.segments[CELL_SEG_RT].ctrl_y,
+            cell.segments[CELL_SEG_RT].ctrl.x,
+            cell.segments[CELL_SEG_RT].ctrl.y,
         ),
         Vec2::new(cell.segments[CELL_SEG_RT].radius, 0.0),
     );
@@ -102,8 +102,8 @@ fn gen_cell_path(cell: &Cell) -> PathBuilder {
     // Right side bottom
     path_builder.quadratic_bezier_to(
         Vec2::new(
-            cell.segments[CELL_SEG_RB].ctrl_x,
-            -cell.segments[CELL_SEG_RB].ctrl_y,
+            cell.segments[CELL_SEG_RB].ctrl.x,
+            -cell.segments[CELL_SEG_RB].ctrl.y,
         ),
         Vec2::new(0.0, -cell.segments[CELL_SEG_RB].radius),
     );
@@ -111,8 +111,8 @@ fn gen_cell_path(cell: &Cell) -> PathBuilder {
     // Left side bottom
     path_builder.quadratic_bezier_to(
         Vec2::new(
-            -cell.segments[CELL_SEG_LB].ctrl_x,
-            -cell.segments[CELL_SEG_LB].ctrl_y,
+            -cell.segments[CELL_SEG_LB].ctrl.x,
+            -cell.segments[CELL_SEG_LB].ctrl.y,
         ),
         Vec2::new(-cell.segments[CELL_SEG_LB].radius, 0.0),
     );
@@ -120,8 +120,8 @@ fn gen_cell_path(cell: &Cell) -> PathBuilder {
     // Left side top
     path_builder.quadratic_bezier_to(
         Vec2::new(
-            -cell.segments[CELL_SEG_LT].ctrl_x,
-            cell.segments[CELL_SEG_LT].ctrl_y,
+            -cell.segments[CELL_SEG_LT].ctrl.x,
+            cell.segments[CELL_SEG_LT].ctrl.y,
         ),
         // Need to close up cleanly so we are going back to values from the RT segment
         // Vec2::new(0.0, cell.segments[3].radius),
@@ -177,8 +177,8 @@ fn get_next_location(current_location: f32, target_location: f32, speed: f32) ->
 fn redraw_cell(mut query: Query<(&mut Path, &mut Cell)>) {
     let (mut path, mut cell) = query.iter_mut().next().unwrap();
     for seg in &mut cell.segments {
-        seg.ctrl_x = get_next_location(seg.ctrl_x, seg.ctrl_target.x, seg.ctrl_speed);
-        seg.ctrl_y = get_next_location(seg.ctrl_y, seg.ctrl_target.y, seg.ctrl_speed);
+        seg.ctrl.x = get_next_location(seg.ctrl.x, seg.ctrl_target.x, seg.ctrl_speed);
+        seg.ctrl.y = get_next_location(seg.ctrl.y, seg.ctrl_target.y, seg.ctrl_speed);
         seg.radius = get_next_location(seg.radius, seg.radius_target, seg.radius_speed);
     }
     let path_builder = gen_cell_path(&cell);
