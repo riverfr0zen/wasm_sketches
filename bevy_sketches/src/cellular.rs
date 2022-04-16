@@ -22,13 +22,14 @@ const CELL_INNER_STROKE_CLR: Color = Color::rgba(0.41, 0.1, 0.03, 0.2);
 const CELL_INNER_STROKE: f32 = 2.0;
 const CELL_INNER_SIZE: f32 = 0.9;
 const CELL_CTRL_MIN: f32 = 100.0;
-const CELL_CTRL_MAX: f32 = 900.0;
+const CELL_CTRL_MAX: f32 = 600.0;
 /// Radius to curve intersection
 /// Setting the CELL_MIN_RADIUS closer to CELL_CTRL_MIN lessens the valleys in the shape
 const CELL_MIN_RADIUS: f32 = 150.0;
 /// It seems that keeping radius size between 100-125% of **the smaller** of ctrl.x or
 /// ctrl.y keeps the shape from getting too sharp, at least on the concave "surfaces".
 const CELL_MAX_RADIUS_MODIFIER: f32 = 1.10;
+const CELL_MAX_RADIUS_TIGHTNESS: f32 = 2.0;
 const CELL_SEG_RT: usize = 0;
 const CELL_SEG_RB: usize = 1;
 const CELL_SEG_LB: usize = 2;
@@ -49,14 +50,34 @@ pub struct CellSegment {
     radius: f32,
     radius_target: f32,
     radius_speed: f32,
+    max_radius_looser: bool,
 }
 
 
 impl CellSegment {
+    fn tight() -> Self {
+        Self {
+            ctrl: Vec2::new(CELL_CTRL_MIN, CELL_CTRL_MIN),
+            ctrl_speed: CELL_MIN_SPEED,
+            ctrl_target: Vec2::new(CELL_CTRL_MIN, CELL_CTRL_MIN),
+            radius: CELL_MIN_RADIUS,
+            radius_target: CELL_MIN_RADIUS,
+            radius_speed: CELL_MIN_SPEED,
+            max_radius_looser: false,
+        }
+    }
+
+
     fn get_max_radius(&self) -> f32 {
-        let mut max_radius = self.ctrl.x * CELL_MAX_RADIUS_MODIFIER;
+        if self.max_radius_looser {
+            return self.get_looser_max_radius();
+        }
+
+        let max_radius;
         if self.ctrl.x > self.ctrl.y {
             max_radius = self.ctrl.y * CELL_MAX_RADIUS_MODIFIER;
+        } else {
+            max_radius = self.ctrl.x * CELL_MAX_RADIUS_MODIFIER;
         }
         if max_radius <= CELL_MIN_RADIUS {
             return CELL_MIN_RADIUS + 1.0;
@@ -64,8 +85,9 @@ impl CellSegment {
         return max_radius;
     }
 
-    fn get_max_radius2(&self) -> f32 {
-        let max_radius = (self.ctrl.x + self.ctrl.y) / 2.0;
+    /// Get a max radius that is not as gated by the smaller of ctrl.x and ctrl.y
+    fn get_looser_max_radius(&self) -> f32 {
+        let max_radius = (self.ctrl.x + self.ctrl.y) / CELL_MAX_RADIUS_TIGHTNESS;
         if max_radius <= CELL_MIN_RADIUS {
             return CELL_MIN_RADIUS + 1.0;
         }
@@ -83,6 +105,7 @@ impl Default for CellSegment {
             radius: CELL_MIN_RADIUS,
             radius_target: CELL_MIN_RADIUS,
             radius_speed: CELL_MIN_SPEED,
+            max_radius_looser: true,
         }
     }
 }
@@ -94,9 +117,18 @@ pub struct Cell {
 }
 
 
-#[derive(Component)]
-pub struct CellInner;
-
+impl Cell {
+    fn tight() -> Self {
+        Self {
+            segments: [
+                CellSegment::tight(),
+                CellSegment::tight(),
+                CellSegment::tight(),
+                CellSegment::tight(),
+            ],
+        }
+    }
+}
 
 impl Default for Cell {
     fn default() -> Self {
@@ -110,6 +142,10 @@ impl Default for Cell {
         }
     }
 }
+
+
+#[derive(Component)]
+pub struct CellInner;
 
 
 fn gen_cell_path(cell: &Cell) -> PathBuilder {
@@ -160,6 +196,7 @@ fn gen_cell_path(cell: &Cell) -> PathBuilder {
 
 fn cell_setup(mut commands: Commands) {
     let cell = Cell::default();
+    // let cell = Cell::tight();
     let path_builder = gen_cell_path(&cell);
 
     let path = path_builder.build().0;
