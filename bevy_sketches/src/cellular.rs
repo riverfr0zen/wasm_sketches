@@ -7,20 +7,25 @@ use rand::prelude::thread_rng;
 use rand::Rng;
 
 /*
- * curve_eg
+ * cellular
  *
  * Instructed by:
  * https://github.com/Nilirad/bevy_prototype_lyon/blob/master/src/path.rs
  */
 
 pub const CELL_CLEAR_CLR: Color = Color::rgb(0.58, 0.71, 0.87);
-const CELL_FILL_CLR: Color = Color::rgba(0.95, 0.85, 0.62, 0.2);
+const CELL_FILL_CLR: Color = Color::rgba(0.95, 0.85, 0.62, 0.1);
 const CELL_STROKE_CLR: Color = Color::rgba(0.95, 0.91, 0.81, 0.2);
 const CELL_STROKE: f32 = 5.0;
-const CELL_CTRL_MIN: f32 = 200.0;
-const CELL_CTRL_MAX: f32 = 800.0;
+const CELL_INNER_FILL_CLR: Color = Color::rgba(1.0, 0.79, 0.69, 0.2);
+const CELL_INNER_STROKE_CLR: Color = Color::rgba(0.41, 0.1, 0.03, 0.2);
+const CELL_INNER_STROKE: f32 = 2.0;
+const CELL_INNER_SIZE: f32 = 0.9;
+const CELL_CTRL_MIN: f32 = 100.0;
+const CELL_CTRL_MAX: f32 = 900.0;
 /// Radius to curve intersection
-const CELL_MIN_RADIUS: f32 = 50.0;
+/// Setting the CELL_MIN_RADIUS closer to CELL_CTRL_MIN lessens the valleys in the shape
+const CELL_MIN_RADIUS: f32 = 150.0;
 /// It seems that keeping radius size between 100-125% of **the smaller** of ctrl.x or
 /// ctrl.y keeps the shape from getting too sharp, at least on the concave "surfaces".
 const CELL_MAX_RADIUS_MODIFIER: f32 = 1.10;
@@ -31,8 +36,8 @@ const CELL_SEG_LT: usize = 3;
 /// Although these speed values are used for both radius and ctrl speeds, the ctrl max speed is
 /// nerfed in the `mutate_cell` system
 const CELL_MIN_SPEED: f32 = 1.0;
-const CELL_MAX_SPEED: f32 = 20.0;
-pub const CELL_STEP: f64 = 0.1;
+const CELL_MAX_SPEED: f32 = 4.0;
+pub const CELL_STEP: f64 = 0.3;
 // pub const CELL_STEP: f64 = 1.0;
 
 
@@ -46,14 +51,28 @@ pub struct CellSegment {
     radius_speed: f32,
 }
 
+
 impl CellSegment {
     fn get_max_radius(&self) -> f32 {
+        let mut max_radius = self.ctrl.x * CELL_MAX_RADIUS_MODIFIER;
         if self.ctrl.x > self.ctrl.y {
-            return self.ctrl.y * CELL_MAX_RADIUS_MODIFIER;
+            max_radius = self.ctrl.y * CELL_MAX_RADIUS_MODIFIER;
         }
-        return self.ctrl.x * CELL_MAX_RADIUS_MODIFIER;
+        if max_radius <= CELL_MIN_RADIUS {
+            return CELL_MIN_RADIUS + 1.0;
+        }
+        return max_radius;
+    }
+
+    fn get_max_radius2(&self) -> f32 {
+        let max_radius = (self.ctrl.x + self.ctrl.y) / 2.0;
+        if max_radius <= CELL_MIN_RADIUS {
+            return CELL_MIN_RADIUS + 1.0;
+        }
+        return max_radius;
     }
 }
+
 
 impl Default for CellSegment {
     fn default() -> Self {
@@ -68,10 +87,16 @@ impl Default for CellSegment {
     }
 }
 
+
 #[derive(Component)]
 pub struct Cell {
     segments: [CellSegment; 4],
 }
+
+
+#[derive(Component)]
+pub struct CellInner;
+
 
 impl Default for Cell {
     fn default() -> Self {
@@ -85,6 +110,7 @@ impl Default for Cell {
         }
     }
 }
+
 
 fn gen_cell_path(cell: &Cell) -> PathBuilder {
     let mut path_builder = PathBuilder::new();
@@ -139,7 +165,7 @@ fn cell_setup(mut commands: Commands) {
     let path = path_builder.build().0;
 
     commands.spawn_bundle(OrthographicCameraBundle::new_2d());
-    commands
+    let cell_bundle = commands
         .spawn_bundle(GeometryBuilder::build_as(
             &path,
             // DrawMode::Stroke(StrokeMode::new(Color::BLACK, 10.0)),
@@ -149,7 +175,24 @@ fn cell_setup(mut commands: Commands) {
             },
             Transform::default(),
         ))
-        .insert(cell);
+        .insert(cell)
+        .id();
+
+    commands
+        .spawn_bundle(GeometryBuilder::build_as(
+            &path,
+            // DrawMode::Stroke(StrokeMode::new(Color::BLACK, 10.0)),
+            DrawMode::Outlined {
+                fill_mode: FillMode::color(CELL_INNER_FILL_CLR),
+                outline_mode: StrokeMode::new(CELL_INNER_STROKE_CLR, CELL_INNER_STROKE),
+            },
+            Transform {
+                scale: Vec3::new(CELL_INNER_SIZE, CELL_INNER_SIZE, -2.0),
+                ..Default::default()
+            },
+        ))
+        .insert(CellInner)
+        .insert(Parent(cell_bundle));
 }
 
 
@@ -190,6 +233,31 @@ fn redraw_cell(mut query: Query<(&mut Path, &mut Cell)>) {
 }
 
 
+// With help from
+// https://bevy-cheatbook.github.io/features/parent-child.html
+// https://github.com/bevyengine/bevy/blob/main/examples/ecs/hierarchy.rs
+fn redraw_cell_inner(
+    inner_q: Query<(Entity, &Parent), With<CellInner>>,
+    mut path_q: Query<&mut Path, Without<Cell>>,
+    outer_path_q: Query<(&Path, &Cell), With<Cell>>,
+) {
+    let (inner_entity, parent) = inner_q.iter().next().unwrap();
+    if let Ok(mut inner_path) = path_q.get_mut(inner_entity) {
+        if let Ok((outer_path, cell)) = outer_path_q.get(parent.0) {
+            debug!("hoi {:?}", inner_path.0.as_slice());
+            debug!("hoi {:?}", outer_path.0.as_slice());
+
+            // Here we have to gen_cell_path again (it is already done in redraw_cell system).
+            // Maybe can avoid this by moving all of this into redraw_cell since I think I
+            // know how to solve the query conflict issue now.
+            let path_builder = gen_cell_path(&cell);
+            let new_path = path_builder.build().0;
+            *inner_path = ShapePath::build_as(&new_path);
+        }
+    }
+}
+
+
 fn mutate_cell(mut query: Query<&mut Cell>) {
     let mut rng = thread_rng();
     let mut cell = query.iter_mut().next().unwrap();
@@ -203,13 +271,18 @@ fn mutate_cell(mut query: Query<&mut Cell>) {
     }
 }
 
+
 pub fn app() {
-    let webcfg = WebExtrasCfg::default();
+    let webcfg = WebExtrasCfg {
+        title: String::from("cellular"),
+        ..Default::default()
+    };
     let mut app = sketch(webcfg);
     app.insert_resource(ClearColor(CELL_CLEAR_CLR))
         .add_plugin(ShapePlugin)
         .add_startup_system(cell_setup)
         .add_system(redraw_cell)
+        .add_system(redraw_cell_inner)
         .add_system(mutate_cell.with_run_criteria(FixedTimestep::step(CELL_STEP)));
 
     app.run();
