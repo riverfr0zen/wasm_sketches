@@ -22,14 +22,15 @@ const CELL_INNER_STROKE_CLR: Color = Color::rgba(0.41, 0.1, 0.03, 0.2);
 const CELL_INNER_STROKE: f32 = 2.0;
 const CELL_INNER_SIZE: f32 = 0.9;
 const CELL_CTRL_MIN: f32 = 100.0;
-const CELL_CTRL_MAX: f32 = 600.0;
+const CELL_CTRL_MAX: f32 = 250.0;
 /// Radius to curve intersection
 /// Setting the CELL_MIN_RADIUS closer to CELL_CTRL_MIN lessens the valleys in the shape
-const CELL_MIN_RADIUS: f32 = 150.0;
+const CELL_MIN_RADIUS: f32 = 100.0;
 /// It seems that keeping radius size between 100-125% of **the smaller** of ctrl.x or
 /// ctrl.y keeps the shape from getting too sharp, at least on the concave "surfaces".
 const CELL_MAX_RADIUS_MODIFIER: f32 = 1.10;
-const CELL_MAX_RADIUS_TIGHTNESS: f32 = 2.0;
+/// Less tight causes more convex / peaks (if using Cell::tight())
+const CELL_MAX_RADIUS_TIGHTNESS: f32 = 1.5;
 const CELL_SEG_RT: usize = 0;
 const CELL_SEG_RB: usize = 1;
 const CELL_SEG_LB: usize = 2;
@@ -198,7 +199,6 @@ fn cell_setup(mut commands: Commands) {
     let cell = Cell::default();
     // let cell = Cell::tight();
     let path_builder = gen_cell_path(&cell);
-
     let path = path_builder.build().0;
 
     commands.spawn_bundle(OrthographicCameraBundle::new_2d());
