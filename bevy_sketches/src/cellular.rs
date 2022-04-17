@@ -254,8 +254,11 @@ fn get_next_location(current_location: f32, target_location: f32, speed: f32) ->
 }
 
 
-fn redraw_cell(mut query: Query<(&mut Path, &mut Cell)>) {
-    let (mut path, mut cell) = query.iter_mut().next().unwrap();
+fn redraw_cell(
+    mut query: Query<(&mut Path, &mut Cell, &Children)>,
+    mut inner_cell_query: Query<(&mut Path, With<CellInner>), Without<Cell>>,
+) {
+    let (mut path, mut cell, children) = query.iter_mut().next().unwrap();
     for seg in &mut cell.segments {
         seg.ctrl.x = get_next_location(seg.ctrl.x, seg.ctrl_target.x, seg.ctrl_speed);
         seg.ctrl.y = get_next_location(seg.ctrl.y, seg.ctrl_target.y, seg.ctrl_speed);
@@ -265,28 +268,10 @@ fn redraw_cell(mut query: Query<(&mut Path, &mut Cell)>) {
     //  * Irf: Temporary workaround until the fix mentioned in this issue is released:
     //  * https://github.com/Nilirad/bevy_prototype_lyon/issues/138
     let new_path = path_builder.build().0;
-
     *path = ShapePath::build_as(&new_path);
-}
 
-
-// With help from
-// https://bevy-cheatbook.github.io/features/parent-child.html
-// https://github.com/bevyengine/bevy/blob/main/examples/ecs/hierarchy.rs
-fn redraw_cell_inner(
-    mut inner_q: Query<(&mut Path, &Parent, With<CellInner>), Without<Cell>>,
-    outer_path_q: Query<(&Path, &Cell), With<Cell>>,
-) {
-    let (mut inner_path, parent, _) = inner_q.iter_mut().next().unwrap();
-    if let Ok((outer_path, cell)) = outer_path_q.get(parent.0) {
-        debug!("hoi {:?}", inner_path.0.as_slice());
-        debug!("hoi {:?}", outer_path.0.as_slice());
-
-        // Here we have to gen_cell_path again (it is already done in redraw_cell system).
-        // Maybe can avoid this by moving all of this into redraw_cell since I think I
-        // know how to solve the query conflict issue now.
-        let path_builder = gen_cell_path(&cell);
-        let new_path = path_builder.build().0;
+    let &inner_cell_entity = children.iter().next().unwrap();
+    if let Ok((mut inner_path, _)) = inner_cell_query.get_mut(inner_cell_entity) {
         *inner_path = ShapePath::build_as(&new_path);
     }
 }
@@ -316,7 +301,7 @@ pub fn app() {
         .add_plugin(ShapePlugin)
         .add_startup_system(cell_setup)
         .add_system(redraw_cell)
-        .add_system(redraw_cell_inner)
+        // .add_system(redraw_cell_inner)
         .add_system(mutate_cell.with_run_criteria(FixedTimestep::step(CELL_STEP)));
 
     app.run();
