@@ -29,7 +29,7 @@ const CELL_MIN_RADIUS: f32 = 100.0;
 /// It seems that keeping radius size between 100-125% of **the smaller** of ctrl.x or
 /// ctrl.y keeps the shape from getting too sharp, at least on the concave "surfaces".
 const CELL_MAX_RADIUS_MODIFIER: f32 = 1.10;
-/// Less tight causes more convex / peaks (if using Cell::tight())
+/// Less tight causes more convex / peaks (used only if max_radius_looser)
 const CELL_MAX_RADIUS_TIGHTNESS: f32 = 1.5;
 const CELL_SEG_RT: usize = 0;
 const CELL_SEG_RB: usize = 1;
@@ -56,19 +56,6 @@ pub struct CellSegment {
 
 
 impl CellSegment {
-    fn tight() -> Self {
-        Self {
-            ctrl: Vec2::new(CELL_CTRL_MIN, CELL_CTRL_MIN),
-            ctrl_speed: CELL_MIN_SPEED,
-            ctrl_target: Vec2::new(CELL_CTRL_MIN, CELL_CTRL_MIN),
-            radius: CELL_MIN_RADIUS,
-            radius_target: CELL_MIN_RADIUS,
-            radius_speed: CELL_MIN_SPEED,
-            max_radius_looser: false,
-        }
-    }
-
-
     fn get_max_radius(&self) -> f32 {
         if self.max_radius_looser {
             return self.get_looser_max_radius();
@@ -122,10 +109,22 @@ impl Cell {
     fn tight() -> Self {
         Self {
             segments: [
-                CellSegment::tight(),
-                CellSegment::tight(),
-                CellSegment::tight(),
-                CellSegment::tight(),
+                CellSegment {
+                    max_radius_looser: false,
+                    ..Default::default()
+                },
+                CellSegment {
+                    max_radius_looser: false,
+                    ..Default::default()
+                },
+                CellSegment {
+                    max_radius_looser: false,
+                    ..Default::default()
+                },
+                CellSegment {
+                    max_radius_looser: false,
+                    ..Default::default()
+                },
             ],
         }
     }
@@ -202,6 +201,7 @@ fn cell_setup(mut commands: Commands) {
     let path = path_builder.build().0;
 
     commands.spawn_bundle(OrthographicCameraBundle::new_2d());
+
     let cell_bundle = commands
         .spawn_bundle(GeometryBuilder::build_as(
             &path,
@@ -210,7 +210,10 @@ fn cell_setup(mut commands: Commands) {
                 fill_mode: FillMode::color(CELL_FILL_CLR),
                 outline_mode: StrokeMode::new(CELL_STROKE_CLR, CELL_STROKE),
             },
-            Transform::default(),
+            Transform {
+                translation: Vec3::new(0.0, 0.0, 2.0),
+                ..Default::default()
+            },
         ))
         .insert(cell)
         .id();
@@ -224,12 +227,49 @@ fn cell_setup(mut commands: Commands) {
                 outline_mode: StrokeMode::new(CELL_INNER_STROKE_CLR, CELL_INNER_STROKE),
             },
             Transform {
-                scale: Vec3::new(CELL_INNER_SIZE, CELL_INNER_SIZE, -2.0),
+                translation: Vec3::new(0.0, 0.0, 1.0),
+                scale: Vec3::new(CELL_INNER_SIZE, CELL_INNER_SIZE, 1.0),
                 ..Default::default()
             },
         ))
         .insert(CellInner)
         .insert(Parent(cell_bundle));
+
+    // let cell2 = Cell::tight();
+    // let path_builder = gen_cell_path(&cell2);
+    // let path = path_builder.build().0;
+    // let cell_bundle2 = commands
+    //     .spawn_bundle(GeometryBuilder::build_as(
+    //         &path,
+    //         // DrawMode::Stroke(StrokeMode::new(Color::BLACK, 10.0)),
+    //         DrawMode::Outlined {
+    //             fill_mode: FillMode::color(CELL_FILL_CLR),
+    //             outline_mode: StrokeMode::new(CELL_STROKE_CLR, CELL_STROKE),
+    //         },
+    //         Transform {
+    //             translation: Vec3::new(400.0, 400.0, 4.0),
+    //             ..Default::default()
+    //         },
+    //     ))
+    //     .insert(cell2)
+    //     .id();
+
+    // commands
+    //     .spawn_bundle(GeometryBuilder::build_as(
+    //         &path,
+    //         // DrawMode::Stroke(StrokeMode::new(Color::BLACK, 10.0)),
+    //         DrawMode::Outlined {
+    //             fill_mode: FillMode::color(CELL_INNER_FILL_CLR),
+    //             outline_mode: StrokeMode::new(CELL_INNER_STROKE_CLR, CELL_INNER_STROKE),
+    //         },
+    //         Transform {
+    //             translation: Vec3::new(0.0, 0.0, 3.0),
+    //             scale: Vec3::new(CELL_INNER_SIZE, CELL_INNER_SIZE, 1.0),
+    //             ..Default::default()
+    //         },
+    //     ))
+    //     .insert(CellInner)
+    //     .insert(Parent(cell_bundle2));
 }
 
 
@@ -261,35 +301,37 @@ fn redraw_cell(
     mut query: Query<(&mut Path, &mut Cell, &Children)>,
     mut inner_cell_query: Query<(&mut Path, With<CellInner>), Without<Cell>>,
 ) {
-    let (mut path, mut cell, children) = query.iter_mut().next().unwrap();
-    for seg in &mut cell.segments {
-        seg.ctrl.x = get_next_location(seg.ctrl.x, seg.ctrl_target.x, seg.ctrl_speed);
-        seg.ctrl.y = get_next_location(seg.ctrl.y, seg.ctrl_target.y, seg.ctrl_speed);
-        seg.radius = get_next_location(seg.radius, seg.radius_target, seg.radius_speed);
-    }
-    let path_builder = gen_cell_path(&cell);
-    //  * Irf: Temporary workaround until the fix mentioned in this issue is released:
-    //  * https://github.com/Nilirad/bevy_prototype_lyon/issues/138
-    let new_path = path_builder.build().0;
-    *path = ShapePath::build_as(&new_path);
+    for (mut path, mut cell, children) in query.iter_mut() {
+        for seg in &mut cell.segments {
+            seg.ctrl.x = get_next_location(seg.ctrl.x, seg.ctrl_target.x, seg.ctrl_speed);
+            seg.ctrl.y = get_next_location(seg.ctrl.y, seg.ctrl_target.y, seg.ctrl_speed);
+            seg.radius = get_next_location(seg.radius, seg.radius_target, seg.radius_speed);
+        }
+        let path_builder = gen_cell_path(&cell);
+        //  * Irf: Temporary workaround until the fix mentioned in this issue is released:
+        //  * https://github.com/Nilirad/bevy_prototype_lyon/issues/138
+        let new_path = path_builder.build().0;
+        *path = ShapePath::build_as(&new_path);
 
-    let &inner_cell_entity = children.iter().next().unwrap();
-    if let Ok((mut inner_path, _)) = inner_cell_query.get_mut(inner_cell_entity) {
-        *inner_path = ShapePath::build_as(&new_path);
+        let &inner_cell_entity = children.iter().next().unwrap();
+        if let Ok((mut inner_path, _)) = inner_cell_query.get_mut(inner_cell_entity) {
+            *inner_path = ShapePath::build_as(&new_path);
+        }
     }
 }
 
 
 fn mutate_cell(mut query: Query<&mut Cell>) {
     let mut rng = thread_rng();
-    let mut cell = query.iter_mut().next().unwrap();
 
-    for seg in &mut cell.segments {
-        seg.radius_speed = rng.gen_range(CELL_MIN_SPEED..CELL_MAX_SPEED);
-        seg.ctrl_speed = rng.gen_range(CELL_MIN_SPEED..CELL_MAX_SPEED / 2.0);
-        seg.ctrl_target.x = rng.gen_range(CELL_CTRL_MIN..CELL_CTRL_MAX);
-        seg.ctrl_target.y = rng.gen_range(CELL_CTRL_MIN..CELL_CTRL_MAX);
-        seg.radius_target = rng.gen_range(CELL_MIN_RADIUS..seg.get_max_radius());
+    for mut cell in query.iter_mut() {
+        for seg in &mut cell.segments {
+            seg.radius_speed = rng.gen_range(CELL_MIN_SPEED..CELL_MAX_SPEED);
+            seg.ctrl_speed = rng.gen_range(CELL_MIN_SPEED..CELL_MAX_SPEED / 2.0);
+            seg.ctrl_target.x = rng.gen_range(CELL_CTRL_MIN..CELL_CTRL_MAX);
+            seg.ctrl_target.y = rng.gen_range(CELL_CTRL_MIN..CELL_CTRL_MAX);
+            seg.radius_target = rng.gen_range(CELL_MIN_RADIUS..seg.get_max_radius());
+        }
     }
 }
 
