@@ -274,23 +274,20 @@ fn redraw_cell(mut query: Query<(&mut Path, &mut Cell)>) {
 // https://bevy-cheatbook.github.io/features/parent-child.html
 // https://github.com/bevyengine/bevy/blob/main/examples/ecs/hierarchy.rs
 fn redraw_cell_inner(
-    inner_q: Query<(Entity, &Parent), With<CellInner>>,
-    mut path_q: Query<&mut Path, Without<Cell>>,
+    mut inner_q: Query<(&mut Path, &Parent, With<CellInner>), Without<Cell>>,
     outer_path_q: Query<(&Path, &Cell), With<Cell>>,
 ) {
-    let (inner_entity, parent) = inner_q.iter().next().unwrap();
-    if let Ok(mut inner_path) = path_q.get_mut(inner_entity) {
-        if let Ok((outer_path, cell)) = outer_path_q.get(parent.0) {
-            debug!("hoi {:?}", inner_path.0.as_slice());
-            debug!("hoi {:?}", outer_path.0.as_slice());
+    let (mut inner_path, parent, _) = inner_q.iter_mut().next().unwrap();
+    if let Ok((outer_path, cell)) = outer_path_q.get(parent.0) {
+        debug!("hoi {:?}", inner_path.0.as_slice());
+        debug!("hoi {:?}", outer_path.0.as_slice());
 
-            // Here we have to gen_cell_path again (it is already done in redraw_cell system).
-            // Maybe can avoid this by moving all of this into redraw_cell since I think I
-            // know how to solve the query conflict issue now.
-            let path_builder = gen_cell_path(&cell);
-            let new_path = path_builder.build().0;
-            *inner_path = ShapePath::build_as(&new_path);
-        }
+        // Here we have to gen_cell_path again (it is already done in redraw_cell system).
+        // Maybe can avoid this by moving all of this into redraw_cell since I think I
+        // know how to solve the query conflict issue now.
+        let path_builder = gen_cell_path(&cell);
+        let new_path = path_builder.build().0;
+        *inner_path = ShapePath::build_as(&new_path);
     }
 }
 
