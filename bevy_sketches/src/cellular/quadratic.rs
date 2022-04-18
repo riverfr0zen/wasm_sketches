@@ -194,13 +194,11 @@ fn gen_cell_path(cell: &Cell) -> PathBuilder {
 }
 
 
-fn cell_setup(mut commands: Commands) {
-    let cell = Cell::default();
+fn spawn_cell(commands: &mut Commands, cell: Cell, translation: Vec3) -> Entity {
+    // let cell = Cell::default();
     // let cell = Cell::tight();
     let path_builder = gen_cell_path(&cell);
     let path = path_builder.build().0;
-
-    commands.spawn_bundle(OrthographicCameraBundle::new_2d());
 
     let cell_bundle = commands
         .spawn_bundle(GeometryBuilder::build_as(
@@ -211,7 +209,7 @@ fn cell_setup(mut commands: Commands) {
                 outline_mode: StrokeMode::new(CELL_STROKE_CLR, CELL_STROKE),
             },
             Transform {
-                translation: Vec3::new(0.0, 0.0, 2.0),
+                translation: translation,
                 ..Default::default()
             },
         ))
@@ -227,7 +225,7 @@ fn cell_setup(mut commands: Commands) {
                 outline_mode: StrokeMode::new(CELL_INNER_STROKE_CLR, CELL_INNER_STROKE),
             },
             Transform {
-                translation: Vec3::new(0.0, 0.0, 1.0),
+                translation: Vec3::new(0.0, 0.0, translation.z - 1.0),
                 scale: Vec3::new(CELL_INNER_SIZE, CELL_INNER_SIZE, 1.0),
                 ..Default::default()
             },
@@ -235,41 +233,20 @@ fn cell_setup(mut commands: Commands) {
         .insert(CellInner)
         .insert(Parent(cell_bundle));
 
-    // let cell2 = Cell::tight();
-    // let path_builder = gen_cell_path(&cell2);
-    // let path = path_builder.build().0;
-    // let cell_bundle2 = commands
-    //     .spawn_bundle(GeometryBuilder::build_as(
-    //         &path,
-    //         // DrawMode::Stroke(StrokeMode::new(Color::BLACK, 10.0)),
-    //         DrawMode::Outlined {
-    //             fill_mode: FillMode::color(CELL_FILL_CLR),
-    //             outline_mode: StrokeMode::new(CELL_STROKE_CLR, CELL_STROKE),
-    //         },
-    //         Transform {
-    //             translation: Vec3::new(400.0, 400.0, 4.0),
-    //             ..Default::default()
-    //         },
-    //     ))
-    //     .insert(cell2)
-    //     .id();
+    return cell_bundle;
+}
 
-    // commands
-    //     .spawn_bundle(GeometryBuilder::build_as(
-    //         &path,
-    //         // DrawMode::Stroke(StrokeMode::new(Color::BLACK, 10.0)),
-    //         DrawMode::Outlined {
-    //             fill_mode: FillMode::color(CELL_INNER_FILL_CLR),
-    //             outline_mode: StrokeMode::new(CELL_INNER_STROKE_CLR, CELL_INNER_STROKE),
-    //         },
-    //         Transform {
-    //             translation: Vec3::new(0.0, 0.0, 3.0),
-    //             scale: Vec3::new(CELL_INNER_SIZE, CELL_INNER_SIZE, 1.0),
-    //             ..Default::default()
-    //         },
-    //     ))
-    //     .insert(CellInner)
-    //     .insert(Parent(cell_bundle2));
+
+fn cell_setup(mut commands: Commands) {
+    commands.spawn_bundle(OrthographicCameraBundle::new_2d());
+
+    spawn_cell(&mut commands, Cell::default(), Vec3::ONE);
+    spawn_cell(&mut commands, Cell::tight(), Vec3::new(300.0, 300.0, 2.0));
+    spawn_cell(
+        &mut commands,
+        Cell::default(),
+        Vec3::new(-350.0, 320.0, 3.0),
+    );
 }
 
 
@@ -339,6 +316,7 @@ fn mutate_cell(mut query: Query<&mut Cell>) {
 pub fn app() {
     let webcfg = WebExtrasCfg {
         title: String::from("cellular"),
+        match_clear_color: true,
         ..Default::default()
     };
     let mut app = sketch(webcfg);
