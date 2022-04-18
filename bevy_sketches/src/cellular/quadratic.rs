@@ -15,10 +15,10 @@ use rand::Rng;
 
 pub const CELL_CLEAR_CLR: Color = Color::rgb(0.58, 0.71, 0.87);
 const CELL_FILL_CLR: Color = Color::rgba(0.95, 0.85, 0.62, 0.1);
-const CELL_STROKE_CLR: Color = Color::rgba(0.95, 0.91, 0.81, 0.2);
+const CELL_STROKE_CLR: Color = Color::rgba(0.95, 0.91, 0.81, 0.08);
 const CELL_STROKE: f32 = 5.0;
 const CELL_INNER_FILL_CLR: Color = Color::rgba(1.0, 0.79, 0.69, 0.2);
-const CELL_INNER_STROKE_CLR: Color = Color::rgba(0.41, 0.1, 0.03, 0.2);
+const CELL_INNER_STROKE_CLR: Color = Color::rgba(0.41, 0.1, 0.03, 0.1);
 const CELL_INNER_STROKE: f32 = 2.0;
 const CELL_INNER_SIZE: f32 = 0.9;
 const CELL_CTRL_MIN: f32 = 100.0;
@@ -195,8 +195,6 @@ fn gen_cell_path(cell: &Cell) -> PathBuilder {
 
 
 fn spawn_cell(commands: &mut Commands, cell: Cell, translation: Vec3) -> Entity {
-    // let cell = Cell::default();
-    // let cell = Cell::tight();
     let path_builder = gen_cell_path(&cell);
     let path = path_builder.build().0;
 
@@ -241,12 +239,12 @@ fn cell_setup(mut commands: Commands) {
     commands.spawn_bundle(OrthographicCameraBundle::new_2d());
 
     spawn_cell(&mut commands, Cell::default(), Vec3::ONE);
-    spawn_cell(&mut commands, Cell::tight(), Vec3::new(300.0, 300.0, 2.0));
     spawn_cell(
         &mut commands,
         Cell::default(),
         Vec3::new(-350.0, 320.0, 3.0),
     );
+    spawn_cell(&mut commands, Cell::tight(), Vec3::new(-200.0, -250.0, 2.0));
 }
 
 
