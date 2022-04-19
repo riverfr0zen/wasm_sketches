@@ -353,7 +353,8 @@ fn handle_post_browser_resize(
 pub fn app(variation: &str) {
     let webcfg = WebExtrasCfg {
         title: format!("shifty{}", String::from(variation)),
-        match_clear_color_always: true,
+        match_element: Some(String::from("content")),
+        // match_clear_color_always: true,
         ..Default::default()
     };
     // Need to copy a couple of values here b/c webcfg will be lost to `web_app`

@@ -8,14 +8,14 @@ use std::process::{Command, Stdio};
 
 
 const WWW_PATH: &str = "bevy_sketches/www";
-const CANVAS_HTML_TPL: &str = concatcp!(WWW_PATH, "/window-matching-canvas.template.html");
+const CANVAS_HTML_TPL: &str = concatcp!(WWW_PATH, "/match_window.tpl.html");
 const WASM_CONFIG: &str = concatcp!(WWW_PATH, "/sketches.json");
 const EXAMPLES_DIR: &str = "bevy_sketches/examples";
 
 
-fn gen_html_from_template(sketch: &str) {
-    println!("{}", CANVAS_HTML_TPL);
-    let file_contents = fs::read_to_string(CANVAS_HTML_TPL).expect("Unable to read file");
+fn gen_html_from_template(sketch: &str, template: &str) {
+    println!("{}", template);
+    let file_contents = fs::read_to_string(template).expect("Unable to read file");
 
     let file_contents = file_contents.replace("{{sketch}}", sketch);
     fs::write(format!("{}/{}.html", WWW_PATH, sketch), file_contents)
@@ -48,7 +48,13 @@ fn add_to_sketch_to_json_cfg(sketch: &str) -> Result<()> {
 }
 
 
-fn build_sketch(sketch: &str, no_html: &bool, framestats: &bool, debuglog: &bool) {
+fn build_sketch(
+    sketch: &str,
+    template: &String,
+    no_html: &bool,
+    framestats: &bool,
+    debuglog: &bool,
+) {
     println!("Building {}...", sketch);
     // In the previous commit I was following this example
     // https://rust-lang-nursery.github.io/rust-cookbook/os/external.html#continuously-process-child-process-outputs
@@ -106,7 +112,7 @@ fn build_sketch(sketch: &str, no_html: &bool, framestats: &bool, debuglog: &bool
 
     if !no_html {
         println!("Creating html from template...");
-        gen_html_from_template(sketch);
+        gen_html_from_template(sketch, template);
     }
 
     println!("Adding sketch to list in json...");
@@ -128,7 +134,7 @@ fn build_sketch(sketch: &str, no_html: &bool, framestats: &bool, debuglog: &bool
 }
 
 
-fn build_sketches(no_html: &bool, framestats: &bool, debuglog: &bool) {
+fn build_sketches(template: &String, no_html: &bool, framestats: &bool, debuglog: &bool) {
     let egs_dir = Path::new(EXAMPLES_DIR);
     if egs_dir.is_dir() {
         for entry in fs::read_dir(egs_dir).expect("Couldn't read directory") {
@@ -138,6 +144,7 @@ fn build_sketches(no_html: &bool, framestats: &bool, debuglog: &bool) {
                 println!("{}", path.file_stem().unwrap().to_str().unwrap());
                 build_sketch(
                     path.file_stem().unwrap().to_str().unwrap(),
+                    template,
                     no_html,
                     framestats,
                     debuglog,
@@ -154,6 +161,11 @@ struct Args {
     /// Name of the example to build
     #[clap(short, long)]
     sketch: Option<String>,
+
+    /// Html template
+    #[clap(short, long, default_value_t = CANVAS_HTML_TPL.to_string())]
+    template: String,
+
     /// Skip generation of html file
     #[clap(long = "no-html")]
     no_html: bool,
@@ -171,7 +183,18 @@ fn main() {
     let args = Args::parse();
 
     match args.sketch {
-        Some(sketch) => build_sketch(&sketch, &args.no_html, &args.framestats, &args.debuglog),
-        None => build_sketches(&args.no_html, &args.framestats, &args.debuglog),
+        Some(sketch) => build_sketch(
+            &sketch,
+            &args.template,
+            &args.no_html,
+            &args.framestats,
+            &args.debuglog,
+        ),
+        None => build_sketches(
+            &args.template,
+            &args.no_html,
+            &args.framestats,
+            &args.debuglog,
+        ),
     }
 }

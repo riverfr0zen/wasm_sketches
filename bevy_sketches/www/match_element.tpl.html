@@ -1,7 +1,7 @@
 <html>
   <head>
     <meta charset="UTF-8" />
-    <title>shiftyc</title>
+    <title>{{sketch}}</title>
     <!-- <meta name="viewport" content="width=device-width, initial-scale=1.0"> -->
     <style>
       body {
@@ -15,33 +15,22 @@
         background-color: white;
       }
 
-      #topnav {
-        background-color: white;
-        /* height: 5%; */
-      }
-
       #content {
         background-color: white;
         /* Interestingly if these dimensions are specified in `px`, web-sys will report those instead of
         the actual dimensions (e.g. specifying a height of 500px would likely not actually the result in 
-        an element of 500px height unless we used flexbox or something, but web-sys will still report 500px).
-        height: 500px; */
-        /* height: 95%; */
+        an element of 500px height unless we used flexbox or something, but web-sys will still report 500px). */
+        width: 400px;
+        height: 400px;
       }
     </style>
   </head>
   <script type="module">
-    import init from './wasms/shiftyc.js';
+    import init from './wasms/{{sketch}}.js';
     init();
   </script>
 
   <body>
-    <div id="topnav">
-      <form>
-        <input type="email" name="email" />
-        <button>Get email updates</button>
-      </form>
-    </div>
     <div id="content">
       <canvas id="window-matching-canvas"></canvas>
     </div>
