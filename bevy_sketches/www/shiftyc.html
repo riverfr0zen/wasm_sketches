@@ -1,70 +1,41 @@
 <html>
-  <!-- 
-    This layout is working better that `layout_flex.html` for now, with the trade-off that the canvas 
-    will flow over a little if the window gets too small horizontally (not sure what criteria for 
-    "too small" is, but maybe something to do with the topnav).
-  -->
-
   <head>
     <meta charset="UTF-8" />
     <title>shiftyc</title>
-    <!-- <meta name="viewport" content="width=device-width, initial-scale=1.0"> -->
+    <!--meta name="viewport" content="width=device-width, initial-scale=1.0"/-->
     <style>
       body {
         background-color: white;
         margin: 0 !important; 
         padding: 0 !important;
         border: 0px;
-        height: 100%;
-        /* overflow: hidden; */
+        overflow: hidden;
       }
-
       canvas {
         background-color: white;
-      }
-
-      .box {
-        display: flex;
-        flex-flow: column;
-        height: 100%;
-      }
-
-      #topnav {
-        background-color: white;
-        margin: 0 !important; 
-        padding: 0 !important;
-        border: 0px;
-        text-align: right;
-      }
-
-      #content {
-        margin: 0 !important; 
-        padding: 0 !important;
-        border: 0px;
-        background-color: red;
-        height: 100%;
       }
     </style>
   </head>
   <script type="module">
     import init from './wasms/shiftyc.js';
     init();
+
+    // I don't think the resizing below adds much, since resizing is handled in
+    // the bevy app, but leaving here for future reference.
+    //
+    // resize_canvas()
+    //
+    // window.addEventListener("resize", resize_canvas);
+    //
+    // function resize_canvas() {
+    //     let canvas = document.getElementById("window-matching-canvas");
+    //     canvas.width = window.innerWidth;
+    //     canvas.height = window.innerHeight;
+    // }
+
   </script>
 
   <body>
-    <div class="box">
-      <div id="topnav">
-        <form style="margin: 0px; border: 0px; padding: 0.2rem;">
-          <input type="email" name="email" placeholder="your@email.addy"/>
-          <button>
-            Better sign-up in case there are announcements. No spam, low frequency. Click this button.
-          </button>
-        </form>
-      </div>
-      <div id="content">
-        <!-- content -->
-        <canvas id="window-matching-canvas"></canvas>
-      </div>
-    </div>
+    <canvas id="window-matching-canvas"></canvas>
   </body>
 </html>
