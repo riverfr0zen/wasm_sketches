@@ -1,8 +1,12 @@
 <html>
   <!-- 
-    This layout is working better that `layout_flex.html` for now, with the trade-off that the canvas 
-    will flow over a little if the window gets too small horizontally (not sure what criteria for 
-    "too small" is, but maybe something to do with the topnav).
+      Trying to use flexbox based on links below. However, canvas resizing only works
+      for width. Unexpected results when changing the window height!
+
+      `layout_sketches.html` works better for now (see that file for description of trade-off)
+
+      https://stackoverflow.com/questions/90178/make-a-div-fill-the-height-of-the-remaining-screen-space 
+      https://stackoverflow.com/questions/90178/make-a-div-fill-the-height-of-the-remaining-screen-space
   -->
 
   <head>
@@ -18,7 +22,6 @@
         height: 100%;
         /* overflow: hidden; */
       }
-
       canvas {
         background-color: white;
       }
@@ -35,6 +38,8 @@
         padding: 0 !important;
         border: 0px;
         text-align: right;
+        /* height: 5%; */
+        flex: 0 1 auto;
       }
 
       #content {
@@ -42,7 +47,8 @@
         padding: 0 !important;
         border: 0px;
         background-color: red;
-        height: 100%;
+        /* height: 100%; */
+        flex: 1 1 auto;
       }
     </style>
   </head>
@@ -62,7 +68,7 @@
         </form>
       </div>
       <div id="content">
-        <!-- content -->
+        <!-- content<br/> -->
         <canvas id="window-matching-canvas"></canvas>
       </div>
     </div>

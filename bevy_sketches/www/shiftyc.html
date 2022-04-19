@@ -1,4 +1,10 @@
 <html>
+  <!-- 
+    This layout is working better that `layout_flex.html` for now, with the trade-off that the canvas 
+    will flow over a little if the window gets too small horizontally (not sure what criteria for 
+    "too small" is, but maybe something to do with the topnav).
+  -->
+
   <head>
     <meta charset="UTF-8" />
     <title>shiftyc</title>
@@ -9,10 +15,18 @@
         margin: 0 !important; 
         padding: 0 !important;
         border: 0px;
+        height: 100%;
         /* overflow: hidden; */
       }
+
       canvas {
         background-color: white;
+      }
+
+      .box {
+        display: flex;
+        flex-flow: column;
+        height: 100%;
       }
 
       #topnav {
@@ -21,19 +35,14 @@
         padding: 0 !important;
         border: 0px;
         text-align: right;
-        /* height: 5%; */
       }
 
       #content {
         margin: 0 !important; 
         padding: 0 !important;
         border: 0px;
-        background-color: white;
-        /* Interestingly if these dimensions are specified in `px`, web-sys will report those instead of
-        the actual dimensions (e.g. specifying a height of 500px would likely not actually the result in 
-        an element of 500px height unless we used flexbox or something, but web-sys will still report 500px). */
-        /* height: 500px; */
-        height: 95%;
+        background-color: red;
+        height: 100%;
       }
     </style>
   </head>
@@ -43,16 +52,19 @@
   </script>
 
   <body>
-    <div id="topnav">
-      <form style="padding: 5pt;">
-        <input type="email" name="email" placeholder="your@email.addy"/>
-        <button>
-          Better sign-up in case there are announcements. No spam, low frequency. Click this button.
-        </button>
-      </form>
-    </div>
-    <div id="content">
-      <canvas id="window-matching-canvas"></canvas>
+    <div class="box">
+      <div id="topnav">
+        <form style="margin: 0px; border: 0px; padding: 0.2rem;">
+          <input type="email" name="email" placeholder="your@email.addy"/>
+          <button>
+            Better sign-up in case there are announcements. No spam, low frequency. Click this button.
+          </button>
+        </form>
+      </div>
+      <div id="content">
+        <!-- content -->
+        <canvas id="window-matching-canvas"></canvas>
+      </div>
     </div>
   </body>
 </html>
