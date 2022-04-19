@@ -1,5 +1,5 @@
 use bevy_sketches;
 
 fn main() {
-    bevy_sketches::cellular::app();
+    bevy_sketches::cellular::quadratic::app();
 }
