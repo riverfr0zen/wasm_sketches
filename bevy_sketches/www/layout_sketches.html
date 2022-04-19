@@ -9,14 +9,38 @@
         margin: 0 !important; 
         padding: 0 !important;
         border: 0px;
+        height: 100%;
         overflow: hidden;
       }
       canvas {
         background-color: white;
       }
 
-      #topnav {
-        background-color: white;
+      .box {
+        display: flex;
+        flex-flow: column;
+        height: 100%;
+      }
+
+      .box .row {
+        /* border: 0px dotted grey; */
+      }
+
+      .box .row.header {
+        flex: 0 1 auto;
+        /* The above is shorthand for:
+        flex-grow: 0,
+        flex-shrink: 1,
+        flex-basis: auto
+        */
+      }
+
+      .box .row.content {
+        flex: 1 1 auto;
+      }
+
+      /* #topnav {
+        /* background-color: white; */
         /* height: 5%; */
       }
 
@@ -24,10 +48,10 @@
         background-color: white;
         /* Interestingly if these dimensions are specified in `px`, web-sys will report those instead of
         the actual dimensions (e.g. specifying a height of 500px would likely not actually the result in 
-        an element of 500px height unless we used flexbox or something, but web-sys will still report 500px).
-        height: 500px; */
+        an element of 500px height unless we used flexbox or something, but web-sys will still report 500px). */
+        /* height: 500px; */
         /* height: 95%; */
-      }
+      } */
     </style>
   </head>
   <script type="module">
@@ -36,14 +60,22 @@
   </script>
 
   <body>
-    <div id="topnav">
-      <form>
-        <input type="email" name="email" />
-        <button>Get email updates</button>
-      </form>
-    </div>
-    <div id="content">
-      <canvas id="window-matching-canvas"></canvas>
+    <div class="box">
+
+      <div id="topnav" class="row header">
+        <div style="margin: 10pt">
+          <form>
+            <input type="email" name="email" placeholder="your@email.addy"/>
+            <button>
+              Better sign-up in case there are announcements. No spam, low frequency. Click this button.
+            </button>
+          </form>
+        </div>
+      </div>
+      <div id="content" class="row content">
+        <canvas id="window-matching-canvas"></canvas>
+      </div>
+
     </div>
   </body>
 </html>
