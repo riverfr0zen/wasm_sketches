@@ -314,6 +314,7 @@ fn mutate_cell(mut query: Query<&mut Cell>) {
 pub fn app() {
     let webcfg = WebExtrasCfg {
         title: String::from("cellular"),
+        match_element: Some(String::from("content")),
         match_clear_color: true,
         ..Default::default()
     };

@@ -54,6 +54,7 @@ pub fn path_changer(webcfg: Res<WebExtrasCfg>, mut query: Query<&mut Path>) {
 pub fn app() {
     let webcfg = WebExtrasCfg {
         title: String::from("path changer example"),
+        match_element: Some(String::from("content")),
         match_clear_color: true,
         ..Default::default()
     };

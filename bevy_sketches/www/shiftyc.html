@@ -1,18 +1,48 @@
 <html>
+  <!-- 
+    This layout is working better than `layout_flex.tpl.html` for now, with the trade-off that the canvas 
+    will flow over a little if the window gets too small horizontally (not sure what criteria for 
+    "too small" is, but maybe something to do with the topnav).
+  -->
+
   <head>
     <meta charset="UTF-8" />
     <title>shiftyc</title>
-    <!--meta name="viewport" content="width=device-width, initial-scale=1.0"/-->
+    <!-- <meta name="viewport" content="width=device-width, initial-scale=1.0"> -->
     <style>
       body {
         background-color: white;
         margin: 0 !important; 
         padding: 0 !important;
         border: 0px;
-        overflow: hidden;
+        height: 100%;
+        /* overflow: hidden; */
       }
+
       canvas {
         background-color: white;
+      }
+
+      .box {
+        display: flex;
+        flex-flow: column;
+        height: 100%;
+      }
+
+      #topnav {
+        /* background-color: white; */
+        margin: 0 !important; 
+        padding: 0 !important;
+        border: 0px;
+        text-align: right;
+      }
+
+      #content {
+        margin: 0 !important; 
+        padding: 0 !important;
+        border: 0px;
+        /* background-color: red; */
+        height: 100%;
       }
     </style>
   </head>
@@ -20,22 +50,39 @@
     import init from './wasms/shiftyc.js';
     init();
 
-    // I don't think the resizing below adds much, since resizing is handled in
-    // the bevy app, but leaving here for future reference.
-    //
-    // resize_canvas()
-    //
-    // window.addEventListener("resize", resize_canvas);
-    //
-    // function resize_canvas() {
-    //     let canvas = document.getElementById("window-matching-canvas");
-    //     canvas.width = window.innerWidth;
-    //     canvas.height = window.innerHeight;
-    // }
+    function gotoRandomSketch() {
+      // Import assertions are not yet supported by Firefox, so using fetch
+      // import sketchdata from "./sketches.json" assert { type: "json" };
 
+      fetch('./sketches.json').then(resp => resp.json()).then((sketchdata) => {
+        let randomIndex = Math.floor(Math.random() * sketchdata.sketches.length);
+        location.replace(sketchdata.sketches[randomIndex] + '.html');
+      });
+    }
+    document.querySelector('#nextSketchCtrl').addEventListener('click', gotoRandomSketch)    
   </script>
 
   <body>
-    <canvas id="window-matching-canvas"></canvas>
+    <div class="box">
+      <div id="topnav">
+        <form style="margin: 0px; border: 0px; padding: 0.2rem;">
+          <!--
+          <input type="email" name="email" placeholder="your@email.addy"/>
+          <button>
+            Subscribe
+          </button>
+          <button type="button"
+            onclick="alert('Subscribe to receive low frequency announcements');">
+            (?)
+          </button>
+          -->
+          <button id="nextSketchCtrl" type="button">&#8227;</button>
+        </form>
+      </div>
+      <div id="content">
+        <!-- content -->
+        <canvas id="window-matching-canvas"></canvas>
+      </div>
+    </div>
   </body>
 </html>

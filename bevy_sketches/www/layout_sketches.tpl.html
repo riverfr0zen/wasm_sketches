@@ -1,6 +1,6 @@
 <html>
   <!-- 
-    This layout is working better that `layout_flex.html` for now, with the trade-off that the canvas 
+    This layout is working better than `layout_flex.tpl.html` for now, with the trade-off that the canvas 
     will flow over a little if the window gets too small horizontally (not sure what criteria for 
     "too small" is, but maybe something to do with the topnav).
   -->
@@ -49,20 +49,34 @@
   <script type="module">
     import init from './wasms/{{sketch}}.js';
     init();
+
+    function gotoRandomSketch() {
+      // Import assertions are not yet supported by Firefox, so using fetch
+      // import sketchdata from "./sketches.json" assert { type: "json" };
+
+      fetch('./sketches.json').then(resp => resp.json()).then((sketchdata) => {
+        let randomIndex = Math.floor(Math.random() * sketchdata.sketches.length);
+        location.replace(sketchdata.sketches[randomIndex] + '.html');
+      });
+    }
+    document.querySelector('#nextSketchCtrl').addEventListener('click', gotoRandomSketch)    
   </script>
 
   <body>
     <div class="box">
       <div id="topnav">
         <form style="margin: 0px; border: 0px; padding: 0.2rem;">
+          <!--
           <input type="email" name="email" placeholder="your@email.addy"/>
           <button>
             Subscribe
           </button>
-          <button 
+          <button type="button"
             onclick="alert('Subscribe to receive low frequency announcements');">
             (?)
           </button>
+          -->
+          <button id="nextSketchCtrl" type="button">&#8227;</button>
         </form>
       </div>
       <div id="content">
