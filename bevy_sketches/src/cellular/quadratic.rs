@@ -196,7 +196,7 @@ fn gen_cell_path(cell: &Cell) -> PathBuilder {
 
 fn spawn_cell(commands: &mut Commands, cell: Cell, translation: Vec3) -> Entity {
     let path_builder = gen_cell_path(&cell);
-    let path = path_builder.build().0;
+    let path = path_builder.build();
 
     let cell_bundle = commands
         .spawn_bundle(GeometryBuilder::build_as(
@@ -283,9 +283,7 @@ fn redraw_cell(
             seg.radius = get_next_location(seg.radius, seg.radius_target, seg.radius_speed);
         }
         let path_builder = gen_cell_path(&cell);
-        //  * Irf: Temporary workaround until the fix mentioned in this issue is released:
-        //  * https://github.com/Nilirad/bevy_prototype_lyon/issues/138
-        let new_path = path_builder.build().0;
+        let new_path = path_builder.build();
         *path = ShapePath::build_as(&new_path);
 
         let &inner_cell_entity = children.iter().next().unwrap();

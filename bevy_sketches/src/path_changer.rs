@@ -24,7 +24,7 @@ const CHANGER_MAX_SEGMENTS: u8 = 32;
 
 pub fn path_changing_eg_setup(webcfg: Res<WebExtrasCfg>, mut commands: Commands) {
     let path_builder = random_polygon_builder(webcfg.max_x, webcfg.max_y, CHANGER_MAX_SEGMENTS);
-    let shape = path_builder.build().0;
+    let shape = path_builder.build();
 
     commands.spawn_bundle(OrthographicCameraBundle::new_2d());
     commands.spawn_bundle(GeometryBuilder::build_as(
@@ -42,9 +42,7 @@ pub fn path_changing_eg_setup(webcfg: Res<WebExtrasCfg>, mut commands: Commands)
 pub fn path_changer(webcfg: Res<WebExtrasCfg>, mut query: Query<&mut Path>) {
     let path_builder = random_polygon_builder(webcfg.max_x, webcfg.max_y, CHANGER_MAX_SEGMENTS);
 
-    //  * Irf: Temporary workaround until the fix mentioned in this issue is released:
-    //  * https://github.com/Nilirad/bevy_prototype_lyon/issues/138
-    let new_shape = path_builder.build().0;
+    let new_shape = path_builder.build();
 
     let mut path = query.iter_mut().next().unwrap();
     *path = ShapePath::build_as(&new_shape);

@@ -11,7 +11,9 @@ use rand::Rng;
 const SHIFTY_CIRCLE_STEP: f64 = 0.01;
 const SHIFTY_CHANGE_STEP: f64 = 1.5;
 // const CLEAR_COLOR: Color = Color::rgb(0.149, 0.156, 0.290);
-const CLEAR_COLOR: Color = Color::rgb(0.1, 0.11, 0.0);
+// This reddish color is kind of nice too
+const CLEAR_COLOR: Color = Color::rgb(0.14, 0.13, 0.03);
+// const CLEAR_COLOR: Color = Color::rgb(0.13, 0.13, 0.03);
 const SHIFTY_CIRCLE_COUNT: u8 = 3;
 const SHIFTY_CIRCLE_RADIUS: f32 = 40.0;
 const SHIFTY_CIRCLE_STROKE: f32 = 1.0;
@@ -23,7 +25,7 @@ const BUILDING_MIN_WIDTH: f32 = 10.0;
 const BUILDING_MAX_WIDTH: f32 = 200.0;
 // const BUILDING_COLOR: Color = Color::GREEN;
 const BUILDING_FORE_COLOR: Color = Color::rgb(0.1, 0.09, 0.0);
-const BUILDING_COLOR: Color = Color::rgb(0.1, 0.10, 0.0);
+const BUILDING_COLOR: Color = Color::rgb(0.12, 0.12, 0.02);
 // Ratio of x below means the tallest building is 1/x screen height
 const BUILDING_MAX_HEIGHT_RATIO: f32 = 2.0;
 const BUILDING_MIN_HEIGHT_RATIO: f32 = 16.0;
