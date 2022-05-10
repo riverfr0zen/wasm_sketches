@@ -50,13 +50,18 @@
     import init from './wasms/shiftyufo.js';
     init();
 
+    let currSketch = window.location.pathname.split('/').pop().replace('.html', '');
     function gotoRandomSketch() {
       // Import assertions are not yet supported by Firefox, so using fetch
       // import sketchdata from "./sketches.json" assert { type: "json" };
 
       fetch('./sketches.json').then(resp => resp.json()).then((sketchdata) => {
         let randomIndex = Math.floor(Math.random() * sketchdata.sketches.length);
-        location.replace(sketchdata.sketches[randomIndex] + '.html');
+        if (sketchdata.sketches[randomIndex] === currSketch) {
+          gotoRandomSketch();
+        } else {
+          location.replace(sketchdata.sketches[randomIndex] + '.html');
+        }
       });
     }
     document.querySelector('#nextSketchCtrl').addEventListener('click', gotoRandomSketch)    
@@ -76,7 +81,7 @@
             (?)
           </button>
           -->
-          <button id="nextSketchCtrl" type="button">&#8227;</button>
+          <button id="nextSketchCtrl" type="button">OK &#8227;</button>
         </form>
       </div>
       <div id="content">

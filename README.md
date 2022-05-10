@@ -136,3 +136,8 @@ Based on: https://github.com/rust-lang/vscode-rust/issues/438#issuecomment-10036
 ]
 ```
 
+## Rust with Visual Studio Code
+
+VSCode has also [provided a topic](https://code.visualstudio.com/docs/languages/rust) around using Rust with VSCode. This came out after I had already done my set up, and I think it covers much of what I have already done. However, I'm leaving this link here in case there are any details I may want to revisit, especially around debugging.
+
+The [rust-analyzer manual](https://rust-analyzer.github.io/manual.html#vs-code-2) also shows a lot of nifty config tips for VSCode.
