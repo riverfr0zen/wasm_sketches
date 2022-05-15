@@ -77,7 +77,6 @@
         })
         .then(response => response.json())
         .then(data => {
-          console.log(data)
           if (data.errmsg) {
             alert(data.errmsg);
           } else {
