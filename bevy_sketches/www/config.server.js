@@ -1,0 +1,1 @@
+export const SIMPLEBACKEND_BASEURL = 'https://irfanbaig.com/simplebackend';
