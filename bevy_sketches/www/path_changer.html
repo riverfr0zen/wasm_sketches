@@ -30,21 +30,46 @@
       }
 
       #topnav {
-        /* Using background w/ alpha instead so that children don't inherit opacity */
-        /* background-color: gray; */
-        /* opacity: 0.25; */
-        background: rgba(220, 220, 220, 0.25);
         margin: 0 !important; 
         padding: 0 !important;
         border: 0px;
-        /* text-align: right; */
       }
 
+      #topnavOverlay {
+        pointer-events: none;
+        position: absolute;
+        top: 0;
+        left: 0;
+        z-index: 5;
+        width: 100%;
+
+        /* FX based on:
+        * https://css-tricks.com/old-timey-terminal-styling/
+        * https://css-tricks.com/how-to-create-neon-text-with-css/ */
+ 
+        /* Fade effect */
+        /* background: repeating-linear-gradient(
+          rgba(0, 0, 0, 0.25), 
+          rgba(0, 0, 0, 0.25) 1px, 
+          transparent 50px
+        ); */
+
+        /* Interlaced effect */
+        background: repeating-linear-gradient(
+          rgba(0, 0, 0, 0.15), 
+          rgba(0, 0, 0, 0.15) 1px, 
+          transparent 2px
+        );
+      }
+
+
       .topnavFormEl {
+        /* box-shadow: 1px 1px 5px 1px rgba(0, 0, 0, 0.75);  */
         opacity: 0.75;
       }
 
       .topnavStrongFormEl {
+        /* box-shadow: 1px 1px 5px 1px rgba(0, 0, 0, 1.0);  */
         opacity: 0.5;
       }
 
@@ -112,6 +137,11 @@
   <body>
     <div class="box">
       <div id="topnav">
+        <div id="topnavOverlay">
+          <form style="margin: 0px; border: 0px; padding: 0.2rem;">
+            <input style="opacity: 0.0;" type="text" />
+          </form>
+        </div>
         <div style="width: 34%; float: left;">&nbsp;</div>
         <div style="width: 33%; float: left; text-align: center;">
           <form style="margin: 0px; border: 0px; padding: 0.2rem;">
