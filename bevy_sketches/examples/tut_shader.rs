@@ -51,6 +51,10 @@ fn spawn_quad(
 ) {
     commands.spawn_bundle(MaterialMesh2dBundle {
         mesh: mesh_assets.add(Mesh::from(shape::Quad::default())).into(),
+        transform: Transform { 
+            scale: Vec3::new(800.0, 800.0, 1.0),
+            ..Transform::default()
+        },
         material: my_material_assets.add(MyMaterial),
         ..default()
     });
@@ -107,13 +111,13 @@ impl RenderAsset for MyMaterial {
 fn spawn_camera(mut commands: Commands) {
     let mut camera = OrthographicCameraBundle::new_2d();
 
-    camera.orthographic_projection.right = 1.0 * RESOLUTION;
-    camera.orthographic_projection.left = -1.0 * RESOLUTION;
+    // camera.orthographic_projection.right = 1.0 * RESOLUTION;
+    // camera.orthographic_projection.left = -1.0 * RESOLUTION;
 
-    camera.orthographic_projection.top = 1.0;
-    camera.orthographic_projection.bottom = -1.0;
+    // camera.orthographic_projection.top = 1.0;
+    // camera.orthographic_projection.bottom = -1.0;
 
-    camera.orthographic_projection.scaling_mode = ScalingMode::None;
+    // camera.orthographic_projection.scaling_mode = ScalingMode::None;
 
     commands.spawn_bundle(camera);
 }

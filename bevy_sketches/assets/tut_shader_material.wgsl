@@ -1,3 +1,4 @@
+// From: https://github.com/mwbryant/logic-projects-bevy-shader-tutorial/blob/basic-shaders/assets/my_material.wgsl
 //https://github.com/bevyengine/bevy/blob/c2da7800e3671ad92e775529070a814d0bc2f5f8/crates/bevy_sprite/src/mesh2d/mesh2d.wgsl
 struct VertexOutput {
     [[builtin(position)]] clip_position: vec4<f32>;
