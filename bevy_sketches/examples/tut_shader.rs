@@ -1,4 +1,4 @@
-// From https://github.com/mwbryant/logic-projects-bevy-shader-tutorial/blob/basic-shaders/src/main.rs
+// Based on https://github.com/mwbryant/logic-projects-bevy-shader-tutorial/blob/basic-shaders/src/main.rs
 
 #![allow(clippy::redundant_field_names)]
 #![allow(clippy::type_complexity)]
@@ -19,11 +19,12 @@ use bevy::{
     sprite::{Material2d, Material2dPipeline, Material2dPlugin, MaterialMesh2dBundle},
     window::PresentMode,
 };
-use bevy_inspector_egui::{WorldInspectorParams, WorldInspectorPlugin};
 
 pub const CLEAR: Color = Color::rgb(0.3, 0.3, 0.3);
 pub const HEIGHT: f32 = 900.0;
 pub const RESOLUTION: f32 = 16.0 / 9.0;
+const MATERIAL_PATH: &str = "tut_shader_material.wgsl";
+
 
 fn main() {
     App::new()
@@ -39,13 +40,7 @@ fn main() {
         .add_plugins(DefaultPlugins)
         .add_plugin(Material2dPlugin::<MyMaterial>::default())
         .add_startup_system(spawn_quad)
-        .insert_resource(WorldInspectorParams {
-            enabled: false,
-            ..Default::default()
-        })
-        .add_plugin(WorldInspectorPlugin::new())
         .add_startup_system(spawn_camera)
-        .add_system(toggle_inspector)
         .run();
 }
 
@@ -83,7 +78,7 @@ impl Material2d for MyMaterial {
 
     fn fragment_shader(asset_server: &AssetServer) -> Option<Handle<Shader>> {
         asset_server.watch_for_changes().unwrap();
-        Some(asset_server.load("my_material.wgsl"))
+        Some(asset_server.load(MATERIAL_PATH))
     }
 }
 
@@ -121,15 +116,6 @@ fn spawn_camera(mut commands: Commands) {
     camera.orthographic_projection.scaling_mode = ScalingMode::None;
 
     commands.spawn_bundle(camera);
-}
-
-fn toggle_inspector(
-    input: ResMut<Input<KeyCode>>,
-    mut window_params: ResMut<WorldInspectorParams>,
-) {
-    if input.just_pressed(KeyCode::Grave) {
-        window_params.enabled = !window_params.enabled
-    }
 }
 
 #[allow(dead_code)]
