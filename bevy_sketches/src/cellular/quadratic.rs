@@ -130,6 +130,7 @@ impl Cell {
     }
 }
 
+
 impl Default for Cell {
     fn default() -> Self {
         Self {

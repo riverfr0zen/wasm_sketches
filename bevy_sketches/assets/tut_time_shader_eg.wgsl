@@ -1,5 +1,9 @@
 // This is the shader being used with the time example code in this Discord thread:
 // https://discord.com/channels/691052431525675048/742884593551802431/970382134663577661
+//
+// Apart from being an example about using time, it also shows how to do 
+// the vertex shader (vertex stage) part (i.e. not just the fragment shader stage as I had
+// been working with up to now).
 
 #import bevy_pbr::mesh_view_bind_group
 #import bevy_pbr::mesh_struct
