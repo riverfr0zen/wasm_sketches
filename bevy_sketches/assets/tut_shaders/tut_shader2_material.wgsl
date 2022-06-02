@@ -1,5 +1,6 @@
-// From: https://github.com/mwbryant/logic-projects-bevy-shader-tutorial/blob/basic-shaders/assets/my_material.wgsl
-//https://github.com/bevyengine/bevy/blob/c2da7800e3671ad92e775529070a814d0bc2f5f8/crates/bevy_sprite/src/mesh2d/mesh2d.wgsl
+// The VertexOutput info below is coming from existing Bevy machinery, I believe.
+// See: https://github.com/bevyengine/bevy/blob/main/crates/bevy_sprite/src/mesh2d/mesh2d.wgsl
+// See also: https://youtu.be/EKS0SSq8UPQ?t=613
 
 
 struct VertexOutput {
@@ -19,7 +20,7 @@ var<uniform> time: Time;
 
 [[stage(fragment)]]
 fn fragment(input: VertexOutput) -> [[location(0)]] vec4<f32> {
-    let alpha: f32 = (time.time % 10.0) / 10.0;
+    let alpha: f32 = (time.time % 5.0) / 5.0;
     let xpos: f32 = input.uv.x * 800.0;
     if (
         xpos < 50.0 || 

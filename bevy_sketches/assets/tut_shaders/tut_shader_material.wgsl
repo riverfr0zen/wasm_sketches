@@ -9,6 +9,9 @@ struct VertexOutput {
 
 [[stage(fragment)]]
 fn fragment(input: VertexOutput) -> [[location(0)]] vec4<f32> {
+    // It seems the uv values come already normalized (between 0.0 and 1.0), 
+    // so to get the actual coord we need to multiply by resolution/size of the mesh
+    // (width only here because only looking to denormalize uv.x)
     let xpos: f32 = input.uv.x * 800.0;
     if (
         xpos < 50.0 || 

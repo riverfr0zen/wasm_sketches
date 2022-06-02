@@ -1,4 +1,5 @@
-// Exploring getting time since start to the shader in Bevy
+// Exploring uniform data: time & resolution in a Uniform struct, as shown here:
+// https://github.com/mwbryant/logic-projects-bevy-shader-tutorial/blob/changing-values/src/main.rs#:~:text=let%20uniform_data%20%3D,buffer.as_entire_binding()%2C
 //
 // Based on the following tutorials/discussions:
 //
@@ -48,8 +49,10 @@ use std::mem::size_of;
 pub const CLEAR: Color = Color::rgb(0.3, 0.3, 0.3);
 pub const HEIGHT: f32 = 900.0;
 pub const RESOLUTION: f32 = 16.0 / 9.0;
+const SURFACE_WIDTH: f32 = 800.0;
+const SURFACE_HEIGHT: f32 = 800.0;
 // const MATERIAL_PATH: &str = "tut_shaders/tut_shader2_material.wgsl";
-const MATERIAL_PATH: &str = "tut_shaders/tut_shader2_material2.wgsl";
+const MATERIAL_PATH: &str = "tut_shaders/tut_shader3_shaping_line.wgsl";
 
 
 fn main() {
@@ -82,7 +85,7 @@ fn spawn_quad(
     commands.spawn_bundle(MaterialMesh2dBundle {
         mesh: mesh_assets.add(Mesh::from(shape::Quad::default())).into(),
         transform: Transform {
-            scale: Vec3::new(800.0, 800.0, 1.0),
+            scale: Vec3::new(SURFACE_WIDTH, SURFACE_HEIGHT, 1.0),
             ..Transform::default()
         },
         material: my_material_assets.add(MyMaterial::default()),

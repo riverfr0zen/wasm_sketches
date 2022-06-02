@@ -23,7 +23,7 @@ use bevy::{
 pub const CLEAR: Color = Color::rgb(0.3, 0.3, 0.3);
 pub const HEIGHT: f32 = 900.0;
 pub const RESOLUTION: f32 = 16.0 / 9.0;
-const MATERIAL_PATH: &str = "tut_shader_material.wgsl";
+const MATERIAL_PATH: &str = "tut_shaders/tut_shader_material.wgsl";
 
 
 fn main() {
@@ -51,7 +51,7 @@ fn spawn_quad(
 ) {
     commands.spawn_bundle(MaterialMesh2dBundle {
         mesh: mesh_assets.add(Mesh::from(shape::Quad::default())).into(),
-        transform: Transform { 
+        transform: Transform {
             scale: Vec3::new(800.0, 800.0, 1.0),
             ..Transform::default()
         },
