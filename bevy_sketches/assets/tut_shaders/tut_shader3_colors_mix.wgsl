@@ -145,7 +145,7 @@ fn fragment(input: VertexOutput) -> [[location(0)]] vec4<f32> {
 
     var mixedColor = mix(colorA, colorB, input.uv.y);
     var rectColor: vec3<f32> = vec3<f32>(0.15, 0.30, 0.15);
-    mixedColor = mix(mixedColor, rectColor, featheredRect(input.uv, vec2<f32>(0.1, 0.5), 0.03));
+    mixedColor = mix(mixedColor, rectColor, featheredRect(input.uv, vec2<f32>(0.1, 0.5), 0.02));
     return vec4<f32>(mixedColor, 1.0);
 
 }
