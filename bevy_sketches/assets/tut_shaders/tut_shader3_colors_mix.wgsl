@@ -78,6 +78,31 @@ fn rect(uv: vec2<f32>, size: vec2<f32>) -> f32 {
 }
 
 
+fn drawCross(input: VertexOutput, colorA: vec3<f32>, colorB: vec3<f32>) -> vec3<f32> {
+    var mixedColor = mix(colorA, colorB, input.uv.y);
+    var rectColor: vec3<f32> = vec3<f32>(0.15, 0.30, 0.15);
+    var rectColor2: vec3<f32> = vec3<f32>(0.9, 0.30, 0.15);
+    mixedColor = mix(mixedColor, rectColor, rect(input.uv, vec2<f32>(0.1, 0.9)));
+    mixedColor = mix(mixedColor, rectColor2, rect(input.uv, vec2<f32>(0.9, 0.1)));
+    return mixedColor;
+}
+
+
+fn drawCrossAnim(input: VertexOutput, colorA: vec3<f32>, colorB: vec3<f32>) -> vec3<f32> {
+    var mixedColor = mix(colorA, colorB, input.uv.y);
+    var rectColor: vec3<f32> = vec3<f32>(0.15, 0.30, 0.15);
+    var rectColor2: vec3<f32> = vec3<f32>(0.9, 0.30, 0.15);
+    if (time.time % 2.0 > 1.0) {
+        mixedColor = mix(mixedColor, rectColor, rect(input.uv, vec2<f32>(0.1, 0.9)));
+        mixedColor = mix(mixedColor, rectColor2, rect(input.uv, vec2<f32>(0.9, 0.1)));
+    } else {
+        mixedColor = mix(mixedColor, rectColor, rect(input.uv, vec2<f32>(0.9, 0.1)));
+        mixedColor = mix(mixedColor, rectColor2, rect(input.uv, vec2<f32>(0.1, 0.9)));
+    }
+    return mixedColor;
+}
+
+
 [[stage(fragment)]]
 fn fragment(input: VertexOutput) -> [[location(0)]] vec4<f32> {
     var colorA: vec3<f32> = vec3<f32>(1.0, 0.0, 0.0);
@@ -96,24 +121,10 @@ fn fragment(input: VertexOutput) -> [[location(0)]] vec4<f32> {
     // var mixedColor = animPlottedLinesEg(input, colorA, colorB);
     // return vec4<f32>(mixedColor, 1.0);
 
-    // var mixedColor = mix(colorA, colorB, input.uv.y);
-    // var rectColor: vec3<f32> = vec3<f32>(0.15, 0.30, 0.15);
-    // var rectColor2: vec3<f32> = vec3<f32>(0.9, 0.30, 0.15);
-    // mixedColor = mix(mixedColor, rectColor, rect(input.uv, vec2<f32>(0.1, 0.9)));
-    // mixedColor = mix(mixedColor, rectColor2, rect(input.uv, vec2<f32>(0.9, 0.1)));
+    // var mixedColor = drawCross(input, colorA, colorB);
     // return vec4<f32>(mixedColor, 1.0);
 
-
-    var mixedColor = mix(colorA, colorB, input.uv.y);
-    var rectColor: vec3<f32> = vec3<f32>(0.15, 0.30, 0.15);
-    var rectColor2: vec3<f32> = vec3<f32>(0.9, 0.30, 0.15);
-    if (time.time % 4.0 > 2.0) {
-        mixedColor = mix(mixedColor, rectColor, rect(input.uv, vec2<f32>(0.1, 0.9)));
-        mixedColor = mix(mixedColor, rectColor2, rect(input.uv, vec2<f32>(0.9, 0.1)));
-    } else {
-        mixedColor = mix(mixedColor, rectColor, rect(input.uv, vec2<f32>(0.9, 0.1)));
-        mixedColor = mix(mixedColor, rectColor2, rect(input.uv, vec2<f32>(0.1, 0.9)));
-    }
+    var mixedColor = drawCrossAnim(input, colorA, colorB);
     return vec4<f32>(mixedColor, 1.0);
 
 
