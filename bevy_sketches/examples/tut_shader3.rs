@@ -1,6 +1,3 @@
-// Exploring uniform data: time & resolution in a Uniform struct, as shown here:
-// https://github.com/mwbryant/logic-projects-bevy-shader-tutorial/blob/changing-values/src/main.rs#:~:text=let%20uniform_data%20%3D,buffer.as_entire_binding()%2C
-//
 // Based on the following tutorials/discussions:
 //
 // https://github.com/mwbryant/logic-projects-bevy-shader-tutorial/blob/basic-shaders/src/main.rs
@@ -52,7 +49,10 @@ pub const RESOLUTION: f32 = 16.0 / 9.0;
 const SURFACE_WIDTH: f32 = 800.0;
 const SURFACE_HEIGHT: f32 = 800.0;
 // const MATERIAL_PATH: &str = "tut_shaders/tut_shader2_material.wgsl";
-const MATERIAL_PATH: &str = "tut_shaders/tut_shader3_shaping_line.wgsl";
+// const MATERIAL_PATH: &str = "tut_shaders/tut_shader3_shaping_line.wgsl";
+// const MATERIAL_PATH: &str = "tut_shaders/tut_shader3_shaping_trig.wgsl";
+// const MATERIAL_PATH: &str = "tut_shaders/tut_shader3_colors.wgsl";
+const MATERIAL_PATH: &str = "tut_shaders/tut_shader3_colors_mix.wgsl";
 
 
 fn main() {
