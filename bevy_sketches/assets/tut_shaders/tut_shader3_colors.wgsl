@@ -1,4 +1,4 @@
-// Exploring line shaping from https://thebookofshaders.com/05/
+// Exploring colors from https://thebookofshaders.com/06/
 //
 // The VertexOutput info below is coming from existing Bevy machinery, I believe.
 // See: https://github.com/bevyengine/bevy/blob/main/crates/bevy_sprite/src/mesh2d/mesh2d.wgsl
