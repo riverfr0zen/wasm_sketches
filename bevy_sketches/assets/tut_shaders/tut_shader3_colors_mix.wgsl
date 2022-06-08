@@ -71,6 +71,13 @@ fn animPlottedLinesEg(input: VertexOutput, colorA: vec3<f32>, colorB: vec3<f32>)
 }
 
 
+fn rect(uv: vec2<f32>, size: vec2<f32>) -> f32 {
+	var size = 0.25 - size * 0.25;
+    var area: vec2<f32> = step(size, uv * (1.0 - uv));
+	return area.x*area.y;
+}
+
+
 [[stage(fragment)]]
 fn fragment(input: VertexOutput) -> [[location(0)]] vec4<f32> {
     var colorA: vec3<f32> = vec3<f32>(1.0, 0.0, 0.0);
@@ -86,7 +93,12 @@ fn fragment(input: VertexOutput) -> [[location(0)]] vec4<f32> {
     // var mixedColor = plottedLinesEg(input, colorA, colorB);
     // return vec4<f32>(mixedColor, 1.0);
 
-    var mixedColor = animPlottedLinesEg(input, colorA, colorB);
+    // var mixedColor = animPlottedLinesEg(input, colorA, colorB);
+    // return vec4<f32>(mixedColor, 1.0);
+
+    var mixedColor = mix(colorA, colorB, input.uv.y);
+    var rectColor: vec3<f32> = vec3<f32>(0.15, 0.30, 0.15);
+    mixedColor = mix(mixedColor, rectColor, rect(input.uv, vec2<f32>(0.1, 0.9)));
     return vec4<f32>(mixedColor, 1.0);
 
 }
