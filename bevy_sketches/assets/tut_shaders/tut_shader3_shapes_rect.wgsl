@@ -22,12 +22,17 @@ var<uniform> time: Time;
 fn rect(uv: vec2<f32>, width: f32, height: f32) -> vec3<f32> {
     var wEdge: f32 = (1.0 - width) / 2.0;
     var hEdge: f32 = (1.0 - height) / 2.0;
-    var left: f32 = step(wEdge, uv.x);
-    var top: f32 = step(hEdge, uv.y);
-    var right: f32 = step(wEdge, 1.0-uv.x);
-    var bottom: f32 = step(hEdge, 1.0-uv.y);
 
-    return vec3<f32>(left * bottom * top * right);
+    // var left: f32 = step(wEdge, uv.x);
+    // var top: f32 = step(hEdge, uv.y);
+    // var right: f32 = step(wEdge, 1.0-uv.x);
+    // var bottom: f32 = step(hEdge, 1.0-uv.y);
+    // return vec3<f32>(left * bottom * top * right);
+
+    // Save a few lines by passing in two values to step
+    var topLeft = step(vec2<f32>(hEdge, wEdge), uv);
+    var bottomRight = step(vec2<f32>(hEdge, wEdge), 1.0-uv);
+    return vec3<f32>(topLeft.x * topLeft.y * bottomRight.x * bottomRight.y);
 }
 
 
