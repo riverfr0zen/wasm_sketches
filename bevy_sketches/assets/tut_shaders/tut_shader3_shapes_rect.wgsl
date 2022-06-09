@@ -30,9 +30,16 @@ fn rect(uv: vec2<f32>, width: f32, height: f32) -> vec3<f32> {
     // return vec3<f32>(left * bottom * top * right);
 
     // Save a few lines by passing in two values to step
-    var topLeft = step(vec2<f32>(hEdge, wEdge), uv);
-    var bottomRight = step(vec2<f32>(hEdge, wEdge), 1.0-uv);
+    var topLeft = step(vec2<f32>(wEdge, hEdge), uv);
+    var bottomRight = step(vec2<f32>(wEdge, hEdge), 1.0-uv);
     return vec3<f32>(topLeft.x * topLeft.y * bottomRight.x * bottomRight.y);
+}
+
+
+fn translatedRect(uv: vec2<f32>, position: vec2<f32>, width: f32, height: f32) -> vec3<f32> {
+    var uv = uv + 0.5 - vec2<f32>(width / 2.0, height / 2.0);
+    uv = uv - position;
+    return rect(uv, width, height);
 }
 
 
@@ -58,16 +65,15 @@ fn fragment(input: VertexOutput) -> [[location(0)]] vec4<f32> {
     // mixedColor = mix(backgroundColor, rectColor, myrect);
     // return vec4<f32>(mixedColor, 1.0);
 
-    var mixedColor: vec3<f32>;
-    var myrect = rect(input.uv, 0.8, 0.8);
-    mixedColor = mix(backgroundColor, rectColor, myrect);
-    return vec4<f32>(mixedColor, 1.0);
-
-
     // var mixedColor: vec3<f32>;
     // var myrect = rect(input.uv, 0.8, 0.8);
     // mixedColor = mix(backgroundColor, rectColor, myrect);
-    // var myrect2 = rect(input.uv, 0.4, 0.4);
-    // mixedColor = mix(mixedColor, rectColor2, myrect2);
     // return vec4<f32>(mixedColor, 1.0);
+
+    var mixedColor: vec3<f32>;
+    var myrect = rect(input.uv, 0.8, 0.8);
+    mixedColor = mix(backgroundColor, rectColor, myrect);
+    var myrect2 = translatedRect(input.uv, vec2<f32>(0.0, 0.0), 0.4, 0.4);
+    mixedColor = mix(mixedColor, rectColor2, myrect2);
+    return vec4<f32>(mixedColor, 1.0);
 }
