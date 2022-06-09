@@ -53,8 +53,8 @@ const SURFACE_HEIGHT: f32 = 800.0;
 // const MATERIAL_PATH: &str = "tut_shaders/tut_shader3_shaping_trig.wgsl";
 // const MATERIAL_PATH: &str = "tut_shaders/tut_shader3_colors.wgsl";
 // const MATERIAL_PATH: &str = "tut_shaders/tut_shader3_colors_mix.wgsl";
-const MATERIAL_PATH: &str = "tut_shaders/tut_shader3_building_lights.wgsl";
-
+// const MATERIAL_PATH: &str = "tut_shaders/tut_shader3_building_lights.wgsl";
+const MATERIAL_PATH: &str = "tut_shaders/tut_shader3_shapes_rect.wgsl";
 
 fn main() {
     let mut app = App::new();
