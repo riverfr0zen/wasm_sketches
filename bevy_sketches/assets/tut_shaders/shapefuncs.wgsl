@@ -15,6 +15,18 @@ fn rect(shape: ShapeBasics) -> vec3<f32> {
     return vec3<f32>(topLeft.x * topLeft.y * bottomRight.x * bottomRight.y);
 }
 
+
+// Rect with soft edges (feathered)
+fn rectSoft(shape: ShapeBasics, feather: f32) -> vec3<f32> {
+    var wEdge: f32 = (1.0 - shape.width) / 2.0;
+    var hEdge: f32 = (1.0 - shape.height) / 2.0;
+
+    var topLeft = smoothStep(vec2<f32>(wEdge, hEdge) - feather, vec2<f32>(wEdge, hEdge), shape.uv);
+    var bottomRight = smoothStep(vec2<f32>(wEdge, hEdge) - feather, vec2<f32>(wEdge, hEdge), 1.0-shape.uv);
+    return vec3<f32>(topLeft.x * topLeft.y * bottomRight.x * bottomRight.y);
+}
+
+
 // Rect outline only. Basically this impl. calculates a smaller inner rect and subtracts 
 // that from the shape.
 fn rectOutline(shape: ShapeBasics, border: f32) -> vec3<f32> {
@@ -47,33 +59,19 @@ fn rectOutlineSoft(shape: ShapeBasics, border: f32, outerFeather: f32, innerFeat
     var topLeft = smoothStep(vec2<f32>(wEdge, hEdge) - outerFeather, vec2<f32>(wEdge, hEdge), shape.uv);
     var bottomRight = smoothStep(vec2<f32>(wEdge, hEdge) - outerFeather, vec2<f32>(wEdge, hEdge), 1.0-shape.uv);
 
-    // var topLeftInner = step(vec2<f32>(wInnerEdge, hInnerEdge), shape.uv);
     var topLeftInner = smoothStep(
         vec2<f32>(wInnerEdge, hInnerEdge), 
         vec2<f32>(wInnerEdge, hInnerEdge) + innerFeather, 
         shape.uv
     );
-    // var bottomRightInner = step(vec2<f32>(wInnerEdge, hInnerEdge), 1.0-shape.uv);
     var bottomRightInner = smoothStep(
         vec2<f32>(wInnerEdge, hInnerEdge), 
         vec2<f32>(wInnerEdge, hInnerEdge) + innerFeather, 
         1.0-shape.uv
     );
 
-
     return vec3<f32>(topLeft.x * topLeft.y * bottomRight.x * bottomRight.y) - 
         vec3<f32>(topLeftInner.x * topLeftInner.y * bottomRightInner.x * bottomRightInner.y);
-}
-
-
-// Rect with soft edges (feathered)
-fn rectSoft(shape: ShapeBasics, feather: f32) -> vec3<f32> {
-    var wEdge: f32 = (1.0 - shape.width) / 2.0;
-    var hEdge: f32 = (1.0 - shape.height) / 2.0;
-
-    var topLeft = smoothStep(vec2<f32>(wEdge, hEdge) - feather, vec2<f32>(wEdge, hEdge), shape.uv);
-    var bottomRight = smoothStep(vec2<f32>(wEdge, hEdge) - feather, vec2<f32>(wEdge, hEdge), 1.0-shape.uv);
-    return vec3<f32>(topLeft.x * topLeft.y * bottomRight.x * bottomRight.y);
 }
 
 
