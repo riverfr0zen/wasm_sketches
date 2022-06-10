@@ -19,29 +19,45 @@ struct Time {
 var<uniform> time: Time;
 
 
+struct ShapeTranslation {
+    uv: vec2<f32>;
+    width: f32;
+    height: f32;
+};
+
+
+// Adapted from https://thebookofshaders.com/07/
 fn rect(uv: vec2<f32>, width: f32, height: f32) -> vec3<f32> {
-    // Since our params for the rect are width/height instead of top/left/bottom/right padding,
-    // we derive the padding values (edge value for the step function calls) from the given 
-    // width/height.
     var wEdge: f32 = (1.0 - width) / 2.0;
     var hEdge: f32 = (1.0 - height) / 2.0;
 
-    // var left: f32 = step(wEdge, uv.x);
-    // var top: f32 = step(hEdge, uv.y);
-    // var right: f32 = step(wEdge, 1.0-uv.x);
-    // var bottom: f32 = step(hEdge, 1.0-uv.y);
-    // return vec3<f32>(left * bottom * top * right);
-
-    // Save a few lines by passing in two values to step, as shown at:
-    // https://thebookofshaders.com/07/
     var topLeft = step(vec2<f32>(wEdge, hEdge), uv);
     var bottomRight = step(vec2<f32>(wEdge, hEdge), 1.0-uv);
     return vec3<f32>(topLeft.x * topLeft.y * bottomRight.x * bottomRight.y);
 }
 
+fn rectFeathered(uv: vec2<f32>, width: f32, height: f32, feather: f32) -> vec3<f32> {
+    var wEdge: f32 = (1.0 - width) / 2.0;
+    var hEdge: f32 = (1.0 - height) / 2.0;
+
+    var topLeft = smoothStep(vec2<f32>(wEdge, hEdge) - feather, vec2<f32>(wEdge, hEdge), uv);
+    var bottomRight = smoothStep(vec2<f32>(wEdge, hEdge) - feather, vec2<f32>(wEdge, hEdge), 1.0-uv);
+    return vec3<f32>(topLeft.x * topLeft.y * bottomRight.x * bottomRight.y);
+}
+
+
+fn translate(position: vec2<f32>, uv: vec2<f32>, width: f32, height: f32) -> vec2<f32> {
+    // First move coordinates to 0 (adjusting for rect width/height)
+    var uv = uv + 0.5 - vec2<f32>(width / 2.0, height / 2.0);
+    // Move to requested position
+    uv = uv - position;
+    return uv;
+}
 
 fn translatedRect(position: vec2<f32>, uv: vec2<f32>, width: f32, height: f32) -> vec3<f32> {
+    // First move coordinates to 0 (adjusting for rect width/height)
     var uv = uv + 0.5 - vec2<f32>(width / 2.0, height / 2.0);
+    // Move to requested position
     uv = uv - position;
     return rect(uv, width, height);
 }
@@ -56,25 +72,6 @@ fn fragment(input: VertexOutput) -> [[location(0)]] vec4<f32> {
     var rectColor3: vec3<f32> = vec3<f32>(0.0, 0.0, 0.5);
 
 
-    // var left: f32 = step(0.2, input.uv.x);
-    // var top: f32 = step(0.2, input.uv.y);
-    // var right: f32 = step(0.2, 1.0-input.uv.x);
-    // var bottom: f32 = step(0.2, 1.0-input.uv.y);
-
-    // var mixedColor: vec3<f32>;
-    // mixedColor = vec3<f32>(left * bottom * top * right);
-    // return vec4<f32>(mixedColor, 1.0);
-
-    // var mixedColor: vec3<f32>;
-    // var myrect = vec3<f32>(left * bottom * top * right);
-    // mixedColor = mix(backgroundColor, rectColor, myrect);
-    // return vec4<f32>(mixedColor, 1.0);
-
-    // var mixedColor: vec3<f32>;
-    // var myrect = rect(input.uv, 0.8, 0.8);
-    // mixedColor = mix(backgroundColor, rectColor, myrect);
-    // return vec4<f32>(mixedColor, 1.0);
-
     // var mixedColor: vec3<f32>;
     // var myrect = rect(input.uv, 0.8, 0.8);
     // mixedColor = mix(backgroundColor, rectColor, myrect);
@@ -83,6 +80,13 @@ fn fragment(input: VertexOutput) -> [[location(0)]] vec4<f32> {
     // var myrect3 = translatedRect(vec2<f32>(0.35, 0.65), input.uv, 0.6, 0.3);
     // mixedColor = mix(mixedColor, rectColor3, myrect3);
     // return vec4<f32>(mixedColor, 1.0);
+
+    var mixedColor: vec3<f32>;
+    var myrect = rectFeathered(input.uv, 0.2, 0.2, 0.1);
+    mixedColor = mix(backgroundColor, rectColor, myrect);
+    var myrect2 = rectFeathered(translate(vec2<f32>(0.0, 0.00), input.uv, 0.5, 0.3), 0.5, 0.3, 0.1);
+    mixedColor = mix(mixedColor, rectColor2, myrect2);
+    return vec4<f32>(mixedColor, 1.0);
 
 
 }
