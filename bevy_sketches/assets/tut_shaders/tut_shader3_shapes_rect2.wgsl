@@ -20,46 +20,49 @@ var<uniform> time: Time;
 
 
 struct ShapeTranslation {
+    position: vec2<f32>;
     uv: vec2<f32>;
     width: f32;
     height: f32;
 };
 
+struct ShapeBasics {
+    uv: vec2<f32>;
+    width: f32;
+    height: f32;
+};
 
 // Adapted from https://thebookofshaders.com/07/
-fn rect(uv: vec2<f32>, width: f32, height: f32) -> vec3<f32> {
-    var wEdge: f32 = (1.0 - width) / 2.0;
-    var hEdge: f32 = (1.0 - height) / 2.0;
+fn rect(shape: ShapeBasics) -> vec3<f32> {
+    var wEdge: f32 = (1.0 - shape.width) / 2.0;
+    var hEdge: f32 = (1.0 - shape.height) / 2.0;
 
-    var topLeft = step(vec2<f32>(wEdge, hEdge), uv);
-    var bottomRight = step(vec2<f32>(wEdge, hEdge), 1.0-uv);
+    var topLeft = step(vec2<f32>(wEdge, hEdge), shape.uv);
+    var bottomRight = step(vec2<f32>(wEdge, hEdge), 1.0-shape.uv);
     return vec3<f32>(topLeft.x * topLeft.y * bottomRight.x * bottomRight.y);
 }
 
-fn rectFeathered(uv: vec2<f32>, width: f32, height: f32, feather: f32) -> vec3<f32> {
-    var wEdge: f32 = (1.0 - width) / 2.0;
-    var hEdge: f32 = (1.0 - height) / 2.0;
+fn rectFeathered(shape: ShapeBasics, feather: f32) -> vec3<f32> {
+    var wEdge: f32 = (1.0 - shape.width) / 2.0;
+    var hEdge: f32 = (1.0 - shape.height) / 2.0;
 
-    var topLeft = smoothStep(vec2<f32>(wEdge, hEdge) - feather, vec2<f32>(wEdge, hEdge), uv);
-    var bottomRight = smoothStep(vec2<f32>(wEdge, hEdge) - feather, vec2<f32>(wEdge, hEdge), 1.0-uv);
+    var topLeft = smoothStep(vec2<f32>(wEdge, hEdge) - feather, vec2<f32>(wEdge, hEdge), shape.uv);
+    var bottomRight = smoothStep(vec2<f32>(wEdge, hEdge) - feather, vec2<f32>(wEdge, hEdge), 1.0-shape.uv);
     return vec3<f32>(topLeft.x * topLeft.y * bottomRight.x * bottomRight.y);
 }
 
 
-fn translate(position: vec2<f32>, uv: vec2<f32>, width: f32, height: f32) -> vec2<f32> {
+fn xlate(translation: ShapeTranslation) -> ShapeBasics {
     // First move coordinates to 0 (adjusting for rect width/height)
-    var uv = uv + 0.5 - vec2<f32>(width / 2.0, height / 2.0);
-    // Move to requested position
-    uv = uv - position;
-    return uv;
-}
+    var shapeBasics = ShapeBasics( 
+        translation.uv + 0.5 - vec2<f32>(translation.width / 2.0, translation.height / 2.0),
+        translation.width,
+        translation.height
+    );
 
-fn translatedRect(position: vec2<f32>, uv: vec2<f32>, width: f32, height: f32) -> vec3<f32> {
-    // First move coordinates to 0 (adjusting for rect width/height)
-    var uv = uv + 0.5 - vec2<f32>(width / 2.0, height / 2.0);
     // Move to requested position
-    uv = uv - position;
-    return rect(uv, width, height);
+    shapeBasics.uv = shapeBasics.uv - translation.position;
+    return shapeBasics;
 }
 
 
@@ -82,9 +85,9 @@ fn fragment(input: VertexOutput) -> [[location(0)]] vec4<f32> {
     // return vec4<f32>(mixedColor, 1.0);
 
     var mixedColor: vec3<f32>;
-    var myrect = rectFeathered(input.uv, 0.2, 0.2, 0.1);
+    var myrect = rect(ShapeBasics(input.uv, 0.2, 0.2));
     mixedColor = mix(backgroundColor, rectColor, myrect);
-    var myrect2 = rectFeathered(translate(vec2<f32>(0.0, 0.00), input.uv, 0.5, 0.3), 0.5, 0.3, 0.1);
+    var myrect2 = rectFeathered(xlate(ShapeTranslation(vec2<f32>(0.0, 0.00), input.uv, 0.5, 0.3)), 0.1);
     mixedColor = mix(mixedColor, rectColor2, myrect2);
     return vec4<f32>(mixedColor, 1.0);
 
