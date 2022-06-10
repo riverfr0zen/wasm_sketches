@@ -50,7 +50,7 @@ fn fragment(input: VertexOutput) -> [[location(0)]] vec4<f32> {
     var myrect5 = rectOutline(xlate(vec2<f32>(0.25, 0.5), input.uv, 0.2, 0.1), 0.05);
     mixedColor = mix(mixedColor, rectColor + rectColor3, myrect5);
 
-    var myrect6 = rectOutlineSoft(xlate(vec2<f32>(0.7, 0.3), input.uv, 0.2, 0.25), 0.5, 0.1);
+    var myrect6 = rectOutlineSoft(xlate(vec2<f32>(0.65, 0.3), input.uv, 0.3, 0.25), 0.5, 0.2, 0.02);
     mixedColor = mix(mixedColor, rectColor + rectColor2, myrect6);
 
     return vec4<f32>(mixedColor, 1.0);
