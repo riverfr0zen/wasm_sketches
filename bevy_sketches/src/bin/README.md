@@ -1,0 +1,1 @@
+As of now there are just a bunch of "learning shaders with bevy" explorations here. See the examples folder for actual sketches.
