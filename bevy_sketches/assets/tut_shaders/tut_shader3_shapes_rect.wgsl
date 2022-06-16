@@ -75,14 +75,14 @@ fn fragment(input: VertexOutput) -> [[location(0)]] vec4<f32> {
     // mixedColor = mix(backgroundColor, rectColor, myrect);
     // return vec4<f32>(mixedColor, 1.0);
 
-    // var mixedColor: vec3<f32>;
-    // var myrect = rect(input.uv, 0.8, 0.8);
-    // mixedColor = mix(backgroundColor, rectColor, myrect);
-    // var myrect2 = translatedRect(vec2<f32>(0.0, 0.0), input.uv, 0.4, 0.4);
-    // mixedColor = mix(mixedColor, rectColor2, myrect2);
-    // var myrect3 = translatedRect(vec2<f32>(0.35, 0.65), input.uv, 0.6, 0.3);
-    // mixedColor = mix(mixedColor, rectColor3, myrect3);
-    // return vec4<f32>(mixedColor, 1.0);
+    var mixedColor: vec3<f32>;
+    var myrect = rect(input.uv, 0.8, 0.8);
+    mixedColor = mix(backgroundColor, rectColor, myrect);
+    var myrect2 = translatedRect(vec2<f32>(0.0, 0.0), input.uv, 0.4, 0.4);
+    mixedColor = mix(mixedColor, rectColor2, myrect2);
+    var myrect3 = translatedRect(vec2<f32>(0.35, 0.65), input.uv, 0.6, 0.3);
+    mixedColor = mix(mixedColor, rectColor3, myrect3);
+    return vec4<f32>(mixedColor, 1.0);
 
 
 }
