@@ -129,6 +129,17 @@ impl RenderAsset for ShaderMaterial {
 }
 
 
+pub struct ShaderMaterialPlugin;
+
+impl Plugin for ShaderMaterialPlugin {
+    fn build(&self, app: &mut App) {
+        app.add_plugin(Material2dPlugin::<ShaderMaterial>::default())
+            .sub_app_mut(RenderApp)
+            .add_system_to_stage(RenderStage::Extract, update_time);
+    }
+}
+
+
 pub fn update_time(mut mat_query: ResMut<Assets<ShaderMaterial>>, time: Res<Time>) {
     for (_, mut mymaterial) in mat_query.iter_mut() {
         mymaterial.time = time.seconds_since_startup() as f32;

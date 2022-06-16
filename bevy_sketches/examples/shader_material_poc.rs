@@ -4,7 +4,7 @@ use bevy::{
     sprite::{Material2d, Material2dPipeline, Material2dPlugin, MaterialMesh2dBundle},
 };
 use bevy_sketches::base::sketch;
-use bevy_sketches::shader_material::{update_time, ShaderMaterial};
+use bevy_sketches::shader_material::{ShaderMaterial, ShaderMaterialPlugin};
 use bevy_web_extras::prelude::*;
 
 
@@ -22,17 +22,9 @@ pub fn main() {
         ..Default::default()
     };
     let mut app = sketch(webcfg);
-    // app.insert_resource(ClearColor(CELL_CLEAR_CLR))
-    //     .add_plugin(ShapePlugin)
-    //     .add_startup_system(cell_setup)
-    //     .add_system(redraw_cell)
-    //     .add_system(mutate_cell.with_run_criteria(FixedTimestep::step(CELL_STEP)));
     app.insert_resource(ClearColor(Color::SALMON))
-        .add_plugin(Material2dPlugin::<ShaderMaterial>::default())
+        .add_plugin(ShaderMaterialPlugin)
         .add_startup_system(poc_setup);
-
-    app.sub_app_mut(RenderApp)
-        .add_system_to_stage(RenderStage::Extract, update_time);
 
 
     app.run();
