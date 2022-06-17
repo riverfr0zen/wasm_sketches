@@ -60,11 +60,12 @@ impl Default for BaseShaderMaterial {
 #[uuid = "bc2f08eb-a0fb-43f1-a908-54871ea597d5"]
 pub struct ExampleMaterial(BaseShaderMaterial);
 
-// impl Default for ExampleMaterial {
-//     fn default() -> Self {
-//         Self { time: 0.0 }
-//     }
-// }
+
+impl Default for ExampleMaterial {
+    fn default() -> Self {
+        Self(BaseShaderMaterial::default())
+    }
+}
 
 
 pub struct GPUExampleMaterial {
