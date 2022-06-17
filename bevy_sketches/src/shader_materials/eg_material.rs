@@ -179,7 +179,7 @@ impl<T: BaseShaderTrait> Plugin for ShaderMaterialPlugin<T> {
 }
 
 pub fn update_time<T: BaseShaderTrait>(mut mat_query: ResMut<Assets<T>>, time: Res<Time>) {
-    for (_, mut mymaterial) in mat_query.iter_mut() {
+    for (_, mymaterial) in mat_query.iter_mut() {
         mymaterial.set_time(time.seconds_since_startup() as f32);
     }
 }
