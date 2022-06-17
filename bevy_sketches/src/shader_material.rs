@@ -53,13 +53,13 @@ impl Default for ShaderMaterial {
 }
 
 
-pub struct ShaderMaterialGPU {
+pub struct GPUShaderMaterial {
     bind_group: BindGroup,
 }
 
 
 impl Material2d for ShaderMaterial {
-    fn bind_group(material: &ShaderMaterialGPU) -> &BindGroup {
+    fn bind_group(material: &GPUShaderMaterial) -> &BindGroup {
         &material.bind_group
     }
 
@@ -99,7 +99,7 @@ impl Material2d for ShaderMaterial {
 
 impl RenderAsset for ShaderMaterial {
     type ExtractedAsset = ShaderMaterial;
-    type PreparedAsset = ShaderMaterialGPU;
+    type PreparedAsset = GPUShaderMaterial;
     type Param = (SRes<RenderDevice>, SRes<Material2dPipeline<ShaderMaterial>>);
 
     fn extract_asset(&self) -> ShaderMaterial {
@@ -109,7 +109,7 @@ impl RenderAsset for ShaderMaterial {
     fn prepare_asset(
         extracted_asset: ShaderMaterial,
         (render_device, pipeline): &mut SystemParamItem<Self::Param>,
-    ) -> Result<ShaderMaterialGPU, PrepareAssetError<ShaderMaterial>> {
+    ) -> Result<GPUShaderMaterial, PrepareAssetError<ShaderMaterial>> {
         let time_buffer = render_device.create_buffer_with_data(&BufferInitDescriptor {
             label: None,
             contents: extracted_asset.time.as_bytes(),
@@ -124,7 +124,7 @@ impl RenderAsset for ShaderMaterial {
                 resource: time_buffer.as_entire_binding(),
             }],
         });
-        Ok(ShaderMaterialGPU { bind_group })
+        Ok(GPUShaderMaterial { bind_group })
     }
 }
 
