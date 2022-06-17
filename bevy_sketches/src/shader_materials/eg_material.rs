@@ -43,18 +43,28 @@ use std::mem::size_of;
 const MATERIAL_PATH: &str = "tut_shaders/tut_shader3_building_lights.wgsl";
 
 
-#[derive(TypeUuid, Clone)]
-#[uuid = "bc2f08eb-a0fb-43f1-a908-54871ea597d5"]
-pub struct ExampleMaterial {
+#[derive(Clone)]
+pub struct BaseShaderMaterial {
     pub time: f32,
 }
 
 
-impl Default for ExampleMaterial {
+impl Default for BaseShaderMaterial {
     fn default() -> Self {
         Self { time: 0.0 }
     }
 }
+
+
+#[derive(TypeUuid, Clone)]
+#[uuid = "bc2f08eb-a0fb-43f1-a908-54871ea597d5"]
+pub struct ExampleMaterial(BaseShaderMaterial);
+
+// impl Default for ExampleMaterial {
+//     fn default() -> Self {
+//         Self { time: 0.0 }
+//     }
+// }
 
 
 pub struct GPUExampleMaterial {
@@ -69,7 +79,8 @@ pub trait BaseShaderTrait: Material2d {
 
 impl BaseShaderTrait for ExampleMaterial {
     fn set_time(&mut self, time: f32) {
-        self.time = time;
+        // @TODO: Would be nice to have a cleaner way of accessing time
+        self.0.time = time;
     }
 }
 
@@ -131,7 +142,9 @@ impl RenderAsset for ExampleMaterial {
     ) -> Result<GPUExampleMaterial, PrepareAssetError<ExampleMaterial>> {
         let time_buffer = render_device.create_buffer_with_data(&BufferInitDescriptor {
             label: None,
-            contents: extracted_asset.time.as_bytes(),
+            // @TODO: Would be nice to have a cleaner way of accessing time
+            // contents: extracted_asset.time.as_bytes(),
+            contents: extracted_asset.0.time.as_bytes(),
             usage: BufferUsages::UNIFORM | BufferUsages::COPY_DST,
         });
 
