@@ -23,9 +23,13 @@ use bevy::{
         renderer::RenderDevice,
         RenderApp, RenderStage,
     },
-    sprite::{Material2d, Material2dPipeline, Material2dPlugin, MaterialMesh2dBundle},
+    sprite::{
+        Material2d, Material2dPipeline, Material2dPlugin, MaterialMesh2dBundle,
+        SpecializedMaterial2d,
+    },
     window::PresentMode,
 };
+use std::marker::PhantomData;
 use std::mem::size_of;
 
 
@@ -41,25 +45,34 @@ const MATERIAL_PATH: &str = "tut_shaders/tut_shader3_building_lights.wgsl";
 
 #[derive(TypeUuid, Clone)]
 #[uuid = "bc2f08eb-a0fb-43f1-a908-54871ea597d5"]
-pub struct ShaderMaterial {
+pub struct ExampleMaterial {
     pub time: f32,
 }
 
 
-impl Default for ShaderMaterial {
+impl Default for ExampleMaterial {
     fn default() -> Self {
         Self { time: 0.0 }
     }
 }
 
 
-pub struct GPUShaderMaterial {
+pub struct GPUExampleMaterial {
     bind_group: BindGroup,
 }
 
+pub trait BaseShaderMaterial: Material2d {
+    fn set_time(&mut self, time: f32);
+}
 
-impl Material2d for ShaderMaterial {
-    fn bind_group(material: &GPUShaderMaterial) -> &BindGroup {
+impl BaseShaderMaterial for ExampleMaterial {
+    fn set_time(&mut self, time: f32) {
+        self.time = time;
+    }
+}
+
+impl Material2d for ExampleMaterial {
+    fn bind_group(material: &GPUExampleMaterial) -> &BindGroup {
         &material.bind_group
     }
 
@@ -97,19 +110,22 @@ impl Material2d for ShaderMaterial {
 }
 
 
-impl RenderAsset for ShaderMaterial {
-    type ExtractedAsset = ShaderMaterial;
-    type PreparedAsset = GPUShaderMaterial;
-    type Param = (SRes<RenderDevice>, SRes<Material2dPipeline<ShaderMaterial>>);
+impl RenderAsset for ExampleMaterial {
+    type ExtractedAsset = ExampleMaterial;
+    type PreparedAsset = GPUExampleMaterial;
+    type Param = (
+        SRes<RenderDevice>,
+        SRes<Material2dPipeline<ExampleMaterial>>,
+    );
 
-    fn extract_asset(&self) -> ShaderMaterial {
+    fn extract_asset(&self) -> ExampleMaterial {
         self.clone()
     }
 
     fn prepare_asset(
-        extracted_asset: ShaderMaterial,
+        extracted_asset: ExampleMaterial,
         (render_device, pipeline): &mut SystemParamItem<Self::Param>,
-    ) -> Result<GPUShaderMaterial, PrepareAssetError<ShaderMaterial>> {
+    ) -> Result<GPUExampleMaterial, PrepareAssetError<ExampleMaterial>> {
         let time_buffer = render_device.create_buffer_with_data(&BufferInitDescriptor {
             label: None,
             contents: extracted_asset.time.as_bytes(),
@@ -124,24 +140,29 @@ impl RenderAsset for ShaderMaterial {
                 resource: time_buffer.as_entire_binding(),
             }],
         });
-        Ok(GPUShaderMaterial { bind_group })
+        Ok(GPUExampleMaterial { bind_group })
     }
 }
 
 
-pub struct ShaderMaterialPlugin;
+pub struct ShaderMaterialPlugin<T: BaseShaderMaterial>(PhantomData<T>);
 
-impl Plugin for ShaderMaterialPlugin {
+impl<M: BaseShaderMaterial> Default for ShaderMaterialPlugin<M> {
+    fn default() -> Self {
+        Self(Default::default())
+    }
+}
+
+impl<T: BaseShaderMaterial> Plugin for ShaderMaterialPlugin<T> {
     fn build(&self, app: &mut App) {
-        app.add_plugin(Material2dPlugin::<ShaderMaterial>::default())
+        app.add_plugin(Material2dPlugin::<T>::default())
             .sub_app_mut(RenderApp)
-            .add_system_to_stage(RenderStage::Extract, update_time);
+            .add_system_to_stage(RenderStage::Extract, update_time::<T>);
     }
 }
 
-
-pub fn update_time(mut mat_query: ResMut<Assets<ShaderMaterial>>, time: Res<Time>) {
+pub fn update_time<T: BaseShaderMaterial>(mut mat_query: ResMut<Assets<T>>, time: Res<Time>) {
     for (_, mut mymaterial) in mat_query.iter_mut() {
-        mymaterial.time = time.seconds_since_startup() as f32;
+        mymaterial.set_time(time.seconds_since_startup() as f32);
     }
 }

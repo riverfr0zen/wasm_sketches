@@ -4,7 +4,7 @@ use bevy::{
     sprite::{Material2d, Material2dPipeline, Material2dPlugin, MaterialMesh2dBundle},
 };
 use bevy_sketches::base::sketch;
-use bevy_sketches::shader_material::{ShaderMaterial, ShaderMaterialPlugin};
+use bevy_sketches::shader_materials::eg_material::{ExampleMaterial, ShaderMaterialPlugin};
 use bevy_web_extras::prelude::*;
 
 
@@ -23,7 +23,7 @@ pub fn main() {
     };
     let mut app = sketch(webcfg);
     app.insert_resource(ClearColor(Color::SALMON))
-        .add_plugin(ShaderMaterialPlugin)
+        .add_plugin(ShaderMaterialPlugin::<ExampleMaterial>::default())
         .add_startup_system(poc_setup);
 
 
@@ -34,7 +34,7 @@ pub fn main() {
 fn poc_setup(
     mut commands: Commands,
     mut mesh_assets: ResMut<Assets<Mesh>>,
-    mut my_material_assets: ResMut<Assets<ShaderMaterial>>,
+    mut my_material_assets: ResMut<Assets<ExampleMaterial>>,
     webcfg: Res<WebExtrasCfg>,
 ) {
     commands.spawn_bundle(OrthographicCameraBundle::new_2d());
@@ -47,7 +47,7 @@ fn poc_setup(
             translation: Vec3::new(0.0, -webcfg.max_y + SURFACE_HEIGHT / 2.0, 1.0),
             ..Transform::default()
         },
-        material: my_material_assets.add(ShaderMaterial::default()),
+        material: my_material_assets.add(ExampleMaterial::default()),
         ..default()
     });
 
@@ -59,7 +59,7 @@ fn poc_setup(
             translation: Vec3::new(501.0, -webcfg.max_y + surface2_height / 2.0, 1.0),
             ..Default::default()
         },
-        material: my_material_assets.add(ShaderMaterial::default()),
+        material: my_material_assets.add(ExampleMaterial::default()),
         ..default()
     });
 }
