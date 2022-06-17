@@ -61,15 +61,18 @@ pub struct GPUExampleMaterial {
     bind_group: BindGroup,
 }
 
-pub trait BaseShaderMaterial: Material2d {
+
+pub trait BaseShaderTrait: Material2d {
     fn set_time(&mut self, time: f32);
 }
 
-impl BaseShaderMaterial for ExampleMaterial {
+
+impl BaseShaderTrait for ExampleMaterial {
     fn set_time(&mut self, time: f32) {
         self.time = time;
     }
 }
+
 
 impl Material2d for ExampleMaterial {
     fn bind_group(material: &GPUExampleMaterial) -> &BindGroup {
@@ -145,15 +148,15 @@ impl RenderAsset for ExampleMaterial {
 }
 
 
-pub struct ShaderMaterialPlugin<T: BaseShaderMaterial>(PhantomData<T>);
+pub struct ShaderMaterialPlugin<T: BaseShaderTrait>(PhantomData<T>);
 
-impl<M: BaseShaderMaterial> Default for ShaderMaterialPlugin<M> {
+impl<M: BaseShaderTrait> Default for ShaderMaterialPlugin<M> {
     fn default() -> Self {
         Self(Default::default())
     }
 }
 
-impl<T: BaseShaderMaterial> Plugin for ShaderMaterialPlugin<T> {
+impl<T: BaseShaderTrait> Plugin for ShaderMaterialPlugin<T> {
     fn build(&self, app: &mut App) {
         app.add_plugin(Material2dPlugin::<T>::default())
             .sub_app_mut(RenderApp)
@@ -161,7 +164,7 @@ impl<T: BaseShaderMaterial> Plugin for ShaderMaterialPlugin<T> {
     }
 }
 
-pub fn update_time<T: BaseShaderMaterial>(mut mat_query: ResMut<Assets<T>>, time: Res<Time>) {
+pub fn update_time<T: BaseShaderTrait>(mut mat_query: ResMut<Assets<T>>, time: Res<Time>) {
     for (_, mut mymaterial) in mat_query.iter_mut() {
         mymaterial.set_time(time.seconds_since_startup() as f32);
     }
