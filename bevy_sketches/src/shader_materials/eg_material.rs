@@ -1,3 +1,4 @@
+use super::core::{BaseShaderMaterial, BaseShaderTrait};
 use bevy::{
     ecs::system::{lifetimeless::SRes, SystemParamItem},
     prelude::*,
@@ -21,15 +22,9 @@ use bevy::{
             ShaderStages,
         },
         renderer::RenderDevice,
-        RenderApp, RenderStage,
     },
-    sprite::{
-        Material2d, Material2dPipeline, Material2dPlugin, MaterialMesh2dBundle,
-        SpecializedMaterial2d,
-    },
-    window::PresentMode,
+    sprite::{Material2d, Material2dPipeline},
 };
-use std::marker::PhantomData;
 use std::mem::size_of;
 
 
@@ -41,19 +36,6 @@ use std::mem::size_of;
 // const MATERIAL_PATH: &str = "tut_shaders/tut_shader3_shapes_rect.wgsl";
 // const MATERIAL_PATH: &str = "tut_shaders/tut_shader3_shapes_rect2.wgsl";
 const MATERIAL_PATH: &str = "tut_shaders/tut_shader3_building_lights.wgsl";
-
-
-#[derive(Clone)]
-pub struct BaseShaderMaterial {
-    pub time: f32,
-}
-
-
-impl Default for BaseShaderMaterial {
-    fn default() -> Self {
-        Self { time: 0.0 }
-    }
-}
 
 
 #[derive(TypeUuid, Clone)]
@@ -68,21 +50,16 @@ impl Default for ExampleMaterial {
 }
 
 
-pub struct GPUExampleMaterial {
-    bind_group: BindGroup,
-}
-
-
-pub trait BaseShaderTrait: Material2d {
-    fn set_time(&mut self, time: f32);
-}
-
-
 impl BaseShaderTrait for ExampleMaterial {
     fn set_time(&mut self, time: f32) {
         // @TODO: Would be nice to have a cleaner way of accessing time
         self.0.time = time;
     }
+}
+
+
+pub struct GPUExampleMaterial {
+    bind_group: BindGroup,
 }
 
 
@@ -158,28 +135,5 @@ impl RenderAsset for ExampleMaterial {
             }],
         });
         Ok(GPUExampleMaterial { bind_group })
-    }
-}
-
-
-pub struct ShaderMaterialPlugin<T: BaseShaderTrait>(PhantomData<T>);
-
-impl<M: BaseShaderTrait> Default for ShaderMaterialPlugin<M> {
-    fn default() -> Self {
-        Self(Default::default())
-    }
-}
-
-impl<T: BaseShaderTrait> Plugin for ShaderMaterialPlugin<T> {
-    fn build(&self, app: &mut App) {
-        app.add_plugin(Material2dPlugin::<T>::default())
-            .sub_app_mut(RenderApp)
-            .add_system_to_stage(RenderStage::Extract, update_time::<T>);
-    }
-}
-
-pub fn update_time<T: BaseShaderTrait>(mut mat_query: ResMut<Assets<T>>, time: Res<Time>) {
-    for (_, mymaterial) in mat_query.iter_mut() {
-        mymaterial.set_time(time.seconds_since_startup() as f32);
     }
 }

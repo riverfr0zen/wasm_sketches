@@ -4,7 +4,7 @@ use bevy::{
     sprite::{Material2d, Material2dPipeline, Material2dPlugin, MaterialMesh2dBundle},
 };
 use bevy_sketches::base::sketch;
-use bevy_sketches::shader_materials::eg_material::{ExampleMaterial, ShaderMaterialPlugin};
+use bevy_sketches::shader_materials::{core::ShaderMaterialPlugin, eg_material::ExampleMaterial};
 use bevy_web_extras::prelude::*;
 
 
