@@ -8,7 +8,8 @@
  * jive with the surrounding Bevy materials architecture, which have also posed some puzzles for me
  * due to lack my familiarity.
  *
- * Some resources that have been helpful:
+ *
+ * Some resources I've been looking at around traits and "inheritance":
  *
  * https://stackoverflow.com/questions/52418809/can-a-trait-give-a-default-implementation-for-the-method-of-a-trait-that-it-inhe
  *

@@ -29,13 +29,14 @@ use std::mem::size_of;
 
 
 // const MATERIAL_PATH: &str = "tut_shaders/tut_shader2_material.wgsl";
+const MATERIAL_PATH: &str = "tut_shaders/tut_shader2_material2.wgsl";
 // const MATERIAL_PATH: &str = "tut_shaders/tut_shader3_shaping_line.wgsl";
 // const MATERIAL_PATH: &str = "tut_shaders/tut_shader3_shaping_trig.wgsl";
 // const MATERIAL_PATH: &str = "tut_shaders/tut_shader3_colors.wgsl";
 // const MATERIAL_PATH: &str = "tut_shaders/tut_shader3_colors_mix.wgsl";
 // const MATERIAL_PATH: &str = "tut_shaders/tut_shader3_shapes_rect.wgsl";
 // const MATERIAL_PATH: &str = "tut_shaders/tut_shader3_shapes_rect2.wgsl";
-const MATERIAL_PATH: &str = "tut_shaders/tut_shader3_building_lights.wgsl";
+// const MATERIAL_PATH: &str = "tut_shaders/tut_shader3_building_lights.wgsl";
 
 
 #[derive(TypeUuid, Clone)]
@@ -52,7 +53,6 @@ impl Default for ExampleMaterial {
 
 impl BaseShaderTrait for ExampleMaterial {
     fn set_time(&mut self, time: f32) {
-        // @TODO: Would be nice to have a cleaner way of accessing time
         self.0.time = time;
     }
 }
@@ -120,8 +120,6 @@ impl RenderAsset for ExampleMaterial {
     ) -> Result<GPUExampleMaterial, PrepareAssetError<ExampleMaterial>> {
         let time_buffer = render_device.create_buffer_with_data(&BufferInitDescriptor {
             label: None,
-            // @TODO: Would be nice to have a cleaner way of accessing time
-            // contents: extracted_asset.time.as_bytes(),
             contents: extracted_asset.0.time.as_bytes(),
             usage: BufferUsages::UNIFORM | BufferUsages::COPY_DST,
         });
