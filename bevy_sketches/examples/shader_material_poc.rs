@@ -1,6 +1,9 @@
 use bevy::{prelude::*, sprite::MaterialMesh2dBundle};
 use bevy_sketches::base::sketch;
-use bevy_sketches::shader_materials::{core::ShaderMaterialPlugin, eg_material::ExampleMaterial};
+use bevy_sketches::shader_materials::{
+    core::{DisplayQuad, ShaderMaterialPlugin},
+    eg_material::ExampleMaterial,
+};
 use bevy_web_extras::prelude::*;
 
 
@@ -37,25 +40,30 @@ fn poc_setup(
     commands.spawn_bundle(OrthographicCameraBundle::new_2d());
 
 
-    commands.spawn_bundle(MaterialMesh2dBundle {
-        mesh: mesh_assets.add(Mesh::from(shape::Quad::default())).into(),
-        transform: Transform {
-            scale: Vec3::new(SURFACE_WIDTH, SURFACE_HEIGHT, 1.0),
-            translation: Vec3::new(0.0, -webcfg.max_y + SURFACE_HEIGHT / 2.0, 1.0),
-            ..Transform::default()
-        },
-        material: my_material_assets.add(ExampleMaterial::default()),
-        ..default()
-    });
+    commands
+        .spawn_bundle(MaterialMesh2dBundle {
+            mesh: mesh_assets.add(Mesh::from(shape::Quad::default())).into(),
+            transform: Transform {
+                scale: Vec3::new(SURFACE_WIDTH, SURFACE_HEIGHT, 1.0),
+                translation: Vec3::new(0.0, -webcfg.max_y + SURFACE_HEIGHT / 2.0, 1.0),
+                ..Transform::default()
+            },
+            material: my_material_assets.add(ExampleMaterial::default()),
+            ..default()
+        })
+        .insert(DisplayQuad);
 
-    commands.spawn_bundle(MaterialMesh2dBundle {
-        mesh: mesh_assets.add(Mesh::from(shape::Quad::default())).into(),
-        transform: Transform {
-            scale: Vec3::new(SURFACE_WIDTH, SURFACE2_HEIGHT, 1.0),
-            translation: Vec3::new(501.0, -webcfg.max_y + SURFACE2_HEIGHT / 2.0, 1.0),
-            ..Default::default()
-        },
-        material: my_material_assets.add(ExampleMaterial::default()),
-        ..default()
-    });
+
+    commands
+        .spawn_bundle(MaterialMesh2dBundle {
+            mesh: mesh_assets.add(Mesh::from(shape::Quad::default())).into(),
+            transform: Transform {
+                scale: Vec3::new(SURFACE_WIDTH, SURFACE2_HEIGHT, 1.0),
+                translation: Vec3::new(501.0, -webcfg.max_y + SURFACE2_HEIGHT / 2.0, 1.0),
+                ..Default::default()
+            },
+            material: my_material_assets.add(ExampleMaterial::default()),
+            ..default()
+        })
+        .insert(DisplayQuad);
 }

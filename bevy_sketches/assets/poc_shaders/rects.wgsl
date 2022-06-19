@@ -17,12 +17,13 @@ struct VertexOutput {
     [[location(2)]] uv: vec2<f32>;
 };
 
-struct Time {
-    [[location(0)]] time: f32;
+// Time not actually used in this shader
+struct CommonUniformData {
+    time: f32;
 };
 
 [[group(1), binding(0)]]
-var<uniform> time: Time;
+var<uniform> uniform_data: CommonUniformData;
 
 
 [[stage(fragment)]]

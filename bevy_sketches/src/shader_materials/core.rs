@@ -54,17 +54,51 @@ impl<M: BaseShaderTrait> Default for ShaderMaterialPlugin<M> {
     }
 }
 
+
 impl<T: BaseShaderTrait> Plugin for ShaderMaterialPlugin<T> {
     fn build(&self, app: &mut App) {
         app.add_plugin(Material2dPlugin::<T>::default())
             .sub_app_mut(RenderApp)
-            .add_system_to_stage(RenderStage::Extract, update_time::<T>);
+            // .add_system_to_stage(RenderStage::Extract, update_time::<T>)
+            .add_system_to_stage(RenderStage::Extract, update_common_uniform_data::<T>);
     }
 }
 
-pub fn update_time<T: BaseShaderTrait>(mut mat_query: ResMut<Assets<T>>, time: Res<Time>) {
-    for (_, mymaterial) in mat_query.iter_mut() {
+
+// Original update system which just updated time. Left here for reference.
+// pub fn update_time<T: BaseShaderTrait>(mut mat_resources: ResMut<Assets<T>>, time: Res<Time>) {
+//     for (_, mymaterial) in mat_resources.iter_mut() {
+//         mymaterial.set_time(time.seconds_since_startup() as f32);
+//     }
+// }
+
+
+#[derive(Component)]
+pub struct DisplayQuad;
+
+// How to get the material & update it with res?
+//
+pub fn update_common_uniform_data<T: BaseShaderTrait>(
+    // `time` and `mat_resources` from the original update_time system
+    time: Res<Time>,
+    mut mat_resources: ResMut<Assets<T>>,
+    // Figured out by looking at the declaration of MaterialMesh2dBundle that you can
+    // query for the handle of the material. With the handleId from this, we can filter
+    // Assets<T> to get and update the particular material asset.
+    quad_query: Query<(&Transform, &Handle<T>), With<DisplayQuad>>,
+) {
+    for (asset_handle, mymaterial) in mat_resources.iter_mut() {
+        // Set the time
         mymaterial.set_time(time.seconds_since_startup() as f32);
+
+        // @TODO Set the resolution based on quad transform
+        // info!("x: {:?}", assetHandle);
+        for (transform, handle) in quad_query.iter() {
+            // info!("x: {:?}", handle.id);
+            if handle.id == asset_handle {
+                info!("FOUND A MATCH!, {:?} == {:?}", handle.id, asset_handle);
+            }
+        }
     }
 }
 
