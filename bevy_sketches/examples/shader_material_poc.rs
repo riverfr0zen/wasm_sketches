@@ -1,8 +1,4 @@
-use bevy::{
-    prelude::*,
-    render::{RenderApp, RenderStage},
-    sprite::{Material2d, Material2dPipeline, Material2dPlugin, MaterialMesh2dBundle},
-};
+use bevy::{prelude::*, sprite::MaterialMesh2dBundle};
 use bevy_sketches::base::sketch;
 use bevy_sketches::shader_materials::{core::ShaderMaterialPlugin, eg_material::ExampleMaterial};
 use bevy_web_extras::prelude::*;
@@ -12,6 +8,7 @@ pub const HEIGHT: f32 = 900.0;
 pub const RESOLUTION: f32 = 16.0 / 9.0;
 const SURFACE_WIDTH: f32 = 500.0;
 const SURFACE_HEIGHT: f32 = 800.0;
+const SURFACE2_HEIGHT: f32 = SURFACE_HEIGHT * 1.5;
 
 
 pub fn main() {
@@ -51,12 +48,11 @@ fn poc_setup(
         ..default()
     });
 
-    const surface2_height: f32 = SURFACE_HEIGHT * 1.5;
     commands.spawn_bundle(MaterialMesh2dBundle {
         mesh: mesh_assets.add(Mesh::from(shape::Quad::default())).into(),
         transform: Transform {
-            scale: Vec3::new(SURFACE_WIDTH, surface2_height, 1.0),
-            translation: Vec3::new(501.0, -webcfg.max_y + surface2_height / 2.0, 1.0),
+            scale: Vec3::new(SURFACE_WIDTH, SURFACE2_HEIGHT, 1.0),
+            translation: Vec3::new(501.0, -webcfg.max_y + SURFACE2_HEIGHT / 2.0, 1.0),
             ..Default::default()
         },
         material: my_material_assets.add(ExampleMaterial::default()),
