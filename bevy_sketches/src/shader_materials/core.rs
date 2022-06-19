@@ -27,20 +27,36 @@ use bevy::{
 use std::marker::PhantomData;
 
 
+#[derive(Clone, AsStd140)]
+pub struct CommonUniformData {
+    // @TODO Add resolution, mouse, etc.
+    pub time: f32,
+    pub resolution: Vec2,
+}
+
+
 pub trait BaseShaderTrait: Material2d {
     fn set_time(&mut self, time: f32);
+
+    fn set_resolution(&mut self, resolution: Vec2);
 }
 
 
 #[derive(Clone)]
 pub struct BaseShaderMaterial {
-    pub time: f32,
+    // pub time: f32,
+    pub uniform: CommonUniformData,
 }
 
 
 impl Default for BaseShaderMaterial {
     fn default() -> Self {
-        Self { time: 0.0 }
+        Self {
+            uniform: CommonUniformData {
+                time: 0.0,
+                resolution: Vec2::ONE,
+            },
+        }
     }
 }
 
@@ -76,10 +92,9 @@ impl<T: BaseShaderTrait> Plugin for ShaderMaterialPlugin<T> {
 #[derive(Component)]
 pub struct DisplayQuad;
 
-// How to get the material & update it with res?
-//
+
+/// Update uniform data (time & resolution) in material for sending to shader
 pub fn update_common_uniform_data<T: BaseShaderTrait>(
-    // `time` and `mat_resources` from the original update_time system
     time: Res<Time>,
     mut mat_resources: ResMut<Assets<T>>,
     // Figured out by looking at the declaration of MaterialMesh2dBundle that you can
@@ -88,23 +103,12 @@ pub fn update_common_uniform_data<T: BaseShaderTrait>(
     quad_query: Query<(&Transform, &Handle<T>), With<DisplayQuad>>,
 ) {
     for (asset_handle, mymaterial) in mat_resources.iter_mut() {
-        // Set the time
         mymaterial.set_time(time.seconds_since_startup() as f32);
 
-        // @TODO Set the resolution based on quad transform
-        // info!("x: {:?}", assetHandle);
         for (transform, handle) in quad_query.iter() {
-            // info!("x: {:?}", handle.id);
             if handle.id == asset_handle {
-                info!("FOUND A MATCH!, {:?} == {:?}", handle.id, asset_handle);
+                mymaterial.set_resolution(Vec2::new(transform.scale.x, transform.scale.y));
             }
         }
     }
-}
-
-
-#[derive(Clone, AsStd140)]
-pub struct CommonUniformData {
-    // @TODO Add resolution, mouse, etc.
-    pub time: f32,
 }

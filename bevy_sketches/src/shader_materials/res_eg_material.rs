@@ -1,10 +1,3 @@
-/// Steps to creating a new material
-/// 1. Copy the code below to a new source file
-/// 2. Globally replace "ExampleMaterial" with the name of the new struct
-/// 3. Generate a new `uuid` and replace the one used for the ExampleMaterial struct
-/// 3. That should be it in most cases.
-/// 4. If you need to send additional uniform data, you can adjust the material struct
-/// and other details accordingly.
 use super::core::{BaseShaderMaterial, BaseShaderTrait, CommonUniformData};
 use bevy::{
     ecs::system::{lifetimeless::SRes, SystemParamItem},
@@ -23,22 +16,22 @@ use bevy::{
     sprite::{Material2d, Material2dPipeline},
 };
 
-const MATERIAL_PATH: &str = "poc_shaders/time_colors.wgsl";
+const MATERIAL_PATH: &str = "poc_shaders/res_rects.wgsl";
 
 
 #[derive(TypeUuid, Clone)]
-#[uuid = "bc2f08eb-a0fb-43f1-a908-54871ea597d5"]
-pub struct ExampleMaterial(BaseShaderMaterial);
+#[uuid = "cf1490ee-136c-4603-a22e-3e4ed0ae6acb"]
+pub struct ResExampleMaterial(BaseShaderMaterial);
 
 
-impl Default for ExampleMaterial {
+impl Default for ResExampleMaterial {
     fn default() -> Self {
         Self(BaseShaderMaterial::default())
     }
 }
 
 
-impl BaseShaderTrait for ExampleMaterial {
+impl BaseShaderTrait for ResExampleMaterial {
     fn set_time(&mut self, time: f32) {
         self.0.uniform.time = time;
     }
@@ -49,13 +42,13 @@ impl BaseShaderTrait for ExampleMaterial {
 }
 
 
-pub struct GPUExampleMaterial {
+pub struct GPUResExampleMaterial {
     bind_group: BindGroup,
 }
 
 
-impl Material2d for ExampleMaterial {
-    fn bind_group(material: &GPUExampleMaterial) -> &BindGroup {
+impl Material2d for ResExampleMaterial {
+    fn bind_group(material: &GPUResExampleMaterial) -> &BindGroup {
         &material.bind_group
     }
 
@@ -95,22 +88,22 @@ impl Material2d for ExampleMaterial {
 }
 
 
-impl RenderAsset for ExampleMaterial {
-    type ExtractedAsset = ExampleMaterial;
-    type PreparedAsset = GPUExampleMaterial;
+impl RenderAsset for ResExampleMaterial {
+    type ExtractedAsset = ResExampleMaterial;
+    type PreparedAsset = GPUResExampleMaterial;
     type Param = (
         SRes<RenderDevice>,
-        SRes<Material2dPipeline<ExampleMaterial>>,
+        SRes<Material2dPipeline<ResExampleMaterial>>,
     );
 
-    fn extract_asset(&self) -> ExampleMaterial {
+    fn extract_asset(&self) -> ResExampleMaterial {
         self.clone()
     }
 
     fn prepare_asset(
-        extracted_asset: ExampleMaterial,
+        extracted_asset: ResExampleMaterial,
         (render_device, pipeline): &mut SystemParamItem<Self::Param>,
-    ) -> Result<GPUExampleMaterial, PrepareAssetError<ExampleMaterial>> {
+    ) -> Result<GPUResExampleMaterial, PrepareAssetError<ResExampleMaterial>> {
         let uniform_data = CommonUniformData {
             time: extracted_asset.0.uniform.time,
             resolution: extracted_asset.0.uniform.resolution,
@@ -130,6 +123,6 @@ impl RenderAsset for ExampleMaterial {
                 resource: uniform_buffer.as_entire_binding(),
             }],
         });
-        Ok(GPUExampleMaterial { bind_group })
+        Ok(GPUResExampleMaterial { bind_group })
     }
 }

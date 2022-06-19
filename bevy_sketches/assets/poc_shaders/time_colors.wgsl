@@ -1,17 +1,11 @@
-// The VertexOutput info below is coming from existing Bevy machinery, I believe.
-// See: https://github.com/bevyengine/bevy/blob/main/crates/bevy_sprite/src/mesh2d/mesh2d.wgsl
-// See also: https://youtu.be/EKS0SSq8UPQ?t=613
+#import "shader_common/common_uniform.wgsl"
+
 
 struct VertexOutput {
     [[builtin(position)]] clip_position: vec4<f32>;
     [[location(0)]] world_position: vec4<f32>;
     [[location(1)]] world_normal: vec3<f32>;
     [[location(2)]] uv: vec2<f32>;
-};
-
-
-struct CommonUniformData {
-    time: f32;
 };
 
 

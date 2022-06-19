@@ -17,14 +17,6 @@ struct VertexOutput {
     [[location(2)]] uv: vec2<f32>;
 };
 
-// Time not actually used in this shader
-struct CommonUniformData {
-    time: f32;
-};
-
-[[group(1), binding(0)]]
-var<uniform> uniform_data: CommonUniformData;
-
 
 [[stage(fragment)]]
 fn fragment(input: VertexOutput) -> [[location(0)]] vec4<f32> {
