@@ -1,4 +1,4 @@
-use super::core::{BaseShaderMaterial, BaseShaderTrait};
+use super::core::{BaseShaderMaterial, BaseShaderTrait, CommonUniformData};
 use bevy::{
     ecs::system::{lifetimeless::SRes, SystemParamItem},
     prelude::*,
@@ -6,37 +6,17 @@ use bevy::{
     render::{
         render_asset::{PrepareAssetError, RenderAsset},
         render_resource::{
-            // BindGroup, BindGroupDescriptor, BindGroupLayout, BindGroupLayoutDescriptor,
             std140::{AsStd140, Std140},
-            BindGroup,
-            BindGroupDescriptor,
-            BindGroupEntry,
-            BindGroupLayout,
-            BindGroupLayoutDescriptor,
-            BindGroupLayoutEntry,
-            BindingType,
-            BufferBindingType,
-            BufferInitDescriptor,
-            BufferSize,
-            BufferUsages,
-            ShaderStages,
+            BindGroup, BindGroupDescriptor, BindGroupEntry, BindGroupLayout,
+            BindGroupLayoutDescriptor, BindGroupLayoutEntry, BindingType, BufferBindingType,
+            BufferInitDescriptor, BufferSize, BufferUsages, ShaderStages,
         },
         renderer::RenderDevice,
     },
     sprite::{Material2d, Material2dPipeline},
 };
-use std::mem::size_of;
 
-
-// const MATERIAL_PATH: &str = "tut_shaders/tut_shader2_material.wgsl";
-const MATERIAL_PATH: &str = "tut_shaders/tut_shader2_material2.wgsl";
-// const MATERIAL_PATH: &str = "tut_shaders/tut_shader3_shaping_line.wgsl";
-// const MATERIAL_PATH: &str = "tut_shaders/tut_shader3_shaping_trig.wgsl";
-// const MATERIAL_PATH: &str = "tut_shaders/tut_shader3_colors.wgsl";
-// const MATERIAL_PATH: &str = "tut_shaders/tut_shader3_colors_mix.wgsl";
-// const MATERIAL_PATH: &str = "tut_shaders/tut_shader3_shapes_rect.wgsl";
-// const MATERIAL_PATH: &str = "tut_shaders/tut_shader3_shapes_rect2.wgsl";
-// const MATERIAL_PATH: &str = "tut_shaders/tut_shader3_building_lights.wgsl";
+const MATERIAL_PATH: &str = "poc_shaders/time_colors.wgsl";
 
 
 #[derive(TypeUuid, Clone)]
@@ -79,7 +59,9 @@ impl Material2d for ExampleMaterial {
                 ty: BindingType::Buffer {
                     ty: BufferBindingType::Uniform,
                     has_dynamic_offset: false,
-                    min_binding_size: BufferSize::new(size_of::<f32>() as u64),
+                    min_binding_size: BufferSize::new(
+                        CommonUniformData::std140_size_static() as u64
+                    ),
                 },
                 count: None,
             }],
@@ -118,9 +100,13 @@ impl RenderAsset for ExampleMaterial {
         extracted_asset: ExampleMaterial,
         (render_device, pipeline): &mut SystemParamItem<Self::Param>,
     ) -> Result<GPUExampleMaterial, PrepareAssetError<ExampleMaterial>> {
-        let time_buffer = render_device.create_buffer_with_data(&BufferInitDescriptor {
+        let uniform_data = CommonUniformData {
+            time: extracted_asset.0.time,
+        };
+
+        let uniform_buffer = render_device.create_buffer_with_data(&BufferInitDescriptor {
             label: None,
-            contents: extracted_asset.0.time.as_bytes(),
+            contents: uniform_data.as_std140().as_bytes(),
             usage: BufferUsages::UNIFORM | BufferUsages::COPY_DST,
         });
 
@@ -129,7 +115,7 @@ impl RenderAsset for ExampleMaterial {
             layout: &pipeline.material2d_layout,
             entries: &[BindGroupEntry {
                 binding: 0,
-                resource: time_buffer.as_entire_binding(),
+                resource: uniform_buffer.as_entire_binding(),
             }],
         });
         Ok(GPUExampleMaterial { bind_group })

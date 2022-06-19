@@ -9,12 +9,14 @@ struct VertexOutput {
     [[location(2)]] uv: vec2<f32>;
 };
 
-struct Time {
-    [[location(0)]] time: f32;
+
+struct CommonUniformData {
+    time: f32;
 };
 
+
 [[group(1), binding(0)]]
-var<uniform> time: Time;
+var<uniform> uniform_data: CommonUniformData;
 
 
 [[stage(fragment)]]
@@ -23,12 +25,10 @@ fn fragment(input: VertexOutput) -> [[location(0)]] vec4<f32> {
     let freq_g = 3.0;
     let freq_b = 1.0;
 
-    // var output_color = vec4<f32>(abs(sin(time.time)), 0.0, 0.0, 1.0);
-    // var output_color = vec4<f32>(abs(sin(time.time * freq)), 0.0, 0.0, 1.0);
     var output_color = vec4<f32>(
-        abs(sin(time.time * freq_r)), 
-        abs(sin(time.time * freq_g)), 
-        abs(sin(time.time * freq_b)),  
+        abs(sin(uniform_data.time * freq_r)), 
+        abs(sin(uniform_data.time * freq_g)), 
+        abs(sin(uniform_data.time * freq_b)),  
         1.0
     );
     return output_color;

@@ -49,13 +49,14 @@ pub const RESOLUTION: f32 = 16.0 / 9.0;
 const SURFACE_WIDTH: f32 = 800.0;
 const SURFACE_HEIGHT: f32 = 800.0;
 // const MATERIAL_PATH: &str = "tut_shaders/tut_shader2_material.wgsl";
+const MATERIAL_PATH: &str = "tut_shaders/tut_shader2_material2.wgsl";
 // const MATERIAL_PATH: &str = "tut_shaders/tut_shader3_shaping_line.wgsl";
 // const MATERIAL_PATH: &str = "tut_shaders/tut_shader3_shaping_trig.wgsl";
 // const MATERIAL_PATH: &str = "tut_shaders/tut_shader3_colors.wgsl";
 // const MATERIAL_PATH: &str = "tut_shaders/tut_shader3_colors_mix.wgsl";
 // const MATERIAL_PATH: &str = "tut_shaders/tut_shader3_shapes_rect.wgsl";
 // const MATERIAL_PATH: &str = "tut_shaders/tut_shader3_shapes_rect2.wgsl";
-const MATERIAL_PATH: &str = "tut_shaders/tut_shader3_building_lights.wgsl";
+// const MATERIAL_PATH: &str = "tut_shaders/tut_shader3_building_lights.wgsl";
 
 
 fn main() {

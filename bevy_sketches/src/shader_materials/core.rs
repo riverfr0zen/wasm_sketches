@@ -21,7 +21,7 @@
 
 use bevy::{
     prelude::*,
-    render::{RenderApp, RenderStage},
+    render::{render_resource::std140::AsStd140, RenderApp, RenderStage},
     sprite::{Material2d, Material2dPlugin},
 };
 use std::marker::PhantomData;
@@ -66,4 +66,11 @@ pub fn update_time<T: BaseShaderTrait>(mut mat_query: ResMut<Assets<T>>, time: R
     for (_, mymaterial) in mat_query.iter_mut() {
         mymaterial.set_time(time.seconds_since_startup() as f32);
     }
+}
+
+
+#[derive(Clone, AsStd140)]
+pub struct CommonUniformData {
+    // @TODO Add resolution, mouse, etc.
+    pub time: f32,
 }
