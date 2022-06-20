@@ -3,7 +3,7 @@ use bevy_sketches::base::sketch;
 use bevy_sketches::shader_materials::{
     core::{DisplayQuad, ShaderMaterialPlugin},
     eg_material::ExampleMaterial,
-    res_eg_material::ResExampleMaterial,
+    eg_res_material::ResExampleMaterial,
 };
 use bevy_web_extras::prelude::*;
 
