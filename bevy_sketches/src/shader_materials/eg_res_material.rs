@@ -1,3 +1,5 @@
+/// Material boilterplate for shader that demonstrates using resolution data. See shader
+/// located at MATERIAL_PATH below for more details.
 use super::core::{BaseShaderMaterial, BaseShaderTrait, CommonUniformData};
 use bevy::{
     ecs::system::{lifetimeless::SRes, SystemParamItem},

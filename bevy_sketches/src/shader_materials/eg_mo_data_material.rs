@@ -1,9 +1,5 @@
-/// Steps to creating a new material
-/// 1. Copy the code below to a new source file
-/// 2. Globally replace "ExampleMaterial" with the name of the new struct
-/// 3. Generate a new `uuid` and replace the one used for the ExampleMaterial struct
-/// 3. That should be it in most cases.
-/// 4. If you need to send additional uniform data, take a look at the `eg_mo_data_material` module.
+/// Demonstrates providing additional uniform data from material to shader. See also the
+/// accompanying shader at `MATERIAL_PATH` below.
 use super::core::{BaseShaderMaterial, BaseShaderTrait, CommonUniformData};
 use bevy::{
     ecs::system::{lifetimeless::SRes, SystemParamItem},
@@ -22,39 +18,63 @@ use bevy::{
     sprite::{Material2d, Material2dPipeline},
 };
 
-const MATERIAL_PATH: &str = "poc_shaders/time_colors.wgsl";
+const MATERIAL_PATH: &str = "poc_shaders/rects_from_additional_data.wgsl";
+const DEFAULT_NUM_RECTS: u32 = 2;
+
+
+#[derive(Clone, AsStd140)]
+pub struct SomeCustomUniformData {
+    pub common: CommonUniformData,
+    pub num_rects: u32,
+}
 
 
 #[derive(TypeUuid, Clone)]
-#[uuid = "bc2f08eb-a0fb-43f1-a908-54871ea597d5"]
-pub struct ExampleMaterial(BaseShaderMaterial);
+#[uuid = "9ae754a8-7c86-45e7-87d6-601a11a703f0"]
+pub struct AdditionalDataMaterial {
+    uniform: SomeCustomUniformData,
+}
 
-
-impl Default for ExampleMaterial {
-    fn default() -> Self {
-        Self(BaseShaderMaterial::default())
+impl AdditionalDataMaterial {
+    pub fn with_rects(num_rects: u32) -> Self {
+        Self {
+            uniform: SomeCustomUniformData {
+                common: CommonUniformData::default(),
+                num_rects: num_rects,
+            },
+        }
     }
 }
 
+impl Default for AdditionalDataMaterial {
+    fn default() -> Self {
+        Self {
+            uniform: SomeCustomUniformData {
+                common: CommonUniformData::default(),
+                num_rects: DEFAULT_NUM_RECTS,
+            },
+        }
+    }
+}
 
-impl BaseShaderTrait for ExampleMaterial {
+impl BaseShaderTrait for AdditionalDataMaterial {
     fn set_time(&mut self, time: f32) {
-        self.0.uniform.time = time;
+        self.uniform.common.time = time;
     }
 
     fn set_resolution(&mut self, resolution: Vec2) {
-        self.0.uniform.resolution = resolution;
+        self.uniform.common.resolution = resolution;
     }
 }
 
 
-pub struct GPUExampleMaterial {
+pub struct GPUAdditionalDataMaterial {
     bind_group: BindGroup,
 }
 
 
-impl Material2d for ExampleMaterial {
-    fn bind_group(material: &GPUExampleMaterial) -> &BindGroup {
+impl Material2d for AdditionalDataMaterial {
+    fn bind_group(material: &GPUAdditionalDataMaterial) -> &BindGroup {
         &material.bind_group
     }
 
@@ -70,7 +90,7 @@ impl Material2d for ExampleMaterial {
                     ty: BufferBindingType::Uniform,
                     has_dynamic_offset: false,
                     min_binding_size: BufferSize::new(
-                        CommonUniformData::std140_size_static() as u64
+                        SomeCustomUniformData::std140_size_static() as u64
                     ),
                 },
                 count: None,
@@ -94,25 +114,32 @@ impl Material2d for ExampleMaterial {
 }
 
 
-impl RenderAsset for ExampleMaterial {
-    type ExtractedAsset = ExampleMaterial;
-    type PreparedAsset = GPUExampleMaterial;
+impl RenderAsset for AdditionalDataMaterial {
+    type ExtractedAsset = AdditionalDataMaterial;
+    type PreparedAsset = GPUAdditionalDataMaterial;
     type Param = (
         SRes<RenderDevice>,
-        SRes<Material2dPipeline<ExampleMaterial>>,
+        SRes<Material2dPipeline<AdditionalDataMaterial>>,
     );
 
-    fn extract_asset(&self) -> ExampleMaterial {
+    fn extract_asset(&self) -> AdditionalDataMaterial {
         self.clone()
     }
 
     fn prepare_asset(
-        extracted_asset: ExampleMaterial,
+        extracted_asset: AdditionalDataMaterial,
         (render_device, pipeline): &mut SystemParamItem<Self::Param>,
-    ) -> Result<GPUExampleMaterial, PrepareAssetError<ExampleMaterial>> {
-        let uniform_data = CommonUniformData {
-            time: extracted_asset.0.uniform.time,
-            resolution: extracted_asset.0.uniform.resolution,
+    ) -> Result<GPUAdditionalDataMaterial, PrepareAssetError<AdditionalDataMaterial>> {
+        // let uniform_data = CommonUniformData {
+        //     time: extracted_asset.uniform.common.time,
+        //     resolution: extracted_asset.uniform.common.resolution,
+        // };
+        let uniform_data = SomeCustomUniformData {
+            common: CommonUniformData {
+                time: extracted_asset.uniform.common.time,
+                resolution: extracted_asset.uniform.common.resolution,
+            },
+            num_rects: extracted_asset.uniform.num_rects,
         };
 
         let uniform_buffer = render_device.create_buffer_with_data(&BufferInitDescriptor {
@@ -129,6 +156,6 @@ impl RenderAsset for ExampleMaterial {
                 resource: uniform_buffer.as_entire_binding(),
             }],
         });
-        Ok(GPUExampleMaterial { bind_group })
+        Ok(GPUAdditionalDataMaterial { bind_group })
     }
 }

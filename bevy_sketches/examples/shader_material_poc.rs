@@ -1,8 +1,10 @@
 use bevy::{prelude::*, sprite::MaterialMesh2dBundle};
 use bevy_sketches::base::sketch;
+use bevy_sketches::shader_materials::eg_mo_data_material;
 use bevy_sketches::shader_materials::{
     core::{DisplayQuad, ShaderMaterialPlugin},
     eg_material::ExampleMaterial,
+    eg_mo_data_material::AdditionalDataMaterial,
     eg_res_material::ResExampleMaterial,
 };
 use bevy_web_extras::prelude::*;
@@ -13,9 +15,12 @@ pub const RESOLUTION: f32 = 16.0 / 9.0;
 const SURFACE_WIDTH: f32 = 500.0;
 const SURFACE_HEIGHT: f32 = 800.0;
 const SURFACE2_WIDTH: f32 = SURFACE_WIDTH;
-const SURFACE2_HEIGHT: f32 = SURFACE_HEIGHT * 1.5;
-const SURFACE3_WIDTH: f32 = SURFACE_WIDTH * 1.5;
+// const SURFACE2_HEIGHT: f32 = SURFACE_HEIGHT * 1.5;
+const SURFACE2_HEIGHT: f32 = SURFACE_HEIGHT;
+const SURFACE3_WIDTH: f32 = SURFACE_WIDTH * 1.25;
 const SURFACE3_HEIGHT: f32 = SURFACE_HEIGHT / 2.0;
+const SURFACE4_WIDTH: f32 = SURFACE_WIDTH;
+const SURFACE4_HEIGHT: f32 = SURFACE_HEIGHT / 2.0;
 
 
 pub fn main() {
@@ -29,6 +34,7 @@ pub fn main() {
     app.insert_resource(ClearColor(Color::SALMON))
         .add_plugin(ShaderMaterialPlugin::<ExampleMaterial>::default())
         .add_plugin(ShaderMaterialPlugin::<ResExampleMaterial>::default())
+        .add_plugin(ShaderMaterialPlugin::<AdditionalDataMaterial>::default())
         .add_startup_system(poc_setup);
 
     app.run();
@@ -40,6 +46,7 @@ fn poc_setup(
     mut mesh_assets: ResMut<Assets<Mesh>>,
     mut eg_material_assets: ResMut<Assets<ExampleMaterial>>,
     mut res_eg_material_assets: ResMut<Assets<ResExampleMaterial>>,
+    mut eg_mo_data_material_assets: ResMut<Assets<AdditionalDataMaterial>>,
     webcfg: Res<WebExtrasCfg>,
 ) {
     commands.spawn_bundle(OrthographicCameraBundle::new_2d());
@@ -54,7 +61,7 @@ fn poc_setup(
                 scale: Vec3::new(SURFACE_WIDTH, SURFACE_HEIGHT, 1.0),
                 translation: Vec3::new(
                     -webcfg.max_x + (SURFACE_WIDTH / 2.0) + 10.0,
-                    -webcfg.max_y + (SURFACE_HEIGHT / 2.0),
+                    webcfg.max_y - (SURFACE_HEIGHT / 2.0),
                     1.0,
                 ),
                 ..Transform::default()
@@ -71,7 +78,7 @@ fn poc_setup(
                 scale: Vec3::new(SURFACE_WIDTH, SURFACE2_HEIGHT, 1.0),
                 translation: Vec3::new(
                     -webcfg.max_x + (SURFACE2_WIDTH / 2.0) + SURFACE_WIDTH + 20.0,
-                    -webcfg.max_y + SURFACE2_HEIGHT / 2.0,
+                    webcfg.max_y - (SURFACE2_HEIGHT / 2.0),
                     1.0,
                 ),
                 ..Default::default()
@@ -88,12 +95,58 @@ fn poc_setup(
                 scale: Vec3::new(SURFACE3_WIDTH, SURFACE3_HEIGHT, 1.0),
                 translation: Vec3::new(
                     -webcfg.max_x + (SURFACE3_WIDTH / 2.0) + SURFACE_WIDTH + SURFACE2_WIDTH + 30.0,
-                    -webcfg.max_y + SURFACE3_HEIGHT / 2.0,
+                    webcfg.max_y - (SURFACE3_HEIGHT / 2.0),
                     1.0,
                 ),
                 ..Default::default()
             },
             material: res_eg_material_assets.add(ResExampleMaterial::default()),
+            ..default()
+        })
+        .insert(DisplayQuad);
+
+
+    commands
+        .spawn_bundle(MaterialMesh2dBundle {
+            mesh: mesh_assets.add(Mesh::from(shape::Quad::default())).into(),
+            transform: Transform {
+                scale: Vec3::new(SURFACE4_WIDTH, SURFACE4_HEIGHT, 1.0),
+                translation: Vec3::new(
+                    -webcfg.max_x
+                        + (SURFACE4_WIDTH / 2.0)
+                        + SURFACE_WIDTH
+                        + SURFACE2_WIDTH
+                        + SURFACE3_WIDTH
+                        + 40.0,
+                    webcfg.max_y - (SURFACE4_HEIGHT / 2.0),
+                    1.0,
+                ),
+                ..Default::default()
+            },
+            material: eg_mo_data_material_assets.add(AdditionalDataMaterial::default()),
+            ..default()
+        })
+        .insert(DisplayQuad);
+
+
+    commands
+        .spawn_bundle(MaterialMesh2dBundle {
+            mesh: mesh_assets.add(Mesh::from(shape::Quad::default())).into(),
+            transform: Transform {
+                scale: Vec3::new(SURFACE4_WIDTH, SURFACE4_HEIGHT - 10.0, 1.0),
+                translation: Vec3::new(
+                    -webcfg.max_x
+                        + (SURFACE4_WIDTH / 2.0)
+                        + SURFACE_WIDTH
+                        + SURFACE2_WIDTH
+                        + SURFACE3_WIDTH
+                        + 40.0,
+                    webcfg.max_y - (SURFACE4_HEIGHT / 2.0) - SURFACE4_HEIGHT,
+                    1.0,
+                ),
+                ..Default::default()
+            },
+            material: eg_mo_data_material_assets.add(AdditionalDataMaterial::with_rects(3)),
             ..default()
         })
         .insert(DisplayQuad);

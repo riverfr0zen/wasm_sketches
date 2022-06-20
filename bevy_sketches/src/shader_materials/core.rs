@@ -34,6 +34,15 @@ pub struct CommonUniformData {
     pub resolution: Vec2,
 }
 
+impl Default for CommonUniformData {
+    fn default() -> Self {
+        Self {
+            time: 0.0,
+            resolution: Vec2::ONE,
+        }
+    }
+}
+
 
 pub trait BaseShaderTrait: Material2d {
     fn set_time(&mut self, time: f32);
@@ -52,10 +61,7 @@ pub struct BaseShaderMaterial {
 impl Default for BaseShaderMaterial {
     fn default() -> Self {
         Self {
-            uniform: CommonUniformData {
-                time: 0.0,
-                resolution: Vec2::ONE,
-            },
+            uniform: CommonUniformData::default(),
         }
     }
 }
