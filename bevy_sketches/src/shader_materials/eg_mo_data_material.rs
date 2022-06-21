@@ -1,6 +1,6 @@
 /// Demonstrates providing additional uniform data from material to shader. See also the
 /// accompanying shader at `MATERIAL_PATH` below.
-use super::core::{BaseShaderMaterial, BaseShaderTrait, CommonUniformData};
+use super::core::{BaseShaderTrait, CommonUniformData};
 use bevy::{
     ecs::system::{lifetimeless::SRes, SystemParamItem},
     prelude::*,

@@ -1,6 +1,5 @@
 use bevy::{prelude::*, sprite::MaterialMesh2dBundle};
 use bevy_sketches::base::sketch;
-use bevy_sketches::shader_materials::eg_mo_data_material;
 use bevy_sketches::shader_materials::{
     core::{DisplayQuad, ShaderMaterialPlugin},
     eg_material::ExampleMaterial,
@@ -34,15 +33,47 @@ pub fn main() {
     app.insert_resource(ClearColor(Color::SALMON))
         .add_plugin(ShaderMaterialPlugin::<ExampleMaterial>::default())
         .add_plugin(ShaderMaterialPlugin::<ResExampleMaterial>::default())
-        .add_plugin(ShaderMaterialPlugin::<AdditionalDataMaterial>::default())
-        .add_startup_system(poc_setup);
+        .add_plugin(ShaderMaterialPlugin::<AdditionalDataMaterial>::default());
+
+    // If wasm32, the skyline will be drawn in handle_post_browser_resize
+    #[cfg(not(target_arch = "wasm32"))]
+    app.add_startup_system(poc_setup);
+
+    #[cfg(target_arch = "wasm32")]
+    app.add_system(handle_post_browser_resize);
 
     app.run();
 }
 
 
+#[cfg(target_arch = "wasm32")]
+fn handle_post_browser_resize(
+    commands: Commands,
+    mut entity_q: Query<Entity, With<DisplayQuad>>,
+    mut mesh_assets: ResMut<Assets<Mesh>>,
+    mut eg_material_assets: ResMut<Assets<ExampleMaterial>>,
+    mut res_eg_material_assets: ResMut<Assets<ResExampleMaterial>>,
+    mut eg_mo_data_material_assets: ResMut<Assets<AdditionalDataMaterial>>,
+    mut resize_event_reader: EventReader<BrowserResized>,
+    webcfg: Res<WebExtrasCfg>,
+) {
+    if resize_event_reader.iter().next().is_some() {
+        poc_setup(
+            commands,
+            entity_q,
+            mesh_assets,
+            eg_material_assets,
+            res_eg_material_assets,
+            eg_mo_data_material_assets,
+            webcfg,
+        )
+    }
+}
+
+
 fn poc_setup(
     mut commands: Commands,
+    mut entity_q: Query<Entity, With<DisplayQuad>>,
     mut mesh_assets: ResMut<Assets<Mesh>>,
     mut eg_material_assets: ResMut<Assets<ExampleMaterial>>,
     mut res_eg_material_assets: ResMut<Assets<ResExampleMaterial>>,
@@ -51,6 +82,10 @@ fn poc_setup(
 ) {
     commands.spawn_bundle(OrthographicCameraBundle::new_2d());
 
+    // In case we're redrawing due to a resize, let's clear out the previous entities
+    for entity in entity_q.iter_mut() {
+        commands.entity(entity).despawn();
+    }
 
     // @TODO positioning is messed up on Web because it should be drawn on resize
     // (see conditional setup of systems in shifty circle)
