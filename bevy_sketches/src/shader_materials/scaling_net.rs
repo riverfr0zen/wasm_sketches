@@ -1,10 +1,4 @@
 /// Steps to creating a new material
-/// 1. Copy the code below to a new source file
-/// 2. Globally replace "ExampleMaterial" with the name of the new struct
-/// 3. Generate a new `uuid` and replace the one used for the ExampleMaterial struct
-/// 4. Change the MATERIAL_PATH constant below to the shader you want.
-/// 5. That should be it in most cases.
-/// 6. If you need to send additional uniform data, take a look at the `eg_mo_data_material` module.
 use super::core::{BaseShaderMaterial, BaseShaderTrait, CommonUniformData};
 use bevy::{
     ecs::system::{lifetimeless::SRes, SystemParamItem},
@@ -23,22 +17,22 @@ use bevy::{
     sprite::{Material2d, Material2dPipeline},
 };
 
-const MATERIAL_PATH: &str = "poc_shaders/time_colors.wgsl";
+const MATERIAL_PATH: &str = "poc_shaders/scaling_net.wgsl";
 
 
 #[derive(TypeUuid, Clone)]
-#[uuid = "bc2f08eb-a0fb-43f1-a908-54871ea597d5"]
-pub struct ExampleMaterial(BaseShaderMaterial);
+#[uuid = "47e66e64-4003-41f4-87bf-db487613f327"]
+pub struct ScalingNet(BaseShaderMaterial);
 
 
-impl Default for ExampleMaterial {
+impl Default for ScalingNet {
     fn default() -> Self {
         Self(BaseShaderMaterial::default())
     }
 }
 
 
-impl BaseShaderTrait for ExampleMaterial {
+impl BaseShaderTrait for ScalingNet {
     fn set_time(&mut self, time: f32) {
         self.0.uniform.time = time;
     }
@@ -49,13 +43,13 @@ impl BaseShaderTrait for ExampleMaterial {
 }
 
 
-pub struct GPUExampleMaterial {
+pub struct GPUScalingNet {
     bind_group: BindGroup,
 }
 
 
-impl Material2d for ExampleMaterial {
-    fn bind_group(material: &GPUExampleMaterial) -> &BindGroup {
+impl Material2d for ScalingNet {
+    fn bind_group(material: &GPUScalingNet) -> &BindGroup {
         &material.bind_group
     }
 
@@ -95,22 +89,19 @@ impl Material2d for ExampleMaterial {
 }
 
 
-impl RenderAsset for ExampleMaterial {
-    type ExtractedAsset = ExampleMaterial;
-    type PreparedAsset = GPUExampleMaterial;
-    type Param = (
-        SRes<RenderDevice>,
-        SRes<Material2dPipeline<ExampleMaterial>>,
-    );
+impl RenderAsset for ScalingNet {
+    type ExtractedAsset = ScalingNet;
+    type PreparedAsset = GPUScalingNet;
+    type Param = (SRes<RenderDevice>, SRes<Material2dPipeline<ScalingNet>>);
 
-    fn extract_asset(&self) -> ExampleMaterial {
+    fn extract_asset(&self) -> ScalingNet {
         self.clone()
     }
 
     fn prepare_asset(
-        extracted_asset: ExampleMaterial,
+        extracted_asset: ScalingNet,
         (render_device, pipeline): &mut SystemParamItem<Self::Param>,
-    ) -> Result<GPUExampleMaterial, PrepareAssetError<ExampleMaterial>> {
+    ) -> Result<GPUScalingNet, PrepareAssetError<ScalingNet>> {
         let uniform_data = CommonUniformData {
             time: extracted_asset.0.uniform.time,
             resolution: extracted_asset.0.uniform.resolution,
@@ -130,6 +121,6 @@ impl RenderAsset for ExampleMaterial {
                 resource: uniform_buffer.as_entire_binding(),
             }],
         });
-        Ok(GPUExampleMaterial { bind_group })
+        Ok(GPUScalingNet { bind_group })
     }
 }

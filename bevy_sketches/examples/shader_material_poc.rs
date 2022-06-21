@@ -27,7 +27,7 @@ const SURFACE4_HEIGHT: f32 = SURFACE_HEIGHT;
 
 pub fn main() {
     let webcfg = WebExtrasCfg {
-        title: String::from("cellular"),
+        title: String::from("reusable shader material proof of concept"),
         match_element: Some(String::from("content")),
         match_clear_color: true,
         ..Default::default()
@@ -39,7 +39,7 @@ pub fn main() {
         .add_plugin(ShaderMaterialPlugin::<ResExampleMaterial>::default())
         .add_plugin(ShaderMaterialPlugin::<AdditionalDataMaterial>::default());
 
-    // If wasm32, the skyline will be drawn in handle_post_browser_resize
+    // If wasm32, this will be handled in handle_post_browser_resize
     #[cfg(not(target_arch = "wasm32"))]
     app.add_startup_system(poc_setup);
 
