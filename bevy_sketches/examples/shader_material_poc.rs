@@ -11,15 +11,16 @@ use bevy_web_extras::prelude::*;
 
 pub const HEIGHT: f32 = 900.0;
 pub const RESOLUTION: f32 = 16.0 / 9.0;
-const SURFACE_PADDING: f32 = 0.009;
-// const SURFACE_PADDING: f32 = 0.0;
-const SURFACE_WIDTH: f32 = 0.18;
-const SURFACE_HEIGHT: f32 = 1.0;
+// const SURFACE_PADDING: f32 = 0.009;
+// const SURFACE_WIDTH: f32 = 0.18;
+const SURFACE_PADDING: f32 = 0.001;
+const SURFACE_WIDTH: f32 = 0.1895;
+const SURFACE_HEIGHT: f32 = 0.995;
 const SURFACE2_WIDTH: f32 = SURFACE_WIDTH;
 // const SURFACE2_HEIGHT: f32 = SURFACE_HEIGHT * 1.5;
 const SURFACE2_HEIGHT: f32 = SURFACE_HEIGHT;
 const SURFACE3_WIDTH: f32 = SURFACE_WIDTH * 1.25;
-const SURFACE3_HEIGHT: f32 = SURFACE_HEIGHT / 2.0;
+const SURFACE3_HEIGHT: f32 = SURFACE_HEIGHT * 0.9;
 const SURFACE4_WIDTH: f32 = SURFACE_WIDTH;
 const SURFACE4_HEIGHT: f32 = SURFACE_HEIGHT;
 
@@ -32,7 +33,8 @@ pub fn main() {
         ..Default::default()
     };
     let mut app = sketch(webcfg);
-    app.insert_resource(ClearColor(Color::SALMON))
+    // app.insert_resource(ClearColor(Color::rgb(0.08, 0.24, 0.33)))
+    app.insert_resource(ClearColor(Color::rgb(0.3, 0.41, 0.48)))
         .add_plugin(ShaderMaterialPlugin::<ExampleMaterial>::default())
         .add_plugin(ShaderMaterialPlugin::<ResExampleMaterial>::default())
         .add_plugin(ShaderMaterialPlugin::<AdditionalDataMaterial>::default());
@@ -51,11 +53,11 @@ pub fn main() {
 #[cfg(target_arch = "wasm32")]
 fn handle_post_browser_resize(
     commands: Commands,
-    mut entity_q: Query<Entity, With<DisplayQuad>>,
-    mut mesh_assets: ResMut<Assets<Mesh>>,
-    mut eg_material_assets: ResMut<Assets<ExampleMaterial>>,
-    mut res_eg_material_assets: ResMut<Assets<ResExampleMaterial>>,
-    mut eg_mo_data_material_assets: ResMut<Assets<AdditionalDataMaterial>>,
+    entity_q: Query<Entity, With<DisplayQuad>>,
+    mesh_assets: ResMut<Assets<Mesh>>,
+    eg_material_assets: ResMut<Assets<ExampleMaterial>>,
+    res_eg_material_assets: ResMut<Assets<ResExampleMaterial>>,
+    eg_mo_data_material_assets: ResMut<Assets<AdditionalDataMaterial>>,
     mut resize_event_reader: EventReader<BrowserResized>,
     webcfg: Res<WebExtrasCfg>,
 ) {

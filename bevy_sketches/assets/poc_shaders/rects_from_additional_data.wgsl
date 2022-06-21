@@ -33,7 +33,7 @@ fn fragment(input: VertexOutput) -> [[location(0)]] vec4<f32> {
 
     if (u.num_rects >= 1u) {
         var myrect = rect(xlate(vec2<f32>(0.25, 0.05), input.uv, 0.5, 0.25));
-        mixedColor = mix(mixedColor, rectColor, myrect);
+        mixedColor = mix(mixedColor, rectColor3, myrect);
     }
 
     if (u.num_rects >= 2u) {
@@ -42,8 +42,8 @@ fn fragment(input: VertexOutput) -> [[location(0)]] vec4<f32> {
     }
 
     if (u.num_rects >= 3u) {
-        var myrect = rect(xlate(vec2<f32>(0.25, 0.66), input.uv, 0.5, 0.25));
-        mixedColor = mix(mixedColor, rectColor3, myrect);
+        var myrect = rectSoft(xlate(vec2<f32>(0.25, 0.66), input.uv, 0.5, 0.25), 0.1);
+        mixedColor = mix(mixedColor, rectColor, myrect);
     }
 
     return vec4<f32>(mixedColor, 1.0);

@@ -24,10 +24,11 @@ var<uniform> u: CommonUniformData;
 
 [[stage(fragment)]]
 fn fragment(input: VertexOutput) -> [[location(0)]] vec4<f32> {
-    var backgroundColor: vec3<f32> = vec3<f32>(0.5, 0.5, 1.0);
-    var rectColor: vec3<f32> = vec3<f32>(0.5, 0.0, 0.0);
-    var rectColor2: vec3<f32> = vec3<f32>(0.0, 0.5, 0.0);
-    var rectColor3: vec3<f32> = vec3<f32>(0.0, 0.0, 0.5);
+    var backgroundColor: vec3<f32> = vec3<f32>(1.0, 0.26, 0.02);
+    // var rectColor: vec3<f32> = vec3<f32>(0.5, 0.0, 0.0);
+    // var rectColor2: vec3<f32> = vec3<f32>(0.0, 0.5, 0.0);
+    var rectColor: vec3<f32> = vec3<f32>(0.5, 0.05, 0.0);
+    var rectColor2: vec3<f32> = vec3<f32>(1.0, 0.16, 0.02);
 
     var mixedColor: vec3<f32> = backgroundColor;
 
