@@ -1,11 +1,14 @@
 use crate::base::sketch;
+use crate::shader_materials::{
+    core::{DisplayQuad, ShaderMaterialPlugin},
+    eg_material::ExampleMaterial,
+};
 use bevy::core::FixedTimestep;
-use bevy::prelude::*;
+use bevy::{prelude::*, sprite::MaterialMesh2dBundle};
 use bevy_prototype_lyon::prelude::*;
 use bevy_web_extras::prelude::*;
 use rand::prelude::thread_rng;
 use rand::Rng;
-
 
 // Place window on top right corner
 const SHIFTY_CIRCLE_STEP: f64 = 0.01;
@@ -189,6 +192,8 @@ fn setup_generic(mut commands: Commands, myshape: impl Geometry) {
 
 fn draw_skyline_layer(
     commands: &mut Commands,
+    mut mesh_assets: ResMut<Assets<Mesh>>,
+    mut material_assets: ResMut<Assets<ExampleMaterial>>,
     available_space: f32,
     buildings_start_x: f32,
     buildings_start_y: f32,
@@ -199,6 +204,7 @@ fn draw_skyline_layer(
 ) {
     let mut remaining_space = available_space;
     let mut building_pos_x = buildings_start_x;
+    let mut building_pos_y = buildings_start_y;
     let mut rng = thread_rng();
 
     while remaining_space > 0.0 {
@@ -207,34 +213,56 @@ fn draw_skyline_layer(
         let building_width = if remaining_space > BUILDING_MAX_WIDTH {
             rng.gen_range(BUILDING_MIN_WIDTH..BUILDING_MAX_WIDTH)
         } else {
-            BUILDING_MAX_WIDTH
+            // It should correctly be `remaining_space`, but iirc there used to be
+            // some kind of error before. Re-instate BUILDING_MAX_WIDTH if error recurrs.
+            // BUILDING_MAX_WIDTH
+            remaining_space
         };
         let building_height = rng.gen_range(building_min_height..building_max_height);
-        let building = shapes::Rectangle {
-            extents: Vec2::new(building_width, building_height),
-            origin: RectangleOrigin::BottomLeft,
-            ..Default::default()
-        };
+
+        building_pos_x = building_pos_x + building_width / 2.0;
+        building_pos_y = buildings_start_y + building_height / 2.0;
+        // let building = shapes::Rectangle {
+        //     extents: Vec2::new(building_width, building_height),
+        //     origin: RectangleOrigin::BottomLeft,
+        //     ..Default::default()
+        // };
+        // commands
+        //     .spawn_bundle(GeometryBuilder::build_as(
+        //         &building,
+        //         DrawMode::Outlined {
+        //             fill_mode: FillMode::color(building_color),
+        //             outline_mode: StrokeMode::new(SHIFTY_CIRCLE_STROKE_COLOR, SHIFTY_CIRCLE_STROKE),
+        //         },
+        //         // Transform::default(),
+        //         Transform::from_translation(Vec3::new(building_pos_x, buildings_start_y, z_index)),
+        //     ))
+        //     .insert(Building);
 
         commands
-            .spawn_bundle(GeometryBuilder::build_as(
-                &building,
-                DrawMode::Outlined {
-                    fill_mode: FillMode::color(building_color),
-                    outline_mode: StrokeMode::new(SHIFTY_CIRCLE_STROKE_COLOR, SHIFTY_CIRCLE_STROKE),
+            .spawn_bundle(MaterialMesh2dBundle {
+                mesh: mesh_assets.add(Mesh::from(shape::Quad::default())).into(),
+                transform: Transform {
+                    scale: Vec3::new(building_width, building_height, 1.0),
+                    translation: Vec3::new(building_pos_x, building_pos_y, z_index),
+                    ..Transform::default()
                 },
-                // Transform::default(),
-                Transform::from_translation(Vec3::new(building_pos_x, buildings_start_y, z_index)),
-            ))
-            .insert(Building);
+                material: material_assets.add(ExampleMaterial::default()),
+                ..default()
+            })
+            .insert(Building)
+            .insert(DisplayQuad);
 
-        building_pos_x += building_width;
+
+        building_pos_x += building_width / 2.0;
         remaining_space -= building_width;
     }
 }
 
 fn draw_skyline(
     mut commands: Commands,
+    mesh_assets: ResMut<Assets<Mesh>>,
+    material_assets: ResMut<Assets<ExampleMaterial>>,
     webcfg: ResMut<WebExtrasCfg>,
     mut q: Query<Entity, With<Building>>,
 ) {
@@ -249,6 +277,8 @@ fn draw_skyline(
 
     draw_skyline_layer(
         &mut commands,
+        mesh_assets,
+        material_assets,
         webcfg.width,
         buildings_start_x,
         buildings_start_y,
@@ -258,16 +288,19 @@ fn draw_skyline(
         0.0,
     );
 
-    draw_skyline_layer(
-        &mut commands,
-        webcfg.width,
-        buildings_start_x,
-        buildings_start_y,
-        building_min_height,
-        building_max_height - building_max_height / 4.0,
-        BUILDING_FORE_COLOR,
-        2.0,
-    );
+    // @TODO reinstate after material work
+    // draw_skyline_layer(
+    //     &mut commands,
+    //     &mesh_assets,
+    //     &material_assets,
+    //     webcfg.width,
+    //     buildings_start_x,
+    //     buildings_start_y,
+    //     building_min_height,
+    //     building_max_height - building_max_height / 4.0,
+    //     BUILDING_FORE_COLOR,
+    //     2.0,
+    // );
 }
 
 
@@ -338,6 +371,8 @@ fn do_pulsating_effect(time: Res<Time>, mut query: Query<&mut DrawMode, With<Shi
 fn handle_post_browser_resize(
     commands: Commands,
     webcfg: ResMut<WebExtrasCfg>,
+    mesh_assets: ResMut<Assets<Mesh>>,
+    material_assets: ResMut<Assets<ExampleMaterial>>,
     mut resize_event_reader: EventReader<BrowserResized>,
     mut app_globals: ResMut<AppGlobals>,
     buildings_query: Query<Entity, With<Building>>,
@@ -347,7 +382,13 @@ fn handle_post_browser_resize(
         app_globals.dest_high_x = webcfg.max_x - SHIFTY_CIRCLE_RADIUS;
         app_globals.dest_low_y = -webcfg.max_y + SHIFTY_CIRCLE_RADIUS;
         app_globals.dest_high_y = webcfg.max_y - SHIFTY_CIRCLE_RADIUS;
-        draw_skyline(commands, webcfg, buildings_query);
+        draw_skyline(
+            commands,
+            mesh_assets,
+            material_assets,
+            webcfg,
+            buildings_query,
+        );
     }
 }
 
@@ -370,7 +411,8 @@ pub fn app(variation: &str) {
             dest_low_y: -webcfg_max_y,
             dest_high_y: webcfg_max_y,
         })
-        .add_plugin(ShapePlugin);
+        .add_plugin(ShapePlugin)
+        .add_plugin(ShaderMaterialPlugin::<ExampleMaterial>::default());
 
 
     match variation {
