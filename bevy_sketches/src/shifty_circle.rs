@@ -192,8 +192,8 @@ fn setup_generic(mut commands: Commands, myshape: impl Geometry) {
 
 fn draw_skyline_layer(
     commands: &mut Commands,
-    mut mesh_assets: ResMut<Assets<Mesh>>,
-    mut material_assets: ResMut<Assets<ExampleMaterial>>,
+    mesh_assets: &mut ResMut<Assets<Mesh>>,
+    material_assets: &mut ResMut<Assets<ExampleMaterial>>,
     available_space: f32,
     buildings_start_x: f32,
     buildings_start_y: f32,
@@ -261,8 +261,8 @@ fn draw_skyline_layer(
 
 fn draw_skyline(
     mut commands: Commands,
-    mesh_assets: ResMut<Assets<Mesh>>,
-    material_assets: ResMut<Assets<ExampleMaterial>>,
+    mut mesh_assets: ResMut<Assets<Mesh>>,
+    mut material_assets: ResMut<Assets<ExampleMaterial>>,
     webcfg: ResMut<WebExtrasCfg>,
     mut q: Query<Entity, With<Building>>,
 ) {
@@ -277,8 +277,8 @@ fn draw_skyline(
 
     draw_skyline_layer(
         &mut commands,
-        mesh_assets,
-        material_assets,
+        &mut mesh_assets,
+        &mut material_assets,
         webcfg.width,
         buildings_start_x,
         buildings_start_y,
@@ -289,18 +289,18 @@ fn draw_skyline(
     );
 
     // @TODO reinstate after material work
-    // draw_skyline_layer(
-    //     &mut commands,
-    //     &mesh_assets,
-    //     &material_assets,
-    //     webcfg.width,
-    //     buildings_start_x,
-    //     buildings_start_y,
-    //     building_min_height,
-    //     building_max_height - building_max_height / 4.0,
-    //     BUILDING_FORE_COLOR,
-    //     2.0,
-    // );
+    draw_skyline_layer(
+        &mut commands,
+        &mut mesh_assets,
+        &mut material_assets,
+        webcfg.width,
+        buildings_start_x,
+        buildings_start_y,
+        building_min_height,
+        building_max_height - building_max_height / 4.0,
+        BUILDING_FORE_COLOR,
+        2.0,
+    );
 }
 
 
