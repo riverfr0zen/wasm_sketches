@@ -139,10 +139,6 @@ impl RenderAsset for AdditionalDataMaterial {
         extracted_asset: AdditionalDataMaterial,
         (render_device, pipeline): &mut SystemParamItem<Self::Param>,
     ) -> Result<GPUAdditionalDataMaterial, PrepareAssetError<AdditionalDataMaterial>> {
-        // let uniform_data = CommonUniformData {
-        //     time: extracted_asset.uniform.common.time,
-        //     resolution: extracted_asset.uniform.common.resolution,
-        // };
         let uniform_data = SomeCustomUniformData {
             common: CommonUniformData {
                 time: extracted_asset.uniform.common.time,

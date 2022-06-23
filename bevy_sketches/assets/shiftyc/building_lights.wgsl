@@ -96,7 +96,15 @@ fn gridFlicker(
 fn fragment(input: VertexOutput) -> [[location(0)]] vec4<f32> {
     var mixedColor: vec3<f32> = u.background_color;
 
-    // var outColor = gridFlicker(input, mixedColor, lightColors, 10.0, 15.0);
+    var lightColor: vec3<f32> = vec3<f32>(0.005, 0.006, 0.0);
+    var lightColor1: vec3<f32> = vec3<f32>(0.01, 0.015, 0.00);
+    var lightColor2: vec3<f32> = vec3<f32>(0.04, 0.06, 0.02);
+    var lightColor3: vec3<f32> = vec3<f32>(0.08, 0.1, 0.05);
+    var lightColor4: vec3<f32> = vec3<f32>(0.9, 1.0, 0.6);
+    var lightColors: array<vec3<f32>, 5>;
+    lightColors = array<vec3<f32>, 5>(lightColor, lightColor1, lightColor2, lightColor3, lightColor4);
+
+    mixedColor = gridFlicker(input, mixedColor, lightColors, 4.0, 16.0);
 
     return vec4<f32>(mixedColor, 1.0);
 

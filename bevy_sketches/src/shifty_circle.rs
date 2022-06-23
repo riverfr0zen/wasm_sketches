@@ -27,8 +27,8 @@ const SHIFTY_CIRCLE_STROKE_COLOR: Color = Color::rgba(0.784, 0.713, 0.345, 0.0);
 const BUILDING_MIN_WIDTH: f32 = 10.0;
 const BUILDING_MAX_WIDTH: f32 = 200.0;
 // const BUILDING_COLOR: Color = Color::GREEN;
-const BUILDING_FORE_COLOR: Color = Color::rgb(0.1, 0.09, 0.0);
 const BUILDING_COLOR: Color = Color::rgb(0.12, 0.12, 0.02);
+const BUILDING_FORE_COLOR: Color = Color::rgb(0.1, 0.09, 0.0);
 // Ratio of x below means the tallest building is 1/x screen height
 const BUILDING_MAX_HEIGHT_RATIO: f32 = 2.0;
 const BUILDING_MIN_HEIGHT_RATIO: f32 = 16.0;

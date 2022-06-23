@@ -132,10 +132,6 @@ impl RenderAsset for BuildingLights {
         extracted_asset: BuildingLights,
         (render_device, pipeline): &mut SystemParamItem<Self::Param>,
     ) -> Result<GPUBuildingLights, PrepareAssetError<BuildingLights>> {
-        // let uniform_data = CommonUniformData {
-        //     time: extracted_asset.uniform.common.time,
-        //     resolution: extracted_asset.uniform.common.resolution,
-        // };
         let uniform_data = SomeCustomUniformData {
             common: CommonUniformData {
                 time: extracted_asset.uniform.common.time,
