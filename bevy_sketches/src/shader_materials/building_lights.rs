@@ -2,13 +2,8 @@
 /// accompanying shader at `MATERIAL_PATH` below.
 ///
 /// Steps to creating a new material
-/// 1. Copy the code below to a new source file
-/// 2. Globally replace "AdditionalDataMaterial" with the name of the new material struct
-/// 3. Generate a new `uuid` and replace the one used for the ExampleMaterial struct
-/// 4. Change the MATERIAL_PATH constant below to the shader you want.
-/// 5. Update SomeCustomUniformData to contain the data you want. Update other structs,
-///    impls, etc. also to reflect these changes.
-/// 6. Make sure you also update the shader to resemble the new custom uniform data.
+/// 1. First, follow all the steps listed in `super::eg_material.rs`
+/// 2..?
 use super::core::{BaseShaderTrait, CommonUniformData};
 use bevy::{
     ecs::system::{lifetimeless::SRes, SystemParamItem},
@@ -27,46 +22,51 @@ use bevy::{
     sprite::{Material2d, Material2dPipeline},
 };
 
-const MATERIAL_PATH: &str = "poc_shaders/rects_from_additional_data.wgsl";
-const DEFAULT_NUM_RECTS: u32 = 2;
+// const MATERIAL_PATH: &str = "poc_shaders/rects_from_additional_data.wgsl";
+const MATERIAL_PATH: &str = "shiftyc/building_lights.wgsl";
+const DEFAULT_BGCOLOR: (f32, f32, f32) = (0.5, 0.5, 0.5);
 
 
 #[derive(Clone, AsStd140)]
 pub struct SomeCustomUniformData {
     pub common: CommonUniformData,
-    pub num_rects: u32,
+    pub background_color: Vec3,
 }
 
 
 #[derive(TypeUuid, Clone)]
-#[uuid = "9ae754a8-7c86-45e7-87d6-601a11a703f0"]
-pub struct AdditionalDataMaterial {
+#[uuid = "f305c425-4f41-40cf-b7d3-b6e4a1ed6f04"]
+pub struct BuildingLights {
     uniform: SomeCustomUniformData,
 }
 
-impl AdditionalDataMaterial {
-    pub fn with_rects(num_rects: u32) -> Self {
+impl BuildingLights {
+    pub fn with_config(background_color: Vec3) -> Self {
         Self {
             uniform: SomeCustomUniformData {
                 common: CommonUniformData::default(),
-                num_rects: num_rects,
+                background_color: background_color,
             },
         }
     }
 }
 
-impl Default for AdditionalDataMaterial {
+impl Default for BuildingLights {
     fn default() -> Self {
         Self {
             uniform: SomeCustomUniformData {
                 common: CommonUniformData::default(),
-                num_rects: DEFAULT_NUM_RECTS,
+                background_color: Vec3::new(
+                    DEFAULT_BGCOLOR.0,
+                    DEFAULT_BGCOLOR.1,
+                    DEFAULT_BGCOLOR.2,
+                ),
             },
         }
     }
 }
 
-impl BaseShaderTrait for AdditionalDataMaterial {
+impl BaseShaderTrait for BuildingLights {
     fn set_time(&mut self, time: f32) {
         self.uniform.common.time = time;
     }
@@ -77,13 +77,13 @@ impl BaseShaderTrait for AdditionalDataMaterial {
 }
 
 
-pub struct GPUAdditionalDataMaterial {
+pub struct GPUBuildingLights {
     bind_group: BindGroup,
 }
 
 
-impl Material2d for AdditionalDataMaterial {
-    fn bind_group(material: &GPUAdditionalDataMaterial) -> &BindGroup {
+impl Material2d for BuildingLights {
+    fn bind_group(material: &GPUBuildingLights) -> &BindGroup {
         &material.bind_group
     }
 
@@ -123,22 +123,19 @@ impl Material2d for AdditionalDataMaterial {
 }
 
 
-impl RenderAsset for AdditionalDataMaterial {
-    type ExtractedAsset = AdditionalDataMaterial;
-    type PreparedAsset = GPUAdditionalDataMaterial;
-    type Param = (
-        SRes<RenderDevice>,
-        SRes<Material2dPipeline<AdditionalDataMaterial>>,
-    );
+impl RenderAsset for BuildingLights {
+    type ExtractedAsset = BuildingLights;
+    type PreparedAsset = GPUBuildingLights;
+    type Param = (SRes<RenderDevice>, SRes<Material2dPipeline<BuildingLights>>);
 
-    fn extract_asset(&self) -> AdditionalDataMaterial {
+    fn extract_asset(&self) -> BuildingLights {
         self.clone()
     }
 
     fn prepare_asset(
-        extracted_asset: AdditionalDataMaterial,
+        extracted_asset: BuildingLights,
         (render_device, pipeline): &mut SystemParamItem<Self::Param>,
-    ) -> Result<GPUAdditionalDataMaterial, PrepareAssetError<AdditionalDataMaterial>> {
+    ) -> Result<GPUBuildingLights, PrepareAssetError<BuildingLights>> {
         // let uniform_data = CommonUniformData {
         //     time: extracted_asset.uniform.common.time,
         //     resolution: extracted_asset.uniform.common.resolution,
@@ -148,7 +145,7 @@ impl RenderAsset for AdditionalDataMaterial {
                 time: extracted_asset.uniform.common.time,
                 resolution: extracted_asset.uniform.common.resolution,
             },
-            num_rects: extracted_asset.uniform.num_rects,
+            background_color: extracted_asset.uniform.background_color,
         };
 
         let uniform_buffer = render_device.create_buffer_with_data(&BufferInitDescriptor {
@@ -165,6 +162,6 @@ impl RenderAsset for AdditionalDataMaterial {
                 resource: uniform_buffer.as_entire_binding(),
             }],
         });
-        Ok(GPUAdditionalDataMaterial { bind_group })
+        Ok(GPUBuildingLights { bind_group })
     }
 }

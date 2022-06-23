@@ -1,7 +1,7 @@
 use crate::base::sketch;
 use crate::shader_materials::{
+    building_lights::BuildingLights,
     core::{DisplayQuad, ShaderMaterialPlugin},
-    eg_material::ExampleMaterial,
 };
 use bevy::core::FixedTimestep;
 use bevy::{prelude::*, sprite::MaterialMesh2dBundle};
@@ -193,7 +193,7 @@ fn setup_generic(mut commands: Commands, myshape: impl Geometry) {
 fn draw_skyline_layer(
     commands: &mut Commands,
     mesh_assets: &mut ResMut<Assets<Mesh>>,
-    material_assets: &mut ResMut<Assets<ExampleMaterial>>,
+    material_assets: &mut ResMut<Assets<BuildingLights>>,
     available_space: f32,
     buildings_start_x: f32,
     buildings_start_y: f32,
@@ -247,7 +247,11 @@ fn draw_skyline_layer(
                     translation: Vec3::new(building_pos_x, building_pos_y, z_index),
                     ..Transform::default()
                 },
-                material: material_assets.add(ExampleMaterial::default()),
+                material: material_assets.add(BuildingLights::with_config(Vec3::new(
+                    building_color.r(),
+                    building_color.g(),
+                    building_color.b(),
+                ))),
                 ..default()
             })
             .insert(Building)
@@ -262,7 +266,7 @@ fn draw_skyline_layer(
 fn draw_skyline(
     mut commands: Commands,
     mut mesh_assets: ResMut<Assets<Mesh>>,
-    mut material_assets: ResMut<Assets<ExampleMaterial>>,
+    mut material_assets: ResMut<Assets<BuildingLights>>,
     webcfg: ResMut<WebExtrasCfg>,
     mut q: Query<Entity, With<Building>>,
 ) {
@@ -412,7 +416,7 @@ pub fn app(variation: &str) {
             dest_high_y: webcfg_max_y,
         })
         .add_plugin(ShapePlugin)
-        .add_plugin(ShaderMaterialPlugin::<ExampleMaterial>::default());
+        .add_plugin(ShaderMaterialPlugin::<BuildingLights>::default());
 
 
     match variation {
