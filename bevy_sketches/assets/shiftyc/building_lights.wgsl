@@ -16,6 +16,7 @@ struct VertexOutput {
 struct CustomUniformData {
     common: CommonUniformData;
     background_color: vec3<f32>;
+    alpha: f32;
 };
 
 
@@ -106,7 +107,7 @@ fn fragment(input: VertexOutput) -> [[location(0)]] vec4<f32> {
 
     mixedColor = gridFlicker(input, mixedColor, lightColors, 4.0, 16.0);
 
-    return vec4<f32>(mixedColor, 1.0);
+    return vec4<f32>(mixedColor, u.alpha);
 
 
 }

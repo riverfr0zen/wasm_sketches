@@ -28,36 +28,34 @@ const DEFAULT_BGCOLOR: Color = Color::rgb(0.1, 0.1, 0.1);
 
 
 #[derive(Clone, AsStd140)]
-pub struct SomeCustomUniformData {
+pub struct BuildingLightsUniform {
     pub common: CommonUniformData,
     pub background_color: Vec3,
+    pub alpha: f32,
+}
+
+
+impl Default for BuildingLightsUniform {
+    fn default() -> Self {
+        Self {
+            common: CommonUniformData::default(),
+            background_color: color_to_shader_vec3(DEFAULT_BGCOLOR),
+            alpha: 1.0,
+        }
+    }
 }
 
 
 #[derive(TypeUuid, Clone)]
 #[uuid = "f305c425-4f41-40cf-b7d3-b6e4a1ed6f04"]
 pub struct BuildingLights {
-    uniform: SomeCustomUniformData,
-}
-
-impl BuildingLights {
-    pub fn with_config(background_color: Vec3) -> Self {
-        Self {
-            uniform: SomeCustomUniformData {
-                common: CommonUniformData::default(),
-                background_color: background_color,
-            },
-        }
-    }
+    pub uniform: BuildingLightsUniform,
 }
 
 impl Default for BuildingLights {
     fn default() -> Self {
         Self {
-            uniform: SomeCustomUniformData {
-                common: CommonUniformData::default(),
-                background_color: color_to_shader_vec3(DEFAULT_BGCOLOR),
-            },
+            uniform: BuildingLightsUniform::default(),
         }
     }
 }
@@ -95,7 +93,7 @@ impl Material2d for BuildingLights {
                     ty: BufferBindingType::Uniform,
                     has_dynamic_offset: false,
                     min_binding_size: BufferSize::new(
-                        SomeCustomUniformData::std140_size_static() as u64
+                        BuildingLightsUniform::std140_size_static() as u64
                     ),
                 },
                 count: None,
@@ -132,12 +130,13 @@ impl RenderAsset for BuildingLights {
         extracted_asset: BuildingLights,
         (render_device, pipeline): &mut SystemParamItem<Self::Param>,
     ) -> Result<GPUBuildingLights, PrepareAssetError<BuildingLights>> {
-        let uniform_data = SomeCustomUniformData {
+        let uniform_data = BuildingLightsUniform {
             common: CommonUniformData {
                 time: extracted_asset.uniform.common.time,
                 resolution: extracted_asset.uniform.common.resolution,
             },
             background_color: extracted_asset.uniform.background_color,
+            alpha: extracted_asset.uniform.alpha,
         };
 
         let uniform_buffer = render_device.create_buffer_with_data(&BufferInitDescriptor {

@@ -1,6 +1,6 @@
 use crate::base::sketch;
 use crate::shader_materials::{
-    building_lights::BuildingLights,
+    building_lights::{BuildingLights, BuildingLightsUniform},
     core::{color_to_shader_vec3, DisplayQuad, ShaderMaterialPlugin},
 };
 use bevy::core::FixedTimestep;
@@ -200,6 +200,7 @@ fn draw_skyline_layer(
     building_min_height: f32,
     building_max_height: f32,
     building_color: Color,
+    building_alpha: f32,
     z_index: f32,
 ) {
     let mut remaining_space = available_space;
@@ -222,22 +223,6 @@ fn draw_skyline_layer(
 
         building_pos_x = building_pos_x + building_width / 2.0;
         building_pos_y = buildings_start_y + building_height / 2.0;
-        // let building = shapes::Rectangle {
-        //     extents: Vec2::new(building_width, building_height),
-        //     origin: RectangleOrigin::BottomLeft,
-        //     ..Default::default()
-        // };
-        // commands
-        //     .spawn_bundle(GeometryBuilder::build_as(
-        //         &building,
-        //         DrawMode::Outlined {
-        //             fill_mode: FillMode::color(building_color),
-        //             outline_mode: StrokeMode::new(SHIFTY_CIRCLE_STROKE_COLOR, SHIFTY_CIRCLE_STROKE),
-        //         },
-        //         // Transform::default(),
-        //         Transform::from_translation(Vec3::new(building_pos_x, buildings_start_y, z_index)),
-        //     ))
-        //     .insert(Building);
 
         commands
             .spawn_bundle(MaterialMesh2dBundle {
@@ -247,9 +232,13 @@ fn draw_skyline_layer(
                     translation: Vec3::new(building_pos_x, building_pos_y, z_index),
                     ..Transform::default()
                 },
-                material: material_assets.add(BuildingLights::with_config(color_to_shader_vec3(
-                    building_color,
-                ))),
+                material: material_assets.add(BuildingLights {
+                    uniform: BuildingLightsUniform {
+                        background_color: color_to_shader_vec3(building_color),
+                        alpha: building_alpha,
+                        ..default()
+                    },
+                }),
                 ..default()
             })
             .insert(Building)
@@ -287,6 +276,7 @@ fn draw_skyline(
         building_min_height,
         building_max_height,
         BUILDING_COLOR,
+        0.3,
         0.0,
     );
 
@@ -301,6 +291,7 @@ fn draw_skyline(
         building_min_height,
         building_max_height - building_max_height / 4.0,
         BUILDING_FORE_COLOR,
+        1.0,
         2.0,
     );
 }
