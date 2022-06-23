@@ -1,7 +1,7 @@
 use crate::base::sketch;
 use crate::shader_materials::{
     building_lights::BuildingLights,
-    core::{DisplayQuad, ShaderMaterialPlugin},
+    core::{color_to_shader_vec3, DisplayQuad, ShaderMaterialPlugin},
 };
 use bevy::core::FixedTimestep;
 use bevy::{prelude::*, sprite::MaterialMesh2dBundle};
@@ -204,7 +204,7 @@ fn draw_skyline_layer(
 ) {
     let mut remaining_space = available_space;
     let mut building_pos_x = buildings_start_x;
-    let mut building_pos_y = buildings_start_y;
+    let mut building_pos_y;
     let mut rng = thread_rng();
 
     while remaining_space > 0.0 {
@@ -247,10 +247,8 @@ fn draw_skyline_layer(
                     translation: Vec3::new(building_pos_x, building_pos_y, z_index),
                     ..Transform::default()
                 },
-                material: material_assets.add(BuildingLights::with_config(Vec3::new(
-                    building_color.r(),
-                    building_color.g(),
-                    building_color.b(),
+                material: material_assets.add(BuildingLights::with_config(color_to_shader_vec3(
+                    building_color,
                 ))),
                 ..default()
             })

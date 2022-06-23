@@ -4,7 +4,7 @@
 /// Steps to creating a new material
 /// 1. First, follow all the steps listed in `super::eg_material.rs`
 /// 2..?
-use super::core::{BaseShaderTrait, CommonUniformData};
+use super::core::{color_to_shader_vec3, BaseShaderTrait, CommonUniformData};
 use bevy::{
     ecs::system::{lifetimeless::SRes, SystemParamItem},
     prelude::*,
@@ -24,7 +24,7 @@ use bevy::{
 
 // const MATERIAL_PATH: &str = "poc_shaders/rects_from_additional_data.wgsl";
 const MATERIAL_PATH: &str = "shiftyc/building_lights.wgsl";
-const DEFAULT_BGCOLOR: (f32, f32, f32) = (0.5, 0.5, 0.5);
+const DEFAULT_BGCOLOR: Color = Color::rgb(0.1, 0.1, 0.1);
 
 
 #[derive(Clone, AsStd140)]
@@ -56,11 +56,7 @@ impl Default for BuildingLights {
         Self {
             uniform: SomeCustomUniformData {
                 common: CommonUniformData::default(),
-                background_color: Vec3::new(
-                    DEFAULT_BGCOLOR.0,
-                    DEFAULT_BGCOLOR.1,
-                    DEFAULT_BGCOLOR.2,
-                ),
+                background_color: color_to_shader_vec3(DEFAULT_BGCOLOR),
             },
         }
     }

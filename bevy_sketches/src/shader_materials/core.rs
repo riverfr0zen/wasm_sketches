@@ -118,3 +118,15 @@ pub fn update_common_uniform_data<T: BaseShaderTrait>(
         }
     }
 }
+
+
+/// Colors from Bevy need to be adjusted before sending to shader as there seems to be
+/// some kind of mismatch.
+///
+/// Current implementation is to multiply color values by 0.1, but another seemingly
+/// less accurate option is to use the Color.as_linear_rgba_f32() method.
+///
+/// See https://github.com/bevyengine/bevy/discussions/2783
+pub fn color_to_shader_vec3(color: Color) -> Vec3 {
+    Vec3::new(color.r(), color.g(), color.b()) * 0.1
+}
