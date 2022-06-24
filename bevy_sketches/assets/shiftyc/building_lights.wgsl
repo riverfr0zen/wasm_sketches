@@ -3,6 +3,14 @@
 #import "shader_common/common_uniform.wgsl"
 #import "shader_common/shapefuncs.wgsl"
 
+/// Not so much lighting speed as time until lighting starts up. Need to look into this more.
+let LIGHTING_SPEED: f32 = 0.5;
+// let LIGHTING_SPEED: f32 = 0.1;
+// let WINDOW_SOFTNESS = 0.025;
+let WINDOW_SOFTNESS = 0.015;
+// let WINDOW_SOFTNESS =0.005;
+
+
 
 struct VertexOutput {
     [[builtin(position)]] clip_position: vec4<f32>;
@@ -52,20 +60,24 @@ fn gridFlicker(
             var window = rectSoft(
                 xlate(vec2<f32>(i + windowWidth * 0.5, j + windowHeight * 0.5), 
                 input.uv, windowWidth, windowHeight), 
-                // 0.025
-                0.015
-                // 0.005
+                WINDOW_SOFTNESS,
             );
-            var colorIndex = 4.0;
-            var lightingSpeed: f32 = 0.5;
-            // var lightingSpeed: f32 = 0.1;
+            var colorIndex = 0.0;
 
-            // fave
+            // Fave
             if (floor(rand(1.0-i) * rand(1.0-j) * (u.common.time + 120.0) % 120.0) % 6.0 > 3.0) {
-                colorIndex = floor(rand(1.0-i) * rand(1.0-j) * u.common.time * lightingSpeed) % 5.0;
+                colorIndex = floor(rand(1.0-i) * rand(1.0-j) * u.common.time * LIGHTING_SPEED) % 5.0;
             } else {
                 colorIndex = 0.0;
             }
+
+            // Not bad, but a little too fast. Using rand_int for color index
+            // if (floor(rand(1.0-i) * rand(1.0-j) * (u.common.time + 120.0) % 120.0) % 6.0 > 3.0) {
+            //     colorIndex = rand_int(1.0-i * 1.0-j * u.common.time * LIGHTING_SPEED, 0.0, 4.0) % 5.0;
+            // } else {
+            //     colorIndex = 0.0;
+            // }
+            
 
             if (colorIndex == 0.0) {
                 outColor = mix(outColor, lightColors[0], window);
