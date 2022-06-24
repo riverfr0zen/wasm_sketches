@@ -13,7 +13,7 @@ const SURFACE_HEIGHT: f32 = 1.0;
 
 pub fn main() {
     let webcfg = WebExtrasCfg {
-        title: String::from("scaling net shader"),
+        title: String::from("building lights shader"),
         match_element: Some(String::from("content")),
         match_clear_color: true,
         ..Default::default()
@@ -38,7 +38,7 @@ fn handle_post_browser_resize(
     commands: Commands,
     entity_q: Query<Entity, With<DisplayQuad>>,
     mesh_assets: ResMut<Assets<Mesh>>,
-    material_assets: ResMut<Assets<ScalingNet>>,
+    material_assets: ResMut<Assets<BuildingLights>>,
     mut resize_event_reader: EventReader<BrowserResized>,
     webcfg: Res<WebExtrasCfg>,
 ) {

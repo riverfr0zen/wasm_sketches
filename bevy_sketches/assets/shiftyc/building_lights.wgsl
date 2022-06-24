@@ -16,6 +16,13 @@ let WINDOW_SOFTNESS = 0.015;
 // let WINDOW_SOFTNESS =0.005;
 
 
+let LIGHT_COLOR: vec3<f32> = vec3<f32>(0.005, 0.006, 0.0);
+let LIGHT_COLOR1: vec3<f32> = vec3<f32>(0.01, 0.015, 0.00);
+let LIGHT_COLOR2: vec3<f32> = vec3<f32>(0.04, 0.06, 0.02);
+let LIGHT_COLOR3: vec3<f32> = vec3<f32>(0.08, 0.1, 0.05);
+let LIGHT_COLOR4: vec3<f32> = vec3<f32>(0.9, 1.0, 0.6);
+
+
 struct VertexOutput {
     [[builtin(position)]] clip_position: vec4<f32>;
     [[location(0)]] world_position: vec4<f32>;
@@ -52,7 +59,7 @@ fn rand_int(seed: f32, min: f32, max: f32) -> f32 {
 
 
 fn gridFlicker(
-    input: VertexOutput, backgroundColor: vec3<f32>, lightColors: array<vec3<f32>, 5>, 
+    input: VertexOutput, backgroundColor: vec3<f32>, 
     perRow: f32, perCol: f32
 ) -> vec3<f32> {
     var outColor: vec3<f32> = backgroundColor;
@@ -86,7 +93,19 @@ fn gridFlicker(
             // } else {
             //     colorIndex = 0.0;
             // }
-            
+
+            // Passing lightColor as a param to the function throws an error in WASM for some reason, 
+            // so declaring it here for now.
+            // let lightColors = array<vec3<f32>, 5>(
+            //     LIGHT_COLOR, LIGHT_COLOR1, LIGHT_COLOR2, 
+            //     LIGHT_COLOR3, LIGHT_COLOR4
+            // );
+            // This arrangement works better, with lights starting black, but then first waves being the brightest
+            // color (instead of a long time with darker colors first).
+            let lightColors = array<vec3<f32>, 5>(
+                LIGHT_COLOR, LIGHT_COLOR4, LIGHT_COLOR3, 
+                LIGHT_COLOR2, LIGHT_COLOR1
+            );
 
             if (colorIndex == 0.0) {
                 outColor = mix(outColor, lightColors[0], window);
@@ -109,23 +128,33 @@ fn gridFlicker(
 fn fragment(input: VertexOutput) -> [[location(0)]] vec4<f32> {
     var mixedColor: vec3<f32> = u.background_color;
 
-    var lightColor: vec3<f32> = vec3<f32>(0.005, 0.006, 0.0);
-    var lightColor1: vec3<f32> = vec3<f32>(0.01, 0.015, 0.00);
-    var lightColor2: vec3<f32> = vec3<f32>(0.04, 0.06, 0.02);
-    var lightColor3: vec3<f32> = vec3<f32>(0.08, 0.1, 0.05);
-    var lightColor4: vec3<f32> = vec3<f32>(0.9, 1.0, 0.6);
-    var lightColors: array<vec3<f32>, 5>;
-    // lightColors = array<vec3<f32>, 5>(lightColor, lightColor1, lightColor2, lightColor3, lightColor4);
-    // This arrangement works better, with lights starting black, but then first waves being the brightest
-    // color (instead of a long time with darker colors first).
-    lightColors = array<vec3<f32>, 5>(lightColor, lightColor4, lightColor3, lightColor2, lightColor1);
+    // var lightColor: vec3<f32> = vec3<f32>(0.005, 0.006, 0.0);
+    // var lightColor1: vec3<f32> = vec3<f32>(0.01, 0.015, 0.00);
+    // var lightColor2: vec3<f32> = vec3<f32>(0.04, 0.06, 0.02);
+    // var lightColor3: vec3<f32> = vec3<f32>(0.08, 0.1, 0.05);
+    // var lightColor4: vec3<f32> = vec3<f32>(0.9, 1.0, 0.6);
+    // var lightColors: array<vec3<f32>, 5>;
+    // // lightColors = array<vec3<f32>, 5>(lightColor, lightColor1, lightColor2, lightColor3, lightColor4);
+    // // This arrangement works better, with lights starting black, but then first waves being the brightest
+    // // color (instead of a long time with darker colors first).
+    // lightColors = array<vec3<f32>, 5>(lightColor, lightColor4, lightColor3, lightColor2, lightColor1);
+
 
     // mixedColor = gridFlicker(input, mixedColor, lightColors, 4.0, 20.0);
 
     let lights_per_row = rand_int(u.rand_modifier, 2.0, 5.0);
     let lights_per_col = rand_int(u.rand_modifier, 10.0, 20.0);
+    // mixedColor = gridFlicker(
+    //     input, 
+    //     mixedColor, 
+    //     lightColors, 
+    //     lights_per_row,
+    //     lights_per_col,
+    // );
     mixedColor = gridFlicker(
-        input, mixedColor, lightColors, 
+        input, 
+        mixedColor, 
+        // lightColors, 
         lights_per_row,
         lights_per_col,
     );

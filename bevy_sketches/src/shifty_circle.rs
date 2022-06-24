@@ -367,7 +367,7 @@ fn handle_post_browser_resize(
     commands: Commands,
     webcfg: ResMut<WebExtrasCfg>,
     mesh_assets: ResMut<Assets<Mesh>>,
-    material_assets: ResMut<Assets<ExampleMaterial>>,
+    material_assets: ResMut<Assets<BuildingLights>>,
     mut resize_event_reader: EventReader<BrowserResized>,
     mut app_globals: ResMut<AppGlobals>,
     buildings_query: Query<Entity, With<Building>>,

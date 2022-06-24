@@ -23,6 +23,7 @@ use bevy::{
 };
 
 // const MATERIAL_PATH: &str = "poc_shaders/rects_from_additional_data.wgsl";
+// const MATERIAL_PATH: &str = "poc_shaders/time_colors.wgsl";
 const MATERIAL_PATH: &str = "shiftyc/building_lights.wgsl";
 const DEFAULT_BGCOLOR: Color = Color::rgb(0.1, 0.1, 0.1);
 
