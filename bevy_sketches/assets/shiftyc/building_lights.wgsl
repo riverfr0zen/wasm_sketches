@@ -3,9 +3,14 @@
 #import "shader_common/common_uniform.wgsl"
 #import "shader_common/shapefuncs.wgsl"
 
-// let LIGHTING_SPEED: f32 = 0.5; // Not so much lighting speed as time until lighting starts up. Need to look into this more.
-// let LIGHTING_SPEED: f32 = 0.1;
+/// LIGHTING_SPEED_KETCHUP compensates for the delay in lights starting up that is caused by 
+/// having a lower LIGHTING_SPEED. The two go hand in hand and changing one will require adjusting 
+// the other for best results.
+// let LIGHTING_SPEED: f32 = 0.01;
+// let LIGHTING_SPEED_KETCHUP = 100.0;
 let LIGHTING_SPEED: f32 = 0.05;
+let LIGHTING_SPEED_KETCHUP = 20.0;
+
 // let WINDOW_SOFTNESS = 0.025;
 let WINDOW_SOFTNESS = 0.015;
 // let WINDOW_SOFTNESS =0.005;
@@ -65,7 +70,12 @@ fn gridFlicker(
 
             // Fave
             if (floor(rand(1.0-i) * rand(1.0-j) * (u.common.time + 120.0) % 120.0) % 6.0 > 3.0) {
-                colorIndex = floor(rand(1.0-i) * rand(1.0-j) * u.common.time * LIGHTING_SPEED) % 5.0;
+                colorIndex = floor(
+                    rand(1.0-i) * 
+                    rand(1.0-j) * 
+                    (u.common.time + LIGHTING_SPEED_KETCHUP) 
+                    * LIGHTING_SPEED) 
+                    % 5.0;
             } else {
                 colorIndex = 0.0;
             }
