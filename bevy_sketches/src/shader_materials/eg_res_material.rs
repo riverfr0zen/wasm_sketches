@@ -106,14 +106,9 @@ impl RenderAsset for ResExampleMaterial {
         extracted_asset: ResExampleMaterial,
         (render_device, pipeline): &mut SystemParamItem<Self::Param>,
     ) -> Result<GPUResExampleMaterial, PrepareAssetError<ResExampleMaterial>> {
-        let uniform_data = CommonUniformData {
-            time: extracted_asset.0.uniform.time,
-            resolution: extracted_asset.0.uniform.resolution,
-        };
-
         let uniform_buffer = render_device.create_buffer_with_data(&BufferInitDescriptor {
             label: None,
-            contents: uniform_data.as_std140().as_bytes(),
+            contents: extracted_asset.0.uniform.as_std140().as_bytes(),
             usage: BufferUsages::UNIFORM | BufferUsages::COPY_DST,
         });
 

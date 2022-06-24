@@ -276,7 +276,7 @@ fn draw_skyline(
         building_min_height,
         building_max_height,
         BUILDING_COLOR,
-        0.3,
+        0.2,
         0.0,
     );
 

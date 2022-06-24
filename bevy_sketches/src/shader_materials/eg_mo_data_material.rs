@@ -139,17 +139,9 @@ impl RenderAsset for AdditionalDataMaterial {
         extracted_asset: AdditionalDataMaterial,
         (render_device, pipeline): &mut SystemParamItem<Self::Param>,
     ) -> Result<GPUAdditionalDataMaterial, PrepareAssetError<AdditionalDataMaterial>> {
-        let uniform_data = SomeCustomUniformData {
-            common: CommonUniformData {
-                time: extracted_asset.uniform.common.time,
-                resolution: extracted_asset.uniform.common.resolution,
-            },
-            num_rects: extracted_asset.uniform.num_rects,
-        };
-
         let uniform_buffer = render_device.create_buffer_with_data(&BufferInitDescriptor {
             label: None,
-            contents: uniform_data.as_std140().as_bytes(),
+            contents: extracted_asset.uniform.as_std140().as_bytes(),
             usage: BufferUsages::UNIFORM | BufferUsages::COPY_DST,
         });
 

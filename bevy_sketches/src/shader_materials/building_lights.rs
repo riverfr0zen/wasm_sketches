@@ -130,18 +130,9 @@ impl RenderAsset for BuildingLights {
         extracted_asset: BuildingLights,
         (render_device, pipeline): &mut SystemParamItem<Self::Param>,
     ) -> Result<GPUBuildingLights, PrepareAssetError<BuildingLights>> {
-        let uniform_data = BuildingLightsUniform {
-            common: CommonUniformData {
-                time: extracted_asset.uniform.common.time,
-                resolution: extracted_asset.uniform.common.resolution,
-            },
-            background_color: extracted_asset.uniform.background_color,
-            alpha: extracted_asset.uniform.alpha,
-        };
-
         let uniform_buffer = render_device.create_buffer_with_data(&BufferInitDescriptor {
             label: None,
-            contents: uniform_data.as_std140().as_bytes(),
+            contents: extracted_asset.uniform.as_std140().as_bytes(),
             usage: BufferUsages::UNIFORM | BufferUsages::COPY_DST,
         });
 
