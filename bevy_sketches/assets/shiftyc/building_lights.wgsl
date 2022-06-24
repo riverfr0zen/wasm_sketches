@@ -1,4 +1,4 @@
-// Demonstrates a shader that receives and uses data in addition to the CommonUniformData
+/// Demonstrates a shader that receives and uses data in addition to the CommonUniformData
 
 #import "shader_common/common_uniform.wgsl"
 #import "shader_common/shapefuncs.wgsl"
@@ -12,7 +12,7 @@ struct VertexOutput {
 };
 
 
-// Nesting CommonUnifromData in a CustomUniformData struct
+/// Nesting CommonUnifromData in a CustomUniformData struct
 struct CustomUniformData {
     common: CommonUniformData;
     background_color: vec3<f32>;
@@ -28,6 +28,13 @@ var<uniform> u: CustomUniformData;
 fn rand(x: f32) -> f32 {
     return fract(sin(x) * u.rand_modifier);    
 }
+
+
+/// Returns a random integer (as a floating point value) between min/max
+fn rand_int(seed: f32, min: f32, max: f32) -> f32 {
+    return round(fract(sin(seed) * 1.0) * max + min);    
+}
+
 
 fn gridFlicker(
     input: VertexOutput, backgroundColor: vec3<f32>, lightColors: array<vec3<f32>, 5>, 
@@ -46,7 +53,8 @@ fn gridFlicker(
                 0.005
             );
             var colorIndex = 4.0;
-            var lightingSpeed: f32 = 0.5;
+            // var lightingSpeed: f32 = 0.5;
+            var lightingSpeed: f32 = 0.1;
 
             // fave
             if (floor(rand(1.0-i) * rand(1.0-j) * (u.common.time + 120.0) % 120.0) % 6.0 > 3.0) {
@@ -82,9 +90,20 @@ fn fragment(input: VertexOutput) -> [[location(0)]] vec4<f32> {
     var lightColor3: vec3<f32> = vec3<f32>(0.08, 0.1, 0.05);
     var lightColor4: vec3<f32> = vec3<f32>(0.9, 1.0, 0.6);
     var lightColors: array<vec3<f32>, 5>;
-    lightColors = array<vec3<f32>, 5>(lightColor, lightColor1, lightColor2, lightColor3, lightColor4);
+    // lightColors = array<vec3<f32>, 5>(lightColor, lightColor1, lightColor2, lightColor3, lightColor4);
+    // This arrangement works better, with lights starting black, but then first waves being the brightest
+    // color (instead of a long time with darker colors first).
+    lightColors = array<vec3<f32>, 5>(lightColor, lightColor4, lightColor3, lightColor2, lightColor1);
 
-    mixedColor = gridFlicker(input, mixedColor, lightColors, 4.0, 20.0);
+    // mixedColor = gridFlicker(input, mixedColor, lightColors, 4.0, 20.0);
+
+    let lights_per_row = rand_int(u.rand_modifier, 2.0, 5.0);
+    let lights_per_col = rand_int(u.rand_modifier, 10.0, 20.0);
+    mixedColor = gridFlicker(
+        input, mixedColor, lightColors, 
+        lights_per_row,
+        lights_per_col,
+    );
 
     return vec4<f32>(mixedColor, u.alpha);
 
