@@ -32,6 +32,7 @@ pub struct BuildingLightsUniform {
     pub common: CommonUniformData,
     pub background_color: Vec3,
     pub alpha: f32,
+    pub rand_modifier: f32,
 }
 
 
@@ -41,6 +42,7 @@ impl Default for BuildingLightsUniform {
             common: CommonUniformData::default(),
             background_color: color_to_shader_vec3(DEFAULT_BGCOLOR),
             alpha: 1.0,
+            rand_modifier: 1.0,
         }
     }
 }

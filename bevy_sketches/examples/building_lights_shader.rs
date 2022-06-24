@@ -98,6 +98,7 @@ fn poc_setup(
                 uniform: BuildingLightsUniform {
                     background_color: color_to_shader_vec3(Color::MIDNIGHT_BLUE),
                     alpha: 0.95,
+                    rand_modifier: 100.0,
                     ..default()
                 },
                 ..default()
@@ -123,6 +124,7 @@ fn poc_setup(
             material: material_assets.add(BuildingLights {
                 uniform: BuildingLightsUniform {
                     background_color: color_to_shader_vec3(Color::MIDNIGHT_BLUE),
+                    rand_modifier: 500.0,
                     ..default()
                 },
                 ..default()

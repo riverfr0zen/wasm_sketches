@@ -17,6 +17,7 @@ struct CustomUniformData {
     common: CommonUniformData;
     background_color: vec3<f32>;
     alpha: f32;
+    rand_modifier: f32;
 };
 
 
@@ -25,7 +26,7 @@ var<uniform> u: CustomUniformData;
 
 
 fn rand(x: f32) -> f32 {
-    return fract(sin(x) * 1.0);    
+    return fract(sin(x) * u.rand_modifier);    
 }
 
 
