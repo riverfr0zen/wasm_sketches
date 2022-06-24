@@ -54,7 +54,11 @@ fn rand(seed: f32) -> f32 {
 
 /// Returns a random integer (as a floating point value) between min/max
 fn rand_int(seed: f32, min: f32, max: f32) -> f32 {
-    return round(fract(sin(seed) * 1.0) * max + min);    
+    var result = fract(sin(seed) * 1.0) * max;
+    if (result < min) {
+        return min;
+    }
+    return round(result);
 }
 
 
@@ -119,6 +123,7 @@ fn grid_flicker(
 fn fragment(input: VertexOutput) -> [[location(0)]] vec4<f32> {
     var mixedColor: vec3<f32> = u.background_color;
 
+    // let lights_per_row = rand_int(u.rand_modifier, 1.0, 1.0);
     let lights_per_row = rand_int(u.rand_modifier, 2.0, 5.0);
     let lights_per_col = rand_int(u.rand_modifier, 10.0, 20.0);
     mixedColor = grid_flicker(input, mixedColor, lights_per_row, lights_per_col);
