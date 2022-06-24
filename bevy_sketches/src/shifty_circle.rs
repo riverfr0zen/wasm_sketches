@@ -236,7 +236,8 @@ fn draw_skyline_layer(
                     uniform: BuildingLightsUniform {
                         background_color: color_to_shader_vec3(building_color),
                         alpha: building_alpha,
-                        rand_modifier: building_width,
+                        // rand_modifier: building_width,
+                        rand_modifier: rng.gen_range(1.0..100000.0),
                         ..default()
                     },
                 }),
