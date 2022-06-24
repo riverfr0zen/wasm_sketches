@@ -3,13 +3,12 @@
 #import "shader_common/common_uniform.wgsl"
 #import "shader_common/shapefuncs.wgsl"
 
-/// Not so much lighting speed as time until lighting starts up. Need to look into this more.
-let LIGHTING_SPEED: f32 = 0.5;
+// let LIGHTING_SPEED: f32 = 0.5; // Not so much lighting speed as time until lighting starts up. Need to look into this more.
 // let LIGHTING_SPEED: f32 = 0.1;
+let LIGHTING_SPEED: f32 = 0.05;
 // let WINDOW_SOFTNESS = 0.025;
 let WINDOW_SOFTNESS = 0.015;
 // let WINDOW_SOFTNESS =0.005;
-
 
 
 struct VertexOutput {
