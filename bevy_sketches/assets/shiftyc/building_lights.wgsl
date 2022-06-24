@@ -25,8 +25,11 @@ struct CustomUniformData {
 var<uniform> u: CustomUniformData;
 
 
-fn rand(x: f32) -> f32 {
-    return fract(sin(x) * u.rand_modifier);    
+fn rand(seed: f32) -> f32 {
+    if (u.rand_modifier < 1.0) {
+        return fract(sin(seed) * 1.0);    
+    }
+    return fract(sin(seed) * u.rand_modifier);    
 }
 
 
@@ -50,11 +53,12 @@ fn gridFlicker(
                 xlate(vec2<f32>(i + windowWidth * 0.5, j + windowHeight * 0.5), 
                 input.uv, windowWidth, windowHeight), 
                 // 0.025
-                0.005
+                0.015
+                // 0.005
             );
             var colorIndex = 4.0;
-            // var lightingSpeed: f32 = 0.5;
-            var lightingSpeed: f32 = 0.1;
+            var lightingSpeed: f32 = 0.5;
+            // var lightingSpeed: f32 = 0.1;
 
             // fave
             if (floor(rand(1.0-i) * rand(1.0-j) * (u.common.time + 120.0) % 120.0) % 6.0 > 3.0) {
