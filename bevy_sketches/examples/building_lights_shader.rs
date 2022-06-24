@@ -1,13 +1,13 @@
 use bevy::{prelude::*, sprite::MaterialMesh2dBundle};
 use bevy_sketches::base::sketch;
 use bevy_sketches::shader_materials::{
-    building_lights::BuildingLights,
-    core::{DisplayQuad, ShaderMaterialPlugin},
+    building_lights::{BuildingLights, BuildingLightsUniform},
+    core::{color_to_shader_vec3, DisplayQuad, ShaderMaterialPlugin},
 };
 use bevy_web_extras::prelude::*;
 
 
-const SURFACE_WIDTH: f32 = 1.0;
+const SURFACE_WIDTH: f32 = 0.25;
 const SURFACE_HEIGHT: f32 = 1.0;
 
 
@@ -19,7 +19,7 @@ pub fn main() {
         ..Default::default()
     };
     let mut app = sketch(webcfg);
-    app.insert_resource(ClearColor(Color::SEA_GREEN))
+    app.insert_resource(ClearColor(Color::WHITE))
         .add_plugin(ShaderMaterialPlugin::<BuildingLights>::default());
 
     // If wasm32, this will be handled in handle_post_browser_resize
@@ -73,9 +73,60 @@ fn poc_setup(
             mesh: mesh_assets.add(Mesh::from(shape::Quad::default())).into(),
             transform: Transform {
                 scale: Vec3::new(surface1_wh.x, surface1_wh.y, 1.0),
-                ..Transform::default()
+                translation: Vec3::new(-webcfg.max_x + surface1_wh.x / 2.0, 0.0, 0.0),
+                ..Default::default()
             },
             material: material_assets.add(BuildingLights::default()),
+            ..default()
+        })
+        .insert(DisplayQuad);
+
+    let surface2_wh = to_scale(&webcfg, Vec2::new(SURFACE_WIDTH, SURFACE_HEIGHT));
+    commands
+        .spawn_bundle(MaterialMesh2dBundle {
+            mesh: mesh_assets.add(Mesh::from(shape::Quad::default())).into(),
+            transform: Transform {
+                scale: Vec3::new(surface2_wh.x, surface2_wh.y, 1.0),
+                translation: Vec3::new(
+                    -webcfg.max_x + surface2_wh.x / 2.0 + surface1_wh.x,
+                    0.0,
+                    0.0,
+                ),
+                ..Default::default()
+            },
+            material: material_assets.add(BuildingLights {
+                uniform: BuildingLightsUniform {
+                    background_color: color_to_shader_vec3(Color::MIDNIGHT_BLUE),
+                    alpha: 0.95,
+                    ..default()
+                },
+                ..default()
+            }),
+            ..default()
+        })
+        .insert(DisplayQuad);
+
+
+    let surface3_wh = to_scale(&webcfg, Vec2::new(SURFACE_WIDTH * 2.0, SURFACE_HEIGHT));
+    commands
+        .spawn_bundle(MaterialMesh2dBundle {
+            mesh: mesh_assets.add(Mesh::from(shape::Quad::default())).into(),
+            transform: Transform {
+                scale: Vec3::new(surface3_wh.x, surface3_wh.y, 1.0),
+                translation: Vec3::new(
+                    -webcfg.max_x + surface3_wh.x / 2.0 + surface1_wh.x + surface2_wh.x,
+                    0.0,
+                    0.0,
+                ),
+                ..Default::default()
+            },
+            material: material_assets.add(BuildingLights {
+                uniform: BuildingLightsUniform {
+                    background_color: color_to_shader_vec3(Color::MIDNIGHT_BLUE),
+                    ..default()
+                },
+                ..default()
+            }),
             ..default()
         })
         .insert(DisplayQuad);
