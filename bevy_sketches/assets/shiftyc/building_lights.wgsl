@@ -29,7 +29,6 @@ fn rand(x: f32) -> f32 {
     return fract(sin(x) * u.rand_modifier);    
 }
 
-
 fn gridFlicker(
     input: VertexOutput, backgroundColor: vec3<f32>, lightColors: array<vec3<f32>, 5>, 
     perRow: f32, perCol: f32
@@ -43,38 +42,18 @@ fn gridFlicker(
             var window = rectSoft(
                 xlate(vec2<f32>(i + windowWidth * 0.5, j + windowHeight * 0.5), 
                 input.uv, windowWidth, windowHeight), 
-                0.025
+                // 0.025
+                0.005
             );
             var colorIndex = 4.0;
-            // var colorIndex = ceil(u.common.time) % 5.0;
-
-            // // Horizontal scroll
-            // var colorIndex = floor(abs(sin(u.common.time) - i) * 5.0) % 5.0;
-            // // Vertical scroll
-            // var colorIndex = floor(abs(sin(u.common.time) - j) * 5.0) % 5.0;
-
-            // Couple of interesting pattern effects
             var lightingSpeed: f32 = 0.5;
-            // var colorIndex = floor(((j/j - i/j) * (u.common.time * lightingSpeed))) % 5.0;
-            // var colorIndex = floor(((i/j - j/i) * (u.common.time * lightingSpeed))) % 5.0;
-            // var colorIndex = floor(((15.0-j/i - j/i) * (u.common.time * lightingSpeed))) % 5.0;
 
-            // Rand
-            // var colorIndex = floor(rand(u.common.time * (1.0-j*i)) * u.common.time) * 0.05 % 5.0;
-            // var colorIndex = floor(rand(1.0-i) * rand(1.0-j) * u.common.time * lightingSpeed) % 5.0;
-
-            // // fave
-            // if (floor(rand(i) * rand(j) * 120.0) % 6.0 > 3.0) {
-            // if (floor(rand(1.0-i) * rand(1.0-j) * 120.0) % 6.0 > 3.0) {
-            // if (floor(rand(1.0-i) * rand(1.0-j) * u.common.time % 120.0) % 6.0 > 3.0) {
+            // fave
             if (floor(rand(1.0-i) * rand(1.0-j) * (u.common.time + 120.0) % 120.0) % 6.0 > 3.0) {
                 colorIndex = floor(rand(1.0-i) * rand(1.0-j) * u.common.time * lightingSpeed) % 5.0;
             } else {
                 colorIndex = 0.0;
             }
-
-            // Moire like noise effect
-            // var colorIndex = floor(rand(u.common.time * (1.0-input.uv.x*input.uv.y)) * u.common.time) % 5.0;
 
             if (colorIndex == 0.0) {
                 outColor = mix(outColor, lightColors[0], window);
@@ -85,7 +64,6 @@ fn gridFlicker(
             } else if (colorIndex == 3.0) {
                 outColor = mix(outColor, lightColors[3], window);
             } else {
-                // outColor = mix(outColor, lightColors[3], window);
                 outColor = mix(outColor, lightColors[4], window);
             }
         }
@@ -106,7 +84,7 @@ fn fragment(input: VertexOutput) -> [[location(0)]] vec4<f32> {
     var lightColors: array<vec3<f32>, 5>;
     lightColors = array<vec3<f32>, 5>(lightColor, lightColor1, lightColor2, lightColor3, lightColor4);
 
-    mixedColor = gridFlicker(input, mixedColor, lightColors, 4.0, 16.0);
+    mixedColor = gridFlicker(input, mixedColor, lightColors, 4.0, 20.0);
 
     return vec4<f32>(mixedColor, u.alpha);
 
