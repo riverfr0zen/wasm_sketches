@@ -22,8 +22,11 @@ const SHIFTY_CIRCLE_RADIUS: f32 = 40.0;
 const SHIFTY_CIRCLE_STROKE: f32 = 1.0;
 const SHIFTY_CIRCLE_MIN_SPEED: f32 = 0.01;
 const SHIFTY_CIRCLE_MAX_SPEED: f32 = 25.0;
-const SHIFTY_CIRCLE_FILL_COLOR: Color = Color::rgba(0.784, 0.713, 0.345, 0.0);
-const SHIFTY_CIRCLE_STROKE_COLOR: Color = Color::rgba(0.784, 0.713, 0.345, 0.0);
+// const SHIFTY_CIRCLE_FILL_COLOR: Color = Color::rgba(0.784, 0.713, 0.345, 0.0);
+// const SHIFTY_CIRCLE_STROKE_COLOR: Color = Color::rgba(0.784, 0.713, 0.345, 0.0);
+const SHIFTY_CIRCLE_FILL_COLOR: Color = Color::rgba(0.04, 0.06, 0.06, 1.0);
+// const SHIFTY_CIRCLE_STROKE_COLOR: Color = SHIFTY_CIRCLE_FILL_COLOR;
+const SHIFTY_CIRCLE_STROKE_COLOR: Color = Color::rgba(0.27, 0.09, 0.02, 0.0);
 const BUILDING_MIN_WIDTH: f32 = 10.0;
 const BUILDING_MAX_WIDTH: f32 = 200.0;
 // const BUILDING_COLOR: Color = Color::GREEN;
@@ -33,11 +36,11 @@ const BUILDING_FORE_COLOR: Color = Color::rgb(0.1, 0.09, 0.0);
 const BUILDING_MAX_HEIGHT_RATIO: f32 = 2.0;
 const BUILDING_MIN_HEIGHT_RATIO: f32 = 16.0;
 const PULSATING_STEP: f64 = 0.1;
-const PULSE_MAX_ALPHA: f32 = 0.1;
+const PULSE_MAX_ALPHA: f32 = 1.0;
 // const PULSE_SCALE: f64 = 0.1;
-const PULSE_SCALE: f64 = 0.01;
+const PULSE_SCALE: f64 = 0.6;
 const PULSE_AMPLITUDE: f64 = 1.0;
-const PULSE_FREQ: f64 = 5.0;
+const PULSE_FREQ: f64 = 2.0;
 
 
 // Resource for app globals.
@@ -352,10 +355,10 @@ fn do_pulsating_effect(time: Res<Time>, mut query: Query<&mut DrawMode, With<Shi
         {
             if pulse_wave > PULSE_MAX_ALPHA as f64 {
                 fill_mode.color.set_a(PULSE_MAX_ALPHA);
-                outline_mode.color.set_a(PULSE_MAX_ALPHA);
+                outline_mode.color.set_a(1.0 - PULSE_MAX_ALPHA * 3.5);
             } else {
                 fill_mode.color.set_a(pulse_wave as f32);
-                outline_mode.color.set_a(pulse_wave as f32);
+                outline_mode.color.set_a(1.0 - pulse_wave as f32 * 3.5);
             }
         }
     }
