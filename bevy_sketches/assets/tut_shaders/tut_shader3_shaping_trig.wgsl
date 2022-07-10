@@ -33,9 +33,10 @@ fn plot2(uv: vec2<f32>, pct: f32) -> f32 {
 // After scaling down, compensate for half the wave being in negative y coords by adding 0.5
 // and thus pushing the full sine wave upwards
 fn adjustedSin(x: f32) -> f32 {
-    return sin(x) / 2.0 + 0.5;
-    // return sin(x) / 20.0 + 0.5;
+    // return sin(x) / 2.0 + 0.5;
+    return sin(x) / 20.0 + 0.5;
 }
+
 
 
 [[stage(fragment)]]
@@ -44,7 +45,7 @@ fn fragment(input: VertexOutput) -> [[location(0)]] vec4<f32> {
     // var y: f32 = sin(input.uv.x);
     // var y: f32 = sin(input.uv.x * 20.0);
     // var y: f32 = abs(sin(input.uv.x * 20.0));
-    var y = adjustedSin(input.uv.x * 20.0);
+    // var y = adjustedSin(input.uv.x * 20.0);
     // Messing w/ time
     // var y: f32 = adjustedSin(input.uv.x * 20.0 + time.time);
     // var y: f32 = adjustedSin(input.uv.x * 20.0 + (time.time * 10.0));
@@ -54,6 +55,11 @@ fn fragment(input: VertexOutput) -> [[location(0)]] vec4<f32> {
     // var y: f32 = adjustedSin(input.uv.x * 20.0 * time.time + (time.time * 10.0));
     // var y: f32 = adjustedSin(input.uv.x * time.time);
 
+    // var y: f32 = adjustedSin(input.uv.x * abs(sin(time.time)) * 10.0);
+    // var y: f32 = adjustedSin(input.uv.x * (time.time % 10.0) + time.time);
+    // var y: f32 = adjustedSin(input.uv.x * sin(time.time % 50.0) + time.time);
+    var y: f32 = adjustedSin(input.uv.x * 10.0 + time.time);
+ 
     var color = vec3<f32>(y);
 
     // var pct: f32 = plot(input.uv);
