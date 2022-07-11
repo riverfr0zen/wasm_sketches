@@ -1,11 +1,14 @@
 use crate::base::sketch;
+use crate::shader_materials::{
+    building_lights::{BuildingLights, BuildingLightsUniform},
+    core::{color_to_shader_vec3, DisplayQuad, ShaderMaterialPlugin},
+};
 use bevy::core::FixedTimestep;
-use bevy::prelude::*;
+use bevy::{prelude::*, sprite::MaterialMesh2dBundle};
 use bevy_prototype_lyon::prelude::*;
 use bevy_web_extras::prelude::*;
 use rand::prelude::thread_rng;
 use rand::Rng;
-
 
 // Place window on top right corner
 const SHIFTY_CIRCLE_STEP: f64 = 0.01;
@@ -19,22 +22,25 @@ const SHIFTY_CIRCLE_RADIUS: f32 = 40.0;
 const SHIFTY_CIRCLE_STROKE: f32 = 1.0;
 const SHIFTY_CIRCLE_MIN_SPEED: f32 = 0.01;
 const SHIFTY_CIRCLE_MAX_SPEED: f32 = 25.0;
-const SHIFTY_CIRCLE_FILL_COLOR: Color = Color::rgba(0.784, 0.713, 0.345, 0.0);
-const SHIFTY_CIRCLE_STROKE_COLOR: Color = Color::rgba(0.784, 0.713, 0.345, 0.0);
+// const SHIFTY_CIRCLE_FILL_COLOR: Color = Color::rgba(0.784, 0.713, 0.345, 0.0);
+// const SHIFTY_CIRCLE_STROKE_COLOR: Color = Color::rgba(0.784, 0.713, 0.345, 0.0);
+const SHIFTY_CIRCLE_FILL_COLOR: Color = Color::rgba(0.04, 0.06, 0.06, 1.0);
+// const SHIFTY_CIRCLE_STROKE_COLOR: Color = SHIFTY_CIRCLE_FILL_COLOR;
+const SHIFTY_CIRCLE_STROKE_COLOR: Color = Color::rgba(0.27, 0.09, 0.02, 0.0);
 const BUILDING_MIN_WIDTH: f32 = 10.0;
 const BUILDING_MAX_WIDTH: f32 = 200.0;
 // const BUILDING_COLOR: Color = Color::GREEN;
-const BUILDING_FORE_COLOR: Color = Color::rgb(0.1, 0.09, 0.0);
 const BUILDING_COLOR: Color = Color::rgb(0.12, 0.12, 0.02);
+const BUILDING_FORE_COLOR: Color = Color::rgb(0.1, 0.09, 0.0);
 // Ratio of x below means the tallest building is 1/x screen height
 const BUILDING_MAX_HEIGHT_RATIO: f32 = 2.0;
 const BUILDING_MIN_HEIGHT_RATIO: f32 = 16.0;
 const PULSATING_STEP: f64 = 0.1;
-const PULSE_MAX_ALPHA: f32 = 0.1;
+const PULSE_MAX_ALPHA: f32 = 1.0;
 // const PULSE_SCALE: f64 = 0.1;
-const PULSE_SCALE: f64 = 0.01;
+const PULSE_SCALE: f64 = 0.6;
 const PULSE_AMPLITUDE: f64 = 1.0;
-const PULSE_FREQ: f64 = 5.0;
+const PULSE_FREQ: f64 = 2.0;
 
 
 // Resource for app globals.
@@ -189,16 +195,20 @@ fn setup_generic(mut commands: Commands, myshape: impl Geometry) {
 
 fn draw_skyline_layer(
     commands: &mut Commands,
+    mesh_assets: &mut ResMut<Assets<Mesh>>,
+    material_assets: &mut ResMut<Assets<BuildingLights>>,
     available_space: f32,
     buildings_start_x: f32,
     buildings_start_y: f32,
     building_min_height: f32,
     building_max_height: f32,
     building_color: Color,
+    building_alpha: f32,
     z_index: f32,
 ) {
     let mut remaining_space = available_space;
     let mut building_pos_x = buildings_start_x;
+    let mut building_pos_y;
     let mut rng = thread_rng();
 
     while remaining_space > 0.0 {
@@ -207,34 +217,48 @@ fn draw_skyline_layer(
         let building_width = if remaining_space > BUILDING_MAX_WIDTH {
             rng.gen_range(BUILDING_MIN_WIDTH..BUILDING_MAX_WIDTH)
         } else {
-            BUILDING_MAX_WIDTH
+            // It should correctly be `remaining_space`, but iirc there used to be
+            // some kind of error before. Re-instate BUILDING_MAX_WIDTH if error recurrs.
+            // BUILDING_MAX_WIDTH
+            remaining_space
         };
         let building_height = rng.gen_range(building_min_height..building_max_height);
-        let building = shapes::Rectangle {
-            extents: Vec2::new(building_width, building_height),
-            origin: RectangleOrigin::BottomLeft,
-            ..Default::default()
-        };
+
+        building_pos_x = building_pos_x + building_width / 2.0;
+        building_pos_y = buildings_start_y + building_height / 2.0;
 
         commands
-            .spawn_bundle(GeometryBuilder::build_as(
-                &building,
-                DrawMode::Outlined {
-                    fill_mode: FillMode::color(building_color),
-                    outline_mode: StrokeMode::new(SHIFTY_CIRCLE_STROKE_COLOR, SHIFTY_CIRCLE_STROKE),
+            .spawn_bundle(MaterialMesh2dBundle {
+                mesh: mesh_assets.add(Mesh::from(shape::Quad::default())).into(),
+                transform: Transform {
+                    scale: Vec3::new(building_width, building_height, 1.0),
+                    translation: Vec3::new(building_pos_x, building_pos_y, z_index),
+                    ..Transform::default()
                 },
-                // Transform::default(),
-                Transform::from_translation(Vec3::new(building_pos_x, buildings_start_y, z_index)),
-            ))
-            .insert(Building);
+                material: material_assets.add(BuildingLights {
+                    uniform: BuildingLightsUniform {
+                        background_color: color_to_shader_vec3(building_color),
+                        alpha: building_alpha,
+                        // rand_modifier: building_width,
+                        rand_modifier: rng.gen_range(1.0..100000.0),
+                        ..default()
+                    },
+                }),
+                ..default()
+            })
+            .insert(Building)
+            .insert(DisplayQuad);
 
-        building_pos_x += building_width;
+
+        building_pos_x += building_width / 2.0;
         remaining_space -= building_width;
     }
 }
 
 fn draw_skyline(
     mut commands: Commands,
+    mut mesh_assets: ResMut<Assets<Mesh>>,
+    mut material_assets: ResMut<Assets<BuildingLights>>,
     webcfg: ResMut<WebExtrasCfg>,
     mut q: Query<Entity, With<Building>>,
 ) {
@@ -249,23 +273,30 @@ fn draw_skyline(
 
     draw_skyline_layer(
         &mut commands,
+        &mut mesh_assets,
+        &mut material_assets,
         webcfg.width,
         buildings_start_x,
         buildings_start_y,
         building_min_height,
         building_max_height,
         BUILDING_COLOR,
+        0.2,
         0.0,
     );
 
+    // @TODO reinstate after material work
     draw_skyline_layer(
         &mut commands,
+        &mut mesh_assets,
+        &mut material_assets,
         webcfg.width,
         buildings_start_x,
         buildings_start_y,
         building_min_height,
         building_max_height - building_max_height / 4.0,
         BUILDING_FORE_COLOR,
+        1.0,
         2.0,
     );
 }
@@ -324,10 +355,10 @@ fn do_pulsating_effect(time: Res<Time>, mut query: Query<&mut DrawMode, With<Shi
         {
             if pulse_wave > PULSE_MAX_ALPHA as f64 {
                 fill_mode.color.set_a(PULSE_MAX_ALPHA);
-                outline_mode.color.set_a(PULSE_MAX_ALPHA);
+                outline_mode.color.set_a(1.0 - PULSE_MAX_ALPHA * 3.5);
             } else {
                 fill_mode.color.set_a(pulse_wave as f32);
-                outline_mode.color.set_a(pulse_wave as f32);
+                outline_mode.color.set_a(1.0 - pulse_wave as f32 * 3.5);
             }
         }
     }
@@ -338,6 +369,8 @@ fn do_pulsating_effect(time: Res<Time>, mut query: Query<&mut DrawMode, With<Shi
 fn handle_post_browser_resize(
     commands: Commands,
     webcfg: ResMut<WebExtrasCfg>,
+    mesh_assets: ResMut<Assets<Mesh>>,
+    material_assets: ResMut<Assets<BuildingLights>>,
     mut resize_event_reader: EventReader<BrowserResized>,
     mut app_globals: ResMut<AppGlobals>,
     buildings_query: Query<Entity, With<Building>>,
@@ -347,7 +380,13 @@ fn handle_post_browser_resize(
         app_globals.dest_high_x = webcfg.max_x - SHIFTY_CIRCLE_RADIUS;
         app_globals.dest_low_y = -webcfg.max_y + SHIFTY_CIRCLE_RADIUS;
         app_globals.dest_high_y = webcfg.max_y - SHIFTY_CIRCLE_RADIUS;
-        draw_skyline(commands, webcfg, buildings_query);
+        draw_skyline(
+            commands,
+            mesh_assets,
+            material_assets,
+            webcfg,
+            buildings_query,
+        );
     }
 }
 
@@ -370,7 +409,8 @@ pub fn app(variation: &str) {
             dest_low_y: -webcfg_max_y,
             dest_high_y: webcfg_max_y,
         })
-        .add_plugin(ShapePlugin);
+        .add_plugin(ShapePlugin)
+        .add_plugin(ShaderMaterialPlugin::<BuildingLights>::default());
 
 
     match variation {

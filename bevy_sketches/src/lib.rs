@@ -16,3 +16,5 @@ pub mod shifty_circle;
 pub mod cellular;
 
 pub mod path_changer;
+
+pub mod shader_materials;

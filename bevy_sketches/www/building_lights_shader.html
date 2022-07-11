@@ -1,0 +1,170 @@
+<html>
+  <!-- 
+    This layout is working better than `layout_flex.tpl.html` for now, with the trade-off that the canvas 
+    will flow over a little if the window gets too small horizontally (not sure what criteria for 
+    "too small" is, but maybe something to do with the topnav).
+  -->
+
+  <head>
+    <meta charset="UTF-8" />
+    <title>building_lights_shader</title>
+    <!-- <meta name="viewport" content="width=device-width, initial-scale=1.0"> -->
+    <style>
+      body {
+        background-color: white;
+        margin: 0 !important; 
+        padding: 0 !important;
+        border: 0px;
+        height: 100%;
+        /* overflow: hidden; */
+      }
+
+      canvas {
+        background-color: white;
+      }
+
+      .box {
+        display: flex;
+        flex-flow: column;
+        height: 100%;
+      }
+
+      #topnav {
+        margin: 0 !important; 
+        padding: 0 !important;
+        border: 0px;
+      }
+
+      #topnavOverlay {
+        pointer-events: none;
+        position: absolute;
+        top: 0;
+        left: 0;
+        z-index: 5;
+        width: 100%;
+
+        /* FX based on:
+        * https://css-tricks.com/old-timey-terminal-styling/
+        * https://css-tricks.com/how-to-create-neon-text-with-css/ */
+ 
+        /* Fade effect */
+        /* background: repeating-linear-gradient(
+          rgba(0, 0, 0, 0.25), 
+          rgba(0, 0, 0, 0.25) 1px, 
+          transparent 50px
+        ); */
+
+        /* Interlaced effect */
+        background: repeating-linear-gradient(
+          rgba(0, 0, 0, 0.15), 
+          rgba(0, 0, 0, 0.15) 1px, 
+          transparent 2px
+        );
+      }
+
+
+      .topnavFormEl {
+        /* box-shadow: 1px 1px 5px 1px rgba(0, 0, 0, 0.75);  */
+        opacity: 0.75;
+      }
+
+      .topnavStrongFormEl {
+        /* box-shadow: 1px 1px 5px 1px rgba(0, 0, 0, 1.0);  */
+        opacity: 0.5;
+      }
+
+      #content {
+        margin: 0 !important; 
+        padding: 0 !important;
+        border: 0px;
+        /* background-color: red; */
+        height: 100%;
+      }
+    </style>
+  </head>
+  <script type="module">
+    import init from './wasms/building_lights_shader.js';
+    init();
+
+    let currSketch = window.location.pathname.split('/').pop().replace('.html', '');
+    function gotoRandomSketch() {
+      // Import assertions are not yet supported by Firefox, so using fetch
+      // import sketchdata from "./sketches.json" assert { type: "json" };
+
+      fetch('./sketches.json').then(resp => resp.json()).then((sketchdata) => {
+        let randomIndex = Math.floor(Math.random() * sketchdata.sketches.length);
+        if (sketchdata.sketches[randomIndex] === currSketch) {
+          gotoRandomSketch();
+        } else {
+          location.replace(sketchdata.sketches[randomIndex] + '.html');
+        }
+      });
+    }
+    document.querySelector('#nextSketchCtrl').addEventListener('click', gotoRandomSketch);
+
+    import {SIMPLEBACKEND_BASEURL} from './config.js';
+    function subscribe() {
+      const emailEl = document.getElementById('subscribeEmail');
+      if (emailEl.value) {
+        fetch(`${SIMPLEBACKEND_BASEURL}/newsletter_signup`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json'},
+          body: JSON.stringify({email: emailEl.value})
+        })
+        .then(response => response.json())
+        .then(data => {
+          if (data.errmsg) {
+            alert(data.errmsg);
+          } else {
+            alert("Thank you for subscribing!")
+            emailEl.value = '';
+          }
+        })
+        .catch((error) => {
+          alert('Could not subscribe: ' + error.toString() + '\n\nPlease try again later.');
+        });
+      } else {
+        alert(
+          'Submit your email address to receive (low frequency) site announcements.\n\n' + 
+          'PRIVACY: The mailing list is maintained by Irfan and your information will not be ' +
+          'used for any other purposes.'
+        );
+      }
+    }
+    document.querySelector('#subscribeButton').addEventListener('click', subscribe);
+  </script>
+
+  <body>
+    <div class="box">
+      <div id="topnav">
+        <div id="topnavOverlay">
+          <!-- This "invisible" form is to match the height of the overlay with the topnav-->
+          <form style="margin: 0px; border: 0px; padding: 0.2rem;">
+            <input style="opacity: 0.0;" type="text" />
+          </form>
+        </div>
+        <div style="width: 34%; float: left;">&nbsp;</div>
+        <div style="width: 33%; float: left; text-align: center;">
+          <form style="margin: 0px; border: 0px; padding: 0.2rem;">
+            <button class="topnavStrongFormEl" id="viewingLabel" type="button">
+              VIEWING <strong>building_lights_shader</strong>
+            </button>
+            <button class="topnavFormEl" id="nextSketchCtrl" type="button">NEXT &#8227;</button>
+          </form>
+        </div>
+        <div style="width: 33%; float: left; text-align: right;">
+          <form style="margin: 0px; border: 0px; padding: 0.2rem;">
+            <input class="topnavFormEl" type="email" id="subscribeEmail" name="email" placeholder="your@email.addy"/>
+            <button class="topnavFormEl" id="subscribeButton" type="button">
+              SUBSCRIBE
+            </button>
+          </form>
+        </div>
+      </div>
+      <div id="content">
+        <!-- content -->
+        <canvas id="window-matching-canvas"></canvas>
+      </div>
+    </div>
+  </body>
+</html>

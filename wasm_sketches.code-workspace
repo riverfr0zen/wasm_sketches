@@ -6,8 +6,9 @@
 	],
 	"settings": {
 		// "editor.parameterHints": false	
+		"explorer.autoReveal": false,	// Prevent explorer from jumping around when closing / opening files
 		"[rust]": {
-			"editor.defaultFormatter": "matklad.rust-analyzer",
+			"editor.defaultFormatter": "rust-lang.rust-analyzer",
 			"editor.formatOnSave": true,
 		},
 		"rust-analyzer.rustfmt.extraArgs": [
