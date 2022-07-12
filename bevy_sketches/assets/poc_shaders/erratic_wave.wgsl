@@ -27,9 +27,9 @@ fn plot2(uv: vec2<f32>, pct: f32, top_feather: f32, bottom_feather: f32) -> f32 
 // Divide by 2.0 to scale down y coordinates since display coord system does not have "negative coordinates".
 // After scaling down, compensate for half the wave being in negative y coords by adding 0.5
 // and thus pushing the full sine wave upwards
-fn adjusted_sin(x: f32) -> f32 {
-    // return sin(x) / 2.0 + 0.5;
-    return sin(x) / 20.0 + 0.5;
+fn adjusted_sin(x: f32, wave_height: f32) -> f32 {
+    // return sin(x) / 2.0 + wave_height;
+    return sin(x) / 20.0 + wave_height;
 }
 
 
@@ -38,24 +38,10 @@ fn fragment(input: VertexOutput) -> [[location(0)]] vec4<f32> {
     var backgroundColor: vec3<f32> = vec3<f32>(1.0, 0.65, 0.2);
     var waveColor = vec3<f32>(0.043, 0.525, 0.756);
 
-    // var y: f32 = sin(input.uv.x);
-    // var y: f32 = sin(input.uv.x * 20.0);
-    // var y: f32 = abs(sin(input.uv.x * 20.0));
-    // var y = adjusted_sin(input.uv.x * 20.0);
-    // Messing w/ time
-    // var y: f32 = adjusted_sin(input.uv.x * 20.0 + u.time);
-    // var y: f32 = adjusted_sin(input.uv.x * 20.0 + (u.time * 10.0));
-    // var y: f32 = adjusted_sin(input.uv.x + u.time);
-    // Interesting effects when multiplying x with time. 
-    // Might want to restart the app to reset time -- but the later effects are interesting too.
-    // var y: f32 = adjusted_sin(input.uv.x * 20.0 * u.time + (u.time * 10.0));
-    // var y: f32 = adjusted_sin(input.uv.x * u.time);
-
-    // var y: f32 = adjusted_sin(input.uv.x * abs(sin(u.time)) * 10.0);
-    // var y: f32 = adjusted_sin(input.uv.x * (u.time % 10.0) + u.time);
-    // var y: f32 = adjusted_sin(input.uv.x * sin(u.time % 50.0) + u.time);
-
-    var y: f32 = adjusted_sin(input.uv.x * abs(sin(u.time % 10.0)) * 5.0 + u.time);
+    // var y: f32 = adjusted_sin(input.uv.x * abs(sin(u.time % 60.0)) * 5.5 + u.time);
+    let wave_height = 0.5;
+    var y: f32 = adjusted_sin(input.uv.x * abs(sin(u.time % 60.0)) * 5.5 + u.time, wave_height);
+    // var y: f32 = adjusted_sin(input.uv.x + u.time, wave_height);
 
 
     // var pct: f32 = plot2(input.uv, y, 0.02, 0.02);
