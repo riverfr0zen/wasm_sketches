@@ -33,14 +33,10 @@ fn adjusted_sin(x: f32) -> f32 {
 }
 
 
-
 [[stage(fragment)]]
 fn fragment(input: VertexOutput) -> [[location(0)]] vec4<f32> {
     var backgroundColor: vec3<f32> = vec3<f32>(1.0, 0.65, 0.2);
     var waveColor = vec3<f32>(0.043, 0.525, 0.756);
-    // var outColor: vec4<f32> = vec4<f32>(backgroundColor, 1.0);
-    // return outColor;
-
 
     // var y: f32 = sin(input.uv.x);
     // var y: f32 = sin(input.uv.x * 20.0);
@@ -58,8 +54,10 @@ fn fragment(input: VertexOutput) -> [[location(0)]] vec4<f32> {
     // var y: f32 = adjusted_sin(input.uv.x * abs(sin(u.time)) * 10.0);
     // var y: f32 = adjusted_sin(input.uv.x * (u.time % 10.0) + u.time);
     // var y: f32 = adjusted_sin(input.uv.x * sin(u.time % 50.0) + u.time);
-    var y: f32 = adjusted_sin(input.uv.x * 10.0 + u.time);
- 
+
+    var y: f32 = adjusted_sin(input.uv.x * abs(sin(u.time % 10.0)) * 5.0 + u.time);
+
+
     // var pct: f32 = plot2(input.uv, y, 0.02, 0.02);
     var pct: f32 = plot2(input.uv, y, 0.05, 5.0);
 
