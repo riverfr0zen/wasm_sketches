@@ -14,9 +14,9 @@ struct VertexOutput {
 var<uniform> u: CommonUniformData;
 
 
-fn plot2(uv: vec2<f32>, pct: f32) -> f32 {
+fn plot2(uv: vec2<f32>, pct: f32, top_feather: f32, bottom_feather: f32) -> f32 {
     // return smoothStep(pct - 0.02, pct, uv.y) - smoothStep(pct, pct + 0.02, uv.y);
-    return smoothStep(pct - 0.02, pct, 1.0-uv.y) - smoothStep(pct, pct + 0.02, 1.0-uv.y);
+    return smoothStep(pct - bottom_feather, pct, 1.0-uv.y) - smoothStep(pct, pct + top_feather, 1.0-uv.y);
 
     // Playing with the feather of the line using time
     // let fade = (u.time % 10.0) / 10.0;
@@ -36,7 +36,8 @@ fn adjusted_sin(x: f32) -> f32 {
 
 [[stage(fragment)]]
 fn fragment(input: VertexOutput) -> [[location(0)]] vec4<f32> {
-    var backgroundColor: vec3<f32> = vec3<f32>(0.2, 0.2, 0.2);
+    var backgroundColor: vec3<f32> = vec3<f32>(1.0, 0.65, 0.2);
+    var waveColor = vec3<f32>(0.043, 0.525, 0.756);
     // var outColor: vec4<f32> = vec4<f32>(backgroundColor, 1.0);
     // return outColor;
 
@@ -59,14 +60,14 @@ fn fragment(input: VertexOutput) -> [[location(0)]] vec4<f32> {
     // var y: f32 = adjusted_sin(input.uv.x * sin(u.time % 50.0) + u.time);
     var y: f32 = adjusted_sin(input.uv.x * 10.0 + u.time);
  
-    var pct: f32 = plot2(input.uv, y);
+    // var pct: f32 = plot2(input.uv, y, 0.02, 0.02);
+    var pct: f32 = plot2(input.uv, y, 0.05, 5.0);
 
-    var color = vec3<f32>(0.0, 1.0, 0.0);
     // This creates a beveled effect
-    // var color = pct * vec3<f32>(0.0, 1.0, 0.0);
+    // waveColor = pct * waveColor;
 
-    color = mix(backgroundColor, color, pct);
-    return vec4<f32>(color, 1.0);
+    waveColor = mix(backgroundColor, waveColor, pct);
+    return vec4<f32>(waveColor, 1.0);
 
 
 }
