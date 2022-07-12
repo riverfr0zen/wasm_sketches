@@ -23,6 +23,11 @@ fn plot2(uv: vec2<f32>, pct: f32, top_feather: f32, bottom_feather: f32) -> f32 
     // return smoothStep(pct - fade, pct, 1.0-uv.y) - smoothStep(pct, pct + fade, 1.0-uv.y);
 }
 
+fn plot(uv: vec2<f32>, pct: f32, feather: f32) -> f32 {
+    return smoothStep(pct + feather, pct, 1.0-uv.y);
+}
+
+
 
 // Divide by 2.0 to scale down y coordinates since display coord system does not have "negative coordinates".
 // After scaling down, compensate for half the wave being in negative y coords by adding 0.5
@@ -47,7 +52,8 @@ fn fragment(input: VertexOutput) -> [[location(0)]] vec4<f32> {
 
 
     // var pct: f32 = plot2(input.uv, y, 0.02, 0.02);
-    var pct: f32 = plot2(input.uv, y, 0.05, 50.0);
+    // var pct: f32 = plot2(input.uv, y, 0.05, 50.0);
+    var pct: f32 = plot(input.uv, y, 0.05);
 
     // This creates a beveled effect
     // waveColor = pct * waveColor;
