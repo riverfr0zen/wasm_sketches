@@ -35,8 +35,10 @@ fn adjusted_sin(x: f32, wave_height: f32) -> f32 {
 
 [[stage(fragment)]]
 fn fragment(input: VertexOutput) -> [[location(0)]] vec4<f32> {
-    var backgroundColor: vec3<f32> = vec3<f32>(1.0, 0.65, 0.2);
-    var waveColor = vec3<f32>(0.043, 0.525, 0.756);
+    // var backgroundColor: vec3<f32> = vec3<f32>(1.0, 0.65, 0.2);
+    // var waveColor = vec3<f32>(0.043, 0.525, 0.756);
+    var backgroundColor: vec3<f32> = vec3<f32>(1.0, 0.65, 0.2) * (input.uv.y * 4.0);
+    var waveColor = vec3<f32>(0.043, 0.525, 0.756) * ((1.0-input.uv.y) * 0.8);
 
     // var y: f32 = adjusted_sin(input.uv.x * abs(sin(u.time % 60.0)) * 5.5 + u.time);
     let wave_height = 0.5;
@@ -45,7 +47,7 @@ fn fragment(input: VertexOutput) -> [[location(0)]] vec4<f32> {
 
 
     // var pct: f32 = plot2(input.uv, y, 0.02, 0.02);
-    var pct: f32 = plot2(input.uv, y, 0.05, 5.0);
+    var pct: f32 = plot2(input.uv, y, 0.05, 50.0);
 
     // This creates a beveled effect
     // waveColor = pct * waveColor;
