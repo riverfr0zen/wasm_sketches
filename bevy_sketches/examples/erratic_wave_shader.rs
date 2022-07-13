@@ -19,7 +19,7 @@ pub fn main() {
         ..Default::default()
     };
     let mut app = sketch(webcfg);
-    app.insert_resource(ClearColor(Color::SEA_GREEN))
+    app.insert_resource(ClearColor(Color::BLACK))
         .add_plugin(ShaderMaterialPlugin::<ErraticWaveMaterial>::default());
 
     // If wasm32, this will be handled in handle_post_browser_resize
@@ -38,12 +38,12 @@ fn handle_post_browser_resize(
     commands: Commands,
     entity_q: Query<Entity, With<DisplayQuad>>,
     mesh_assets: ResMut<Assets<Mesh>>,
-    scaling_net_assets: ResMut<Assets<ScalingNet>>,
+    material_assets: ResMut<Assets<ErraticWaveMaterial>>,
     mut resize_event_reader: EventReader<BrowserResized>,
     webcfg: Res<WebExtrasCfg>,
 ) {
     if resize_event_reader.iter().next().is_some() {
-        poc_setup(commands, entity_q, mesh_assets, scaling_net_assets, webcfg)
+        poc_setup(commands, entity_q, mesh_assets, material_assets, webcfg)
     }
 }
 
@@ -57,7 +57,7 @@ fn poc_setup(
     mut commands: Commands,
     mut entity_q: Query<Entity, With<DisplayQuad>>,
     mut mesh_assets: ResMut<Assets<Mesh>>,
-    mut scaling_net_assets: ResMut<Assets<ErraticWaveMaterial>>,
+    mut material_assets: ResMut<Assets<ErraticWaveMaterial>>,
     webcfg: Res<WebExtrasCfg>,
 ) {
     commands.spawn_bundle(OrthographicCameraBundle::new_2d());
@@ -75,7 +75,7 @@ fn poc_setup(
                 scale: Vec3::new(surface1_wh.x, surface1_wh.y, 1.0),
                 ..Transform::default()
             },
-            material: scaling_net_assets.add(ErraticWaveMaterial::default()),
+            material: material_assets.add(ErraticWaveMaterial::default()),
             ..default()
         })
         .insert(DisplayQuad);
