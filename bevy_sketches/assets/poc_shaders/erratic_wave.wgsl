@@ -32,9 +32,10 @@ fn plot(uv: vec2<f32>, pct: f32, feather: f32) -> f32 {
 // Divide by 2.0 to scale down y coordinates since display coord system does not have "negative coordinates".
 // After scaling down, compensate for half the wave being in negative y coords by adding 0.5
 // and thus pushing the full sine wave upwards
-fn adjusted_sin(x: f32, wave_height: f32) -> f32 {
+fn adjusted_sin(x: f32, y_shrink: f32, wave_height: f32) -> f32 {
     // return sin(x) / 2.0 + wave_height;
-    return sin(x) / 20.0 + wave_height;
+    // return sin(x) / 20.0 + wave_height;
+    return sin(x) / y_shrink + wave_height;
 }
 
 
@@ -47,8 +48,9 @@ fn fragment(input: VertexOutput) -> [[location(0)]] vec4<f32> {
 
     // var y: f32 = adjusted_sin(input.uv.x * abs(sin(u.time % 60.0)) * 5.5 + u.time);
     let wave_height = 0.5;
-    var y: f32 = adjusted_sin(input.uv.x * abs(sin(u.time % 60.0)) * 5.5 + u.time, wave_height);
-    // var y: f32 = adjusted_sin(input.uv.x + u.time, wave_height);
+    let wave_y_shrink = 20.0;
+    var y: f32 = adjusted_sin(input.uv.x * abs(sin(u.time % 60.0)) * 5.5 + u.time, wave_y_shrink, wave_height);
+    // var y: f32 = adjusted_sin(input.uv.x + u.time, wave_y_shrink, wave_height);
 
 
     // var pct: f32 = plot2(input.uv, y, 0.02, 0.02);
