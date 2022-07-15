@@ -48,7 +48,20 @@ fn fragment(input: VertexOutput) -> [[location(0)]] vec4<f32> {
 
     // var y: f32 = adjusted_sin(input.uv.x * abs(sin(u.time % 60.0)) * 5.5 + u.time);
     let wave_height = 0.5;
-    let wave_y_shrink = 20.0;
+    let max_y_shrink = 30.0;
+    let min_y_shrink = 10.0;
+    let wave_y_timeframe = u.time % max_y_shrink;
+    let wave_y_timeframe2x = u.time % (wave_y_timeframe * 2.0);
+    var wave_y_shrink = wave_y_timeframe;
+    // Using the 2x timeframe to step `wave_y_shrink` "backwards" if we've gone past the
+    // single-direction timeframe. This is a technique that can be used to get a 
+    // "pendulum" or "back-and-forth" effect from time and modulus.
+    if (wave_y_timeframe2x > max_y_shrink) {
+        wave_y_shrink = max_y_shrink - wave_y_timeframe;
+    }
+    if (wave_y_shrink < min_y_shrink) {
+        wave_y_shrink = min_y_shrink;
+    }
     var y: f32 = adjusted_sin(input.uv.x * abs(sin(u.time % 60.0)) * 5.5 + u.time, wave_y_shrink, wave_height);
     // var y: f32 = adjusted_sin(input.uv.x + u.time, wave_y_shrink, wave_height);
 
