@@ -6,7 +6,8 @@
 	],
 	"settings": {
 		// "editor.parameterHints": false	
-		"explorer.autoReveal": false,	// Prevent explorer from jumping around when closing / opening files
+		// "explorer.autoReveal": false,	// Prevent explorer from jumping around when closing / opening files
+                "explorer.autoReveal": "focusNoScroll",   // Prevent explorer from jumping around when closing / opening files
 		"[rust]": {
 			"editor.defaultFormatter": "rust-lang.rust-analyzer",
 			"editor.formatOnSave": true,
