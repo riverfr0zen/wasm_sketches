@@ -141,3 +141,48 @@ Based on: https://github.com/rust-lang/vscode-rust/issues/438#issuecomment-10036
 VSCode has also [provided a topic](https://code.visualstudio.com/docs/languages/rust) around using Rust with VSCode. This came out after I had already done my set up, and I think it covers much of what I have already done. However, I'm leaving this link here in case there are any details I may want to revisit, especially around debugging.
 
 The [rust-analyzer manual](https://rust-analyzer.github.io/manual.html#vs-code-2) also shows a lot of nifty config tips for VSCode.
+
+
+## Android Chrome Developer Tools
+
+1. In Android Settings, search for "Build Number" and click several times to set phone to Developer mode
+2. Connect phone to PC via USB.
+3. Open Chrome and navigate to `chrome://inspect/#devices`. Phone should be listed there. It's usually kind of wonky, so tinker around and/or give it a few moments if you don't see it right away.
+
+
+# Troubleshooting
+
+## bindgen format mismatch
+
+After running `rustup update` since some time with the project, I got this error when running the `build-sketches` tool:
+
+```
+Building cellular...
+    Finished release [optimized] target(s) in 0.11s
+Running wasm-bindgen for cellular...
+error: 
+
+it looks like the Rust project used to create this wasm file was linked against
+version of wasm-bindgen that uses a different bindgen format than this binary:
+
+  rust wasm file schema version: 0.2.83
+     this binary schema version: 0.2.79
+
+Currently the bindgen format is unstable enough that these two schema versions
+must exactly match. You can accomplish this by either updating the wasm-bindgen
+dependency or this binary.
+
+You should be able to update the wasm-bindgen dependency with:
+
+    cargo update -p wasm-bindgen
+
+or you can update the binary with
+
+    cargo install -f wasm-bindgen-cli
+
+if this warning fails to go away though and you're not sure what to do feel free
+to open an issue at https://github.com/rustwasm/wasm-bindgen/issues!
+
+```
+
+Solution: Basically just had to update `wasm-bindgen-cli` (which is installed on the user level, not the project level) with the command `cargo install -f wasm-bindgen-cli`, as instructed in the message.
